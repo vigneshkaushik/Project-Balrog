@@ -1,0 +1,66 @@
+---
+description: React best practices for components, hooks, and UI (TypeScript + Vite)
+globs: **/*.{tsx,jsx}
+alwaysApply: false
+---
+
+# React best practices
+
+## Components
+
+- Prefer **function components**; one main component per file when it helps navigation, or group small related pieces.
+- **Name components** with PascalCase; name hooks with `use` prefix.
+- Keep components **focused**: lift state only as high as needed; split when JSX or logic becomes hard to scan.
+- Prefer **composition** (children, small subcomponents) over deep optional prop trees.
+
+## Hooks
+
+- Call hooks at the **top level** only—never inside conditions, loops, or nested functions.
+- Give `useEffect` a **correct dependency array**; do not omit deps to “fix” warnings—fix the effect or memoize values/callbacks intentionally.
+- Extract **custom hooks** (`useThing`) for reusable stateful logic, not for wrapping one-off effects unless clarity wins.
+- For event handlers passed to memoized children, stabilize with **`useCallback`** only when profiling or clear child memo benefit—avoid blanket wrapping.
+
+## Props and re-renders
+
+- Avoid **inline object/array literals** in props when the child is memoized and the reference churn causes real extra work; hoist stable objects or memoize when needed.
+- Prefer **key** on lists that is stable and unique (avoid array index when order/items change).
+
+## TypeScript
+
+- **Type props** explicitly (interface or type); avoid `any` for public component APIs.
+- For `children`, use **`React.ReactNode`** (or a narrower type when you rely on a specific shape).
+
+## Markup and a11y
+
+- Use semantic HTML first; add **`alt` text** for meaningful images (use `alt=""` for decorative only).
+- Wire **labels** to inputs; preserve **keyboard** access for interactive elements; use `aria-*` when semantics are insufficient.
+
+## Styling (Tailwind / CSS)
+
+- Prefer **utility classes** or colocated CSS consistent with the file; avoid mixing many one-off inline `style` objects unless dynamic values require it.
+
+## Examples
+
+```tsx
+// ❌ BAD: suppressing hook deps
+useEffect(() => {
+  fetch(`/api/${id}`)
+}, []) // id ignored
+
+// ✅ GOOD
+useEffect(() => {
+  let cancelled = false
+  fetch(`/api/${id}`).then(/* ... */)
+  return () => {
+    cancelled = true
+  }
+}, [id])
+```
+
+```tsx
+// ❌ BAD: index key for reorderable list
+items.map((item, i) => <Row key={i} item={item} />)
+
+// ✅ GOOD
+items.map((item) => <Row key={item.id} item={item} />)
+```
