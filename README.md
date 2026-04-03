@@ -75,6 +75,13 @@ The application uses a **monolithic web app** layout with clear internal boundar
 
 ---
 
+## Technology Stack
+
+- React frontend
+- Python backend
+
+---
+
 ## Current scope
 
 **Intended workflow**
