@@ -82,6 +82,48 @@ The application uses a **monolithic web app** layout with clear internal boundar
 
 ---
 
+## Running locally
+
+Run the **API** and **web app** in separate terminals. Defaults expect the API on port **8000** and Vite on **5173** (CORS in `apps/api/.env.example` already allows `http://localhost:5173`).
+
+### Prerequisites
+
+- **Backend:** Python 3.12+ and [uv](https://docs.astral.sh/uv/)
+- **Frontend:** Node.js and [pnpm](https://pnpm.io/) (the web app uses a `pnpm-lock.yaml`)
+
+### Backend (`apps/api`)
+
+```bash
+cd apps/api
+cp .env.example .env
+# Edit .env: set LLM provider, API keys, and CORS if your frontend URL differs.
+uv sync
+uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+- Health check: [http://localhost:8000/health](http://localhost:8000/health)
+- More detail: [apps/api/README.md](apps/api/README.md)
+
+### Frontend (`apps/web`)
+
+```bash
+cd apps/web
+pnpm install
+pnpm dev
+```
+
+- Open the URL Vite prints (typically [http://localhost:5173](http://localhost:5173)).
+
+### Production build (frontend only)
+
+```bash
+cd apps/web
+pnpm run build
+pnpm run preview   # optional: serve the built assets locally
+```
+
+---
+
 ## Current scope
 
 **Intended workflow**
