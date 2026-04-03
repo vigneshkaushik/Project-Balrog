@@ -1,0 +1,63 @@
+import { useNavigate } from 'react-router-dom'
+import { useApp } from '../../context/useApp'
+import { FileUpload } from './FileUpload'
+import { SpeckleUrlInput } from './SpeckleUrlInput'
+
+const isDebuggingMode = import.meta.env.DEV
+
+export function LandingPage() {
+  const navigate = useNavigate()
+  const {
+    setNavisworksReport,
+    navisworksFileName,
+    speckleUrls,
+  } = useApp()
+
+  const canContinue =
+    Boolean(navisworksFileName) && speckleUrls.some((u) => u.trim().length > 0)
+  const buttonDisabled = !isDebuggingMode && !canContinue
+
+  return (
+    <div className="flex min-h-full flex-1 items-center justify-center p-6 md:p-10">
+      <div className="w-full max-w-lg rounded-2xl border border-neutral-200/80 bg-white p-8 shadow-md shadow-neutral-900/5">
+        <h1 className="text-center text-xl font-bold text-neutral-900 md:text-2xl">
+          Get started in 3 simple steps
+        </h1>
+        <ol className="mt-6 list-decimal space-y-3 pl-5 text-left text-sm text-neutral-700 md:text-base">
+          <li>Upload your clash report from Navisworks</li>
+          <li>Add the relevant speckle model URLs</li>
+          <li>Inspect your clashes, generate analyses and recommendations!</li>
+        </ol>
+
+        <div className="mt-8 flex flex-col gap-3">
+          <FileUpload onFileSelected={setNavisworksReport} />
+          {navisworksFileName && (
+            <p className="text-center text-xs text-neutral-500">
+              Selected:{' '}
+              <span className="font-medium text-neutral-700">
+                {navisworksFileName}
+              </span>
+            </p>
+          )}
+          <SpeckleUrlInput />
+        </div>
+
+        <button
+          type="button"
+          disabled={buttonDisabled}
+          title={
+            buttonDisabled
+              ? 'Upload a Navisworks clash report and add at least one Speckle URL'
+              : isDebuggingMode && !canContinue
+                ? 'Debug: enabled without upload / Speckle URL (dev server only)'
+                : undefined
+          }
+          onClick={() => navigate('/inspector')}
+          className="btn-primary btn-primary--full mt-6"
+        >
+          Go to clash report
+        </button>
+      </div>
+    </div>
+  )
+}
