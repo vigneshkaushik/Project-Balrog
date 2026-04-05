@@ -14,6 +14,8 @@ dependencies = [
     "sse-starlette>=2",
     "pydantic-settings>=2",
     "python-dotenv>=1",
+    "llama-index-tools-duckduckgo>=0.2",
+    "llama-index-llms-google-genai>=0.9.1",
 ]
 
 [build-system]

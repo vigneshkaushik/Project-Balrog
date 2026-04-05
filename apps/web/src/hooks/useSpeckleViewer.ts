@@ -10,6 +10,8 @@ import {
 export interface UseSpeckleViewerOptions {
   /** When false, skip initialization (e.g. empty container). */
   enabled?: boolean
+  /** Called after `init` and all `loadObject` calls succeed for this viewer instance. */
+  onModelsLoaded?: (viewer: Viewer) => void
 }
 
 /**
@@ -21,8 +23,10 @@ export function useSpeckleViewer(
   speckleUrls: string[],
   options: UseSpeckleViewerOptions = {},
 ) {
-  const { enabled = true } = options
+  const { enabled = true, onModelsLoaded } = options
   const viewerRef = useRef<Viewer | null>(null)
+  const onModelsLoadedRef = useRef(onModelsLoaded)
+  onModelsLoadedRef.current = onModelsLoaded
 
   useEffect(() => {
     if (!enabled) return
@@ -51,6 +55,9 @@ export function useSpeckleViewer(
             const loader = new SpeckleLoader(viewer.getWorldTree(), resourceUrl, '')
             await viewer.loadObject(loader, true)
           }
+        }
+        if (!cancelled) {
+          onModelsLoadedRef.current?.(viewer)
         }
       } catch (err) {
         if (!cancelled) {
