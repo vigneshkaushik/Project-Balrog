@@ -104,15 +104,51 @@ uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000
 - Health check: [http://localhost:8000/health](http://localhost:8000/health)
 - More detail: [apps/api/README.md](apps/api/README.md)
 
+**Chat (SSE):** `POST /chat` accepts JSON `{ "message": "...", "conversation_id": "<optional uuid>" }` and returns `text/event-stream` with `metadata` (includes assigned `conversation_id` if you omitted it), `token` deltas, then `done` or `error`. Use **`curl -N`** so the stream is not buffered:
+
+```bash
+curl -N -X POST http://localhost:8000/chat \
+  -H 'Content-Type: application/json' \
+  -d '{"message":"Say hello in one short sentence."}'
+```
+
+To continue a thread, add `"conversation_id":"<uuid-from-metadata>"` to the JSON body on the next request.
+
+#### LLM and model configuration
+
+Settings live in **`apps/api/.env`** (see **[apps/api/.env.example](apps/api/.env.example)** for provider-specific blocks).
+
+| Variable | Used when | Role |
+| -------- | --------- | ---- |
+| **`LLM_PROVIDER`** | Always | `anthropic` (default), `openai`, or `ollama`. |
+| **`MODEL_NAME`** | Always | **Anthropic / OpenAI:** API model id (e.g. `claude-…`, `gpt-4o`). **Ollama:** model tag, or fallback when **`OLLAMA_MODEL`** is unset. |
+| **`ANTHROPIC_API_KEY`** | `LLM_PROVIDER=anthropic` | Required. Ignored for OpenAI and Ollama. |
+| **`OPENAI_API_KEY`** | `LLM_PROVIDER=openai` | Required. Ignored for Anthropic and Ollama. |
+| **`ANTHROPIC_BASE_URL`** | `LLM_PROVIDER=anthropic` | Optional custom Anthropic-compatible base URL. Leave unset for Anthropic cloud. |
+| **`OPENAI_BASE_URL`** | `LLM_PROVIDER=openai` | Optional custom OpenAI-compatible base URL (for self-hosted gateways / compatible servers). Leave unset for OpenAI cloud. |
+| **`OPENAI_CONTEXT_WINDOW`** | `LLM_PROVIDER=openai` with `OPENAI_BASE_URL` | Context window used for OpenAI-compatible custom endpoints with arbitrary model ids. Ignored for OpenAI cloud. |
+| **`OLLAMA_BASE_URL`** | `LLM_PROVIDER=ollama` | Ollama API root only (no path). Trimmed; trailing `/` removed; empty → `http://localhost:11434`. Ignored for cloud providers. |
+| **`OLLAMA_MODEL`** | `LLM_PROVIDER=ollama` | Optional override; if set, used instead of **`MODEL_NAME`** as the Ollama tag. |
+| **`OLLAMA_CONTEXT_WINDOW`** | `LLM_PROVIDER=ollama` | Context length (`num_ctx`) sent to Ollama; avoids **`POST /api/show`** probes. Ignored for Anthropic and OpenAI. |
+| **`MAX_TOKENS`** | Anthropic and OpenAI | Max **output** tokens. With Ollama, context size is **`OLLAMA_CONTEXT_WINDOW`**; output limits follow LlamaIndex/Ollama defaults unless you tune **`additional_kwargs`** later. |
+
+Startup validation is provider-aware: Anthropic/OpenAI require the matching API key, Ollama requires a non-empty model tag, and `org/model` ids like `qwen/qwen3-vl-4b` are accepted for **OpenAI-compatible** servers when **`OPENAI_BASE_URL`** is set.
+
+For OpenAI-compatible self-hosted servers, set **`LLM_PROVIDER=openai`**, **`OPENAI_BASE_URL=http://host:port/v1`**, and use the model id reported by **`GET /v1/models`**. Some compatible servers ignore auth; if the client still requires a key, a non-empty placeholder like `OPENAI_API_KEY=dummy` may be sufficient. If the model id is not a standard OpenAI cloud name, set **`OPENAI_CONTEXT_WINDOW`** so the app does not rely on OpenAI’s built-in model registry.
+
+Other shared knobs: **`TEMPERATURE`**, **`MAX_AGENT_ITERATIONS`**, **`SYSTEM_PROMPT`**, **`CORS_ORIGINS`**. ReAct tool ids are listed in **`apps/api/app/routes/chat.py`** as **`ENABLED_AGENT_TOOL_IDS`** (not **`.env`**). Restart the API after changing **`.env`** (settings are cached at startup).
+
 ### Frontend (`apps/web`)
 
 ```bash
 cd apps/web
+cp .env.example .env   # optional: set VITE_API_BASE_URL if the API is not on http://localhost:8000
 pnpm install
 pnpm dev
 ```
 
 - Open the URL Vite prints (typically [http://localhost:5173](http://localhost:5173)).
+- The sidebar chat calls **`POST /chat`** on the API origin from **`VITE_API_BASE_URL`** (default `http://localhost:8000`) and streams SSE `token` events into the UI.
 
 ### Production build (frontend only)
 
