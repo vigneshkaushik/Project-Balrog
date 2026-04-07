@@ -16,6 +16,8 @@ dependencies = [
     "python-dotenv>=1",
     "llama-index-tools-duckduckgo>=0.2",
     "llama-index-llms-google-genai>=0.9.1",
+    "ipynb>=0.5.1",
+    "ipykernel>=7.2.0",
 ]
 
 [build-system]
