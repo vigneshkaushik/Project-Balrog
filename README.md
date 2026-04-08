@@ -103,6 +103,7 @@ uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 - Health check: [http://localhost:8000/health](http://localhost:8000/health)
 - More detail: [apps/api/README.md](apps/api/README.md)
+- Clash upload endpoint: `POST /clashes/upload` (multipart XML file)
 
 **Chat (SSE):** `POST /chat` accepts JSON `{ "message": "...", "conversation_id": "<optional uuid>" }` and returns `text/event-stream` with `metadata` (includes assigned `conversation_id` if you omitted it), `token` deltas, then `done` or `error`. Use **`curl -N`** so the stream is not buffered:
 
@@ -113,6 +114,14 @@ curl -N -X POST http://localhost:8000/chat \
 ```
 
 To continue a thread, add `"conversation_id":"<uuid-from-metadata>"` to the JSON body on the next request.
+
+**Clash ingestion:** `POST /clashes/upload` accepts `multipart/form-data` with one `.xml` file field named `file`. The API parses clashes, infers severity in parallel, appends `severity`, `disciplines`, and `lead` onto each clash object (matched by `clashGuid`), and returns the enriched JSON payload.
+
+```bash
+curl -X POST "http://localhost:8000/clashes/upload" \
+  -F "file=@apps/api/experiments/Base_Model_Arch_vs_Structural_Clashes.xml" \
+  -H "Accept: application/json"
+```
 
 #### LLM and model configuration
 

@@ -13,6 +13,7 @@ from app.chat_store import ChatSessionStore
 from app.config import get_settings
 from app.routes.agent_config import router as agent_config_router
 from app.routes.chat import ENABLED_AGENT_TOOL_IDS, router as chat_router
+from app.routes.clashes import router as clashes_router
 from app.user_agent_config import default_config_path, load_user_agent_config
 
 
@@ -56,6 +57,7 @@ app.add_middleware(
 
 app.include_router(chat_router)
 app.include_router(agent_config_router)
+app.include_router(clashes_router)
 
 
 @app.get("/health")
