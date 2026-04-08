@@ -6,9 +6,16 @@ export function ModelViewer() {
   const { speckleUrls } = useApp()
   const containerRef = useRef<HTMLElement>(null)
 
-  const activeUrls = speckleUrls.filter((u) => u.trim().length > 0)
+  const activeUrls = speckleUrls
+    .map((u) => u.trim())
+    .filter((u) => u.length > 0)
+
+  const authToken = import.meta.env.VITE_SPECKLE_TOKEN ?? ''
+
   useSpeckleViewer(containerRef, activeUrls, {
     enabled: activeUrls.length > 0,
+    debug: true,
+    authToken,
   })
 
   return (

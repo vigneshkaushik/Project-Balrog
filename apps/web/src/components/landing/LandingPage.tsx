@@ -4,17 +4,19 @@ import { FileUpload } from './FileUpload'
 import { SpeckleUrlInput } from './SpeckleUrlInput'
 
 const isDebuggingMode = import.meta.env.DEV
+const viewerOnlyMode = true
 
 export function LandingPage() {
   const navigate = useNavigate()
-  const {
-    setNavisworksReport,
-    navisworksFileName,
-    speckleUrls,
-  } = useApp()
+  const { setNavisworksReport, navisworksFileName, speckleUrls } = useApp()
 
-  const canContinue =
-    Boolean(navisworksFileName) && speckleUrls.some((u) => u.trim().length > 0)
+  const hasSpeckleUrl = speckleUrls.some((u) => u.trim().length > 0)
+  const hasClashReport = Boolean(navisworksFileName)
+
+  const canContinue = viewerOnlyMode
+    ? hasSpeckleUrl
+    : hasClashReport && hasSpeckleUrl
+
   const buttonDisabled = !isDebuggingMode && !canContinue
 
   return (
@@ -23,6 +25,7 @@ export function LandingPage() {
         <h1 className="text-center text-xl font-bold text-neutral-900 md:text-2xl">
           Get started in 3 simple steps
         </h1>
+
         <ol className="mt-6 list-decimal space-y-3 pl-5 text-left text-sm text-neutral-700 md:text-base">
           <li>Upload your clash report from Navisworks</li>
           <li>Add the relevant speckle model URLs</li>
@@ -31,6 +34,7 @@ export function LandingPage() {
 
         <div className="mt-8 flex flex-col gap-3">
           <FileUpload onFileSelected={setNavisworksReport} />
+
           {navisworksFileName && (
             <p className="text-center text-xs text-neutral-500">
               Selected:{' '}
@@ -39,7 +43,15 @@ export function LandingPage() {
               </span>
             </p>
           )}
+
           <SpeckleUrlInput />
+
+          {viewerOnlyMode && (
+            <p className="text-center text-xs text-neutral-500">
+              Clash report is optional for now. Add a Speckle URL to test the
+              viewer.
+            </p>
+          )}
         </div>
 
         <button
@@ -47,9 +59,11 @@ export function LandingPage() {
           disabled={buttonDisabled}
           title={
             buttonDisabled
-              ? 'Upload a Navisworks clash report and add at least one Speckle URL'
+              ? viewerOnlyMode
+                ? 'Add at least one Speckle URL'
+                : 'Upload a Navisworks clash report and add at least one Speckle URL'
               : isDebuggingMode && !canContinue
-                ? 'Debug: enabled without upload / Speckle URL (dev server only)'
+                ? 'Debug: enabled for local testing'
                 : undefined
           }
           onClick={() => navigate('/inspector')}

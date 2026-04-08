@@ -8,63 +8,139 @@ import {
 } from '@speckle/viewer'
 
 export interface UseSpeckleViewerOptions {
-  /** When false, skip initialization (e.g. empty container). */
   enabled?: boolean
+  enableSelection?: boolean
+  enableCamera?: boolean
+  debug?: boolean
+  authToken?: string
 }
 
-/**
- * Initializes a Speckle Viewer in the given container and loads all models
- * for the provided Speckle URLs. Disposes the viewer on unmount or URL change.
- */
 export function useSpeckleViewer(
   containerRef: RefObject<HTMLElement | null>,
   speckleUrls: string[],
   options: UseSpeckleViewerOptions = {},
 ) {
-  const { enabled = true } = options
+  const {
+    enabled = true,
+    enableSelection = true,
+    enableCamera = true,
+    debug = false,
+    authToken = '',
+  } = options
+
   const viewerRef = useRef<Viewer | null>(null)
 
   useEffect(() => {
     if (!enabled) return
+
     const el = containerRef.current
     if (!el) return
 
-    const urls = speckleUrls.filter((u) => u.trim().length > 0)
+    const urls = speckleUrls
+      .map((u) => u.trim())
+      .filter((u) => u.length > 0)
+
     if (urls.length === 0) return
 
     let cancelled = false
+
+    el.innerHTML = ''
+
     const viewer = new Viewer(el)
     viewerRef.current = viewer
 
     ;(async () => {
       try {
+        if (debug) {
+          console.log('[useSpeckleViewer] Initializing viewer...')
+          console.log('[useSpeckleViewer] Input URLs:', urls)
+          console.log(
+            '[useSpeckleViewer] Auth token provided:',
+            authToken ? 'yes' : 'no',
+          )
+        }
+
         await viewer.init()
         if (cancelled) return
-        viewer.createExtension(CameraController)
-        viewer.createExtension(SelectionExtension)
+
+        if (enableCamera) {
+          viewer.createExtension(CameraController)
+          if (debug) {
+            console.log('[useSpeckleViewer] CameraController enabled')
+          }
+        }
+
+        if (enableSelection) {
+          viewer.createExtension(SelectionExtension)
+          if (debug) {
+            console.log('[useSpeckleViewer] SelectionExtension enabled')
+          }
+        }
 
         for (const speckleUrl of urls) {
           if (cancelled) return
-          const resolved = await UrlHelper.getResourceUrls(speckleUrl)
+
+          if (debug) {
+            console.log('[useSpeckleViewer] Loading Speckle URL:', speckleUrl)
+          }
+
+          const resolved = await UrlHelper.getResourceUrls(speckleUrl, authToken)
+
+          if (debug) {
+            console.log('[useSpeckleViewer] Resolved resource URLs:', resolved)
+          }
+
           for (const resourceUrl of resolved) {
             if (cancelled) return
-            const loader = new SpeckleLoader(viewer.getWorldTree(), resourceUrl, '')
+
+            if (debug) {
+              console.log(
+                '[useSpeckleViewer] Loading resource URL:',
+                resourceUrl,
+              )
+            }
+
+            const loader = new SpeckleLoader(
+              viewer.getWorldTree(),
+              resourceUrl,
+              authToken,
+            )
+
             await viewer.loadObject(loader, true)
+
+            if (debug) {
+              console.log('[useSpeckleViewer] Model loaded successfully')
+            }
           }
         }
       } catch (err) {
         if (!cancelled) {
-          console.error('[useSpeckleViewer]', err)
+          console.error('[useSpeckleViewer] Error:', err)
         }
       }
     })()
 
     return () => {
       cancelled = true
-      viewer.dispose()
+
+      try {
+        viewer.dispose()
+      } catch (err) {
+        console.warn('[useSpeckleViewer] Dispose warning:', err)
+      }
+
       viewerRef.current = null
+      el.innerHTML = ''
     }
-  }, [containerRef, enabled, speckleUrls])
+  }, [
+    containerRef,
+    enabled,
+    enableSelection,
+    enableCamera,
+    debug,
+    authToken,
+    speckleUrls,
+  ])
 
   return viewerRef
 }
