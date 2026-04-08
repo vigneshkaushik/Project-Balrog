@@ -23,7 +23,7 @@ This document maps the **FastAPI** backend: entrypoint, configuration, AI agent 
 | File / symbol | Role |
 | ------------- | ---- |
 | `main.py` → `lifespan` | On startup: reads **`get_settings()`**, resolves **`user_agent_config_path`** (default **`apps/api/data/agent_user_config.json`** or **`AGENT_USER_CONFIG_PATH`**), loads **`load_user_agent_config`**, builds **`create_llm`**, **`create_react_agent(..., tool_ids=ENABLED_AGENT_TOOL_IDS)`**, **`ChatSessionStore(llm)`**, attaches all to **`app.state`**. |
-| `main.py` → `app` | **`FastAPI`** title/description, **`CORSMiddleware`** from **`settings.cors_origins`**, includes **`chat`** and **`agent_config`** routers, exposes **`GET /health`**. |
+| `main.py` → `app` | **`FastAPI`** title/description, **`CORSMiddleware`** from **`settings.cors_origins`**, includes **`chat`**, **`agent_config`**, and **`clashes`** routers, exposes **`GET /health`**. |
 
 **Runtime state (`request.app.state`)**
 
@@ -140,9 +140,46 @@ Implementation walks **`handler.stream_events()`**, mapping **`AgentStream`**, *
 
 ---
 
+## HTTP API — clash ingestion (`app/routes/clashes.py`)
+
+| Endpoint | Method | Description |
+| -------- | ------ | ----------- |
+| **`/clashes/upload`** | `POST` | Upload a Navisworks clash report XML (`multipart/form-data` field: **`file`**), parse all clashes, run LLM severity inference in parallel, merge inference into each clash by **`clashGuid`**, and return enriched JSON payload. |
+
+**Flow**
+
+1. Validate uploaded file extension (`.xml`) and non-empty payload.
+2. Save bytes to a temp file and parse with **`app/utils/clash_parser.py`** (`parse_clash_xml`).
+3. Collect clashes across all tests and infer severity via **`app/utils/clash_inference.py`** (`infer_clash_severities`).
+4. Merge inference rows by id:
+   - inference row key: `clash`
+   - parsed clash key: `clashGuid`
+5. Append only:
+   - `severity`
+   - `disciplines`
+   - `lead`
+6. Return the full parsed payload with these fields added per matched clash.
+
+**Current runtime defaults in route**
+
+- Prompt: `DEFAULT_CLASH_SEVERITY_PREPROMPT`
+- Model/base url/key: from `request.app.state.settings`
+- Inference params: `max_batch_size=40`, `max_workers=3`, `temperature=0.0`, `minify=True`
+
+---
+
+## Clash utilities (`app/utils`)
+
+| File | Responsibility |
+| ---- | -------------- |
+| **`app/utils/clash_parser.py`** | XML parser + normalization helpers (`parse_clash_xml`, `parse_clash_result`, `parse_clash_object`), and `optimize_clash_for_agent` for LLM-friendly minified clash payloads. |
+| **`app/utils/clash_inference.py`** | Parallel severity inference pipeline using LlamaIndex OpenAI wrapper. Includes adaptive batching (`batch_clashes`), code-fence stripping, minification handoff, default severity preprompt, and ordered result reassembly after concurrent execution. |
+
+---
+
 ## Dependency overview (`pyproject.toml`)
 
-Core packages: **FastAPI**, **Uvicorn**, **`llama-index-core`**, provider LLM extras (**anthropic**, **openai**, **ollama**, **google-genai** via **`llama-index-llms-google-genai`**), **sse-starlette**, **pydantic-settings**, **python-dotenv**, **llama-index-tools-duckduckgo**.
+Core packages: **FastAPI**, **Uvicorn**, **`llama-index-core`**, provider LLM extras (**anthropic**, **openai**, **ollama**, **google-genai** via **`llama-index-llms-google-genai`**), **sse-starlette**, **pydantic-settings**, **python-dotenv**, **llama-index-tools-duckduckgo**, **python-multipart** (file uploads).
 
 ---
 

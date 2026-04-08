@@ -27,6 +27,7 @@ uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 - `GET /health` — liveness
 - `POST /chat` — JSON body `{ "message": "...", "conversation_id": "<optional uuid>" }`, response is `text/event-stream` with events `metadata`, `token`, `thought_delta`, `agent_thought`, `tool_call`, `tool_result`, `done`, or `error`
+- `POST /clashes/upload` — `multipart/form-data` XML upload (`file` field), parses clashes, infers severity in parallel, appends `severity` + `disciplines` + `lead` into each clash object, returns enriched JSON
 
 ### Test chat with curl
 
@@ -44,6 +45,23 @@ To continue a thread, reuse the `conversation_id` returned in the first `metadat
 curl -N -X POST http://localhost:8000/chat \
   -H 'Content-Type: application/json' \
   -d '{"message":"Now answer in Spanish.","conversation_id":"<uuid-from-metadata>"}'
+```
+
+### Test clash upload with curl
+
+```bash
+curl -X POST "http://localhost:8000/clashes/upload" \
+  -F "file=@apps/api/experiments/Base_Model_Arch_vs_Structural_Clashes.xml" \
+  -H "Accept: application/json"
+```
+
+Save to disk:
+
+```bash
+curl -X POST "http://localhost:8000/clashes/upload" \
+  -F "file=@apps/api/experiments/Base_Model_Arch_vs_Structural_Clashes.xml" \
+  -H "Accept: application/json" \
+  -o apps/api/experiments/clashes_with_severity.json
 ```
 
 ## Provider configuration
