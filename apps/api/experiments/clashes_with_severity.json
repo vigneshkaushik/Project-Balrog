@@ -1,0 +1,1200 @@
+{
+    "sourceFile": "tmpmsnfynqy.xml",
+    "sourcePath": "/tmp/tmpmsnfynqy.xml",
+    "units": "m",
+    "tests": [
+        {
+            "testName": "Arch vs Struct",
+            "testType": "hard",
+            "testStatus": "ok",
+            "tolerance": "0.001",
+            "summary": {
+                "total": 3987,
+                "new": 0,
+                "active": 3987,
+                "reviewed": 0,
+                "approved": 0,
+                "resolved": 0
+            },
+            "clashes": [
+                {
+                    "clashName": "Clash1",
+                    "clashGuid": "f99fba96-1ab8-4f60-bc31-407511924e0d",
+                    "clashMetadata": {
+                        "status": "active",
+                        "description": "Hard",
+                        "resultStatus": "Active",
+                        "distance": -4.216,
+                        "href": "Base Model_Arch vs Structural Clashes_files\\cd000001.jpg",
+                        "gridLocation": "B-6 : L3",
+                        "createdAt": "2026-04-03T09:28:56",
+                        "clashPoint": {
+                            "x": 417625.629,
+                            "y": 78709.244,
+                            "z": 247.548
+                        }
+                    },
+                    "objects": [
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "748873",
+                            "clashMetadata": {
+                                "layer": "L2",
+                                "itemName": "Gypsum Wall Board",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "748873"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Gypsum Wall Board",
+                                "Item Type": "Solid"
+                            }
+                        },
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "792679",
+                            "clashMetadata": {
+                                "layer": "L4",
+                                "itemName": "Metal Deck",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "792679"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Metal Deck",
+                                "Item Type": "Solid"
+                            }
+                        }
+                    ],
+                    "severity": "LOW",
+                    "disciplines": [
+                        "ARC"
+                    ],
+                    "lead": [
+                        "Metal Deck"
+                    ]
+                },
+                {
+                    "clashName": "Clash2",
+                    "clashGuid": "68bb1b6b-42c5-4f2d-8a71-fab3fed54848",
+                    "clashMetadata": {
+                        "status": "active",
+                        "description": "Hard",
+                        "resultStatus": "Active",
+                        "distance": -3.637,
+                        "href": "Base Model_Arch vs Structural Clashes_files\\cd000002.jpg",
+                        "gridLocation": "C-8 : L3",
+                        "createdAt": "2026-04-03T09:28:56",
+                        "clashPoint": {
+                            "x": 417632.194,
+                            "y": 78721.969,
+                            "z": 247.548
+                        }
+                    },
+                    "objects": [
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "748363",
+                            "clashMetadata": {
+                                "layer": "L2",
+                                "itemName": "Gypsum Wall Board",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "748363"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Gypsum Wall Board",
+                                "Item Type": "Solid"
+                            }
+                        },
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "792679",
+                            "clashMetadata": {
+                                "layer": "L4",
+                                "itemName": "Metal Deck",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "792679"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Metal Deck",
+                                "Item Type": "Solid"
+                            }
+                        }
+                    ],
+                    "severity": "LOW",
+                    "disciplines": [
+                        "ARC"
+                    ],
+                    "lead": [
+                        "Metal Deck"
+                    ]
+                },
+                {
+                    "clashName": "Clash3",
+                    "clashGuid": "d1e6a973-bfdb-4ca4-8873-3808e0b35b07",
+                    "clashMetadata": {
+                        "status": "active",
+                        "description": "Hard",
+                        "resultStatus": "Active",
+                        "distance": -2.91,
+                        "href": "Base Model_Arch vs Structural Clashes_files\\cd000003.jpg",
+                        "gridLocation": "D-5 : L4",
+                        "createdAt": "2026-04-03T09:28:56",
+                        "clashPoint": {
+                            "x": 417615.19,
+                            "y": 78714.751,
+                            "z": 247.701
+                        }
+                    },
+                    "objects": [
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "685081",
+                            "clashMetadata": {
+                                "layer": "L2",
+                                "itemName": "Gypsum Wall Board",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "685081"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Gypsum Wall Board",
+                                "Item Type": "Solid"
+                            }
+                        },
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "792679",
+                            "clashMetadata": {
+                                "layer": "L4",
+                                "itemName": "Concrete, Cast-in-Place gray",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "792679"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Concrete, Cast-in-Place gray",
+                                "Item Type": "Solid"
+                            }
+                        }
+                    ],
+                    "severity": "LOW",
+                    "disciplines": [
+                        "ARC"
+                    ],
+                    "lead": [
+                        "Concrete, Cast-in-Place gray"
+                    ]
+                },
+                {
+                    "clashName": "Clash4",
+                    "clashGuid": "c7efa973-3c4a-490b-a85f-5af42dff9bb6",
+                    "clashMetadata": {
+                        "status": "active",
+                        "description": "Hard",
+                        "resultStatus": "Active",
+                        "distance": -2.663,
+                        "href": "Base Model_Arch vs Structural Clashes_files\\cd000004.jpg",
+                        "gridLocation": "D-8 : L3",
+                        "createdAt": "2026-04-03T09:28:56",
+                        "clashPoint": {
+                            "x": 417630.055,
+                            "y": 78726.352,
+                            "z": 243.637
+                        }
+                    },
+                    "objects": [
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "748363",
+                            "clashMetadata": {
+                                "layer": "L2",
+                                "itemName": "Gypsum Wall Board",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "748363"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Gypsum Wall Board",
+                                "Item Type": "Solid"
+                            }
+                        },
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "688281",
+                            "clashMetadata": {
+                                "layer": "L3",
+                                "itemName": "Concrete, Cast-in-Place gray",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "688281"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Concrete, Cast-in-Place gray",
+                                "Item Type": "Solid"
+                            }
+                        }
+                    ],
+                    "severity": "LOW",
+                    "disciplines": [
+                        "ARC"
+                    ],
+                    "lead": [
+                        "Concrete, Cast-in-Place gray"
+                    ]
+                },
+                {
+                    "clashName": "Clash5",
+                    "clashGuid": "b110c94f-dbdf-4927-bc28-ec96895403fc",
+                    "clashMetadata": {
+                        "status": "active",
+                        "description": "Hard",
+                        "resultStatus": "Active",
+                        "distance": -1.453,
+                        "href": "Base Model_Arch vs Structural Clashes_files\\cd000005.jpg",
+                        "gridLocation": "C-6 : L4",
+                        "createdAt": "2026-04-03T09:28:56",
+                        "clashPoint": {
+                            "x": 417621.945,
+                            "y": 78716.794,
+                            "z": 247.701
+                        }
+                    },
+                    "objects": [
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "1235583",
+                            "clashMetadata": {
+                                "layer": "L2",
+                                "itemName": "Gypsum Wall Board",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "1235583"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Gypsum Wall Board",
+                                "Item Type": "Solid"
+                            }
+                        },
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "792679",
+                            "clashMetadata": {
+                                "layer": "L4",
+                                "itemName": "Concrete, Cast-in-Place gray",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "792679"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Concrete, Cast-in-Place gray",
+                                "Item Type": "Solid"
+                            }
+                        }
+                    ],
+                    "severity": "LOW",
+                    "disciplines": [
+                        "ARC"
+                    ],
+                    "lead": [
+                        "Concrete, Cast-in-Place gray"
+                    ]
+                },
+                {
+                    "clashName": "Clash6",
+                    "clashGuid": "1f6f1ca3-915b-4372-8d7a-e62bd0e5a097",
+                    "clashMetadata": {
+                        "status": "active",
+                        "description": "Hard",
+                        "resultStatus": "Active",
+                        "distance": -1.419,
+                        "href": "Base Model_Arch vs Structural Clashes_files\\cd000006.jpg",
+                        "gridLocation": "C-5 : L4",
+                        "createdAt": "2026-04-03T09:28:56",
+                        "clashPoint": {
+                            "x": 417617.189,
+                            "y": 78714.645,
+                            "z": 251.612
+                        }
+                    },
+                    "objects": [
+                        {
+                            "revitGlobalId": null,
+                            "elementId": null,
+                            "clashMetadata": {
+                                "layer": "L4",
+                                "itemName": "Two Story Studio Unit 406",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {},
+                            "rawSmartTags": {
+                                "Item Name": "Two Story Studio Unit 406",
+                                "Item Type": "Solid"
+                            }
+                        },
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "792732",
+                            "clashMetadata": {
+                                "layer": "L5",
+                                "itemName": "Metal Deck",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "792732"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Metal Deck",
+                                "Item Type": "Solid"
+                            }
+                        }
+                    ],
+                    "severity": "LOW",
+                    "disciplines": [
+                        "ARC"
+                    ],
+                    "lead": [
+                        "Metal Deck"
+                    ]
+                },
+                {
+                    "clashName": "Clash7",
+                    "clashGuid": "92a9fee5-6eeb-4f6e-bd59-ef821926a561",
+                    "clashMetadata": {
+                        "status": "active",
+                        "description": "Hard",
+                        "resultStatus": "Active",
+                        "distance": -1.411,
+                        "href": "Base Model_Arch vs Structural Clashes_files\\cd000007.jpg",
+                        "gridLocation": "C-5 : L2",
+                        "createdAt": "2026-04-03T09:28:56",
+                        "clashPoint": {
+                            "x": 417616.876,
+                            "y": 78714.492,
+                            "z": 243.478
+                        }
+                    },
+                    "objects": [
+                        {
+                            "revitGlobalId": null,
+                            "elementId": null,
+                            "clashMetadata": {
+                                "layer": "L2",
+                                "itemName": "Two Story Studio Unit 204",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {},
+                            "rawSmartTags": {
+                                "Item Name": "Two Story Studio Unit 204",
+                                "Item Type": "Solid"
+                            }
+                        },
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "778332",
+                            "clashMetadata": {
+                                "layer": "L3 TOS",
+                                "itemName": "16K6",
+                                "itemType": "Structural Framing"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "778332"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "16K6",
+                                "Item Type": "Structural Framing"
+                            }
+                        }
+                    ],
+                    "severity": "MEDIUM",
+                    "disciplines": [
+                        "ARC",
+                        "STR"
+                    ],
+                    "lead": [
+                        "16K6"
+                    ]
+                },
+                {
+                    "clashName": "Clash8",
+                    "clashGuid": "56db11b4-ae1d-4363-a2d3-eee464a796ad",
+                    "clashMetadata": {
+                        "status": "active",
+                        "description": "Hard",
+                        "resultStatus": "Active",
+                        "distance": -1.36,
+                        "href": "Base Model_Arch vs Structural Clashes_files\\cd000008.jpg",
+                        "gridLocation": "C-5 : L4",
+                        "createdAt": "2026-04-03T09:28:56",
+                        "clashPoint": {
+                            "x": 417616.83,
+                            "y": 78714.47,
+                            "z": 251.606
+                        }
+                    },
+                    "objects": [
+                        {
+                            "revitGlobalId": null,
+                            "elementId": null,
+                            "clashMetadata": {
+                                "layer": "L4",
+                                "itemName": "Two Story Studio Unit 406",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {},
+                            "rawSmartTags": {
+                                "Item Name": "Two Story Studio Unit 406",
+                                "Item Type": "Solid"
+                            }
+                        },
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "793260",
+                            "clashMetadata": {
+                                "layer": "L5 TOS",
+                                "itemName": "16K6",
+                                "itemType": "Structural Framing"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "793260"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "16K6",
+                                "Item Type": "Structural Framing"
+                            }
+                        }
+                    ],
+                    "severity": "LOW",
+                    "disciplines": [
+                        "ARC",
+                        "STR"
+                    ],
+                    "lead": [
+                        "16K6"
+                    ]
+                },
+                {
+                    "clashName": "Clash9",
+                    "clashGuid": "7ecb9dcd-4d75-4729-a3c8-2ce7a37bbb93",
+                    "clashMetadata": {
+                        "status": "active",
+                        "description": "Hard",
+                        "resultStatus": "Active",
+                        "distance": -1.349,
+                        "href": "Base Model_Arch vs Structural Clashes_files\\cd000009.jpg",
+                        "gridLocation": "C-5 : L2",
+                        "createdAt": "2026-04-03T09:28:56",
+                        "clashPoint": {
+                            "x": 417615.616,
+                            "y": 78713.878,
+                            "z": 243.484
+                        }
+                    },
+                    "objects": [
+                        {
+                            "revitGlobalId": null,
+                            "elementId": null,
+                            "clashMetadata": {
+                                "layer": "L2",
+                                "itemName": "Two Story Studio Unit 204",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {},
+                            "rawSmartTags": {
+                                "Item Name": "Two Story Studio Unit 204",
+                                "Item Type": "Solid"
+                            }
+                        },
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "688281",
+                            "clashMetadata": {
+                                "layer": "L3",
+                                "itemName": "Metal Deck",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "688281"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Metal Deck",
+                                "Item Type": "Solid"
+                            }
+                        }
+                    ],
+                    "severity": "LOW",
+                    "disciplines": [
+                        "ARC"
+                    ],
+                    "lead": [
+                        "Metal Deck"
+                    ]
+                },
+                {
+                    "clashName": "Clash10",
+                    "clashGuid": "890d784d-850b-4d74-a4bc-3dc52c764618",
+                    "clashMetadata": {
+                        "status": "active",
+                        "description": "Hard",
+                        "resultStatus": "Active",
+                        "distance": -1.25,
+                        "href": "Base Model_Arch vs Structural Clashes_files\\cd000010.jpg",
+                        "gridLocation": "D-3 : L3",
+                        "createdAt": "2026-04-03T09:28:56",
+                        "clashPoint": {
+                            "x": 417600.402,
+                            "y": 78709.85,
+                            "z": 247.548
+                        }
+                    },
+                    "objects": [
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "2113168",
+                            "clashMetadata": {
+                                "layer": "L4",
+                                "itemName": "Floor",
+                                "itemType": "Floors: Floor: Finish Floor - Polished Concrete (Grey)"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "2113168"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Floor",
+                                "Item Type": "Floors: Floor: Finish Floor - Polished Concrete (Grey)"
+                            }
+                        },
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "608215",
+                            "clashMetadata": {
+                                "layer": "L1_35_Low",
+                                "itemName": "W10x49",
+                                "itemType": "Structural Columns"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "608215"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "W10x49",
+                                "Item Type": "Structural Columns"
+                            }
+                        }
+                    ],
+                    "severity": "LOW",
+                    "disciplines": [
+                        "ARC",
+                        "STR"
+                    ],
+                    "lead": [
+                        "W10x49"
+                    ]
+                },
+                {
+                    "clashName": "Clash11",
+                    "clashGuid": "52bdb5f8-eacd-44ac-b1da-f23b65228e6b",
+                    "clashMetadata": {
+                        "status": "active",
+                        "description": "Hard",
+                        "resultStatus": "Active",
+                        "distance": -1.25,
+                        "href": "Base Model_Arch vs Structural Clashes_files\\cd000011.jpg",
+                        "gridLocation": "D-3 : L2",
+                        "createdAt": "2026-04-03T09:28:56",
+                        "clashPoint": {
+                            "x": 417600.425,
+                            "y": 78709.803,
+                            "z": 243.484
+                        }
+                    },
+                    "objects": [
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "2077111",
+                            "clashMetadata": {
+                                "layer": "L3",
+                                "itemName": "Floor",
+                                "itemType": "Floors: Floor: Finish Floor - Polished Concrete (Grey)"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "2077111"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Floor",
+                                "Item Type": "Floors: Floor: Finish Floor - Polished Concrete (Grey)"
+                            }
+                        },
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "608215",
+                            "clashMetadata": {
+                                "layer": "L1_35_Low",
+                                "itemName": "W10x49",
+                                "itemType": "Structural Columns"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "608215"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "W10x49",
+                                "Item Type": "Structural Columns"
+                            }
+                        }
+                    ],
+                    "severity": "LOW",
+                    "disciplines": [
+                        "ARC",
+                        "STR"
+                    ],
+                    "lead": [
+                        "W10x49"
+                    ]
+                },
+                {
+                    "clashName": "Clash12",
+                    "clashGuid": "18c29a73-7c8f-4c11-85e7-e18298e0d458",
+                    "clashMetadata": {
+                        "status": "active",
+                        "description": "Hard",
+                        "resultStatus": "Active",
+                        "distance": -1.25,
+                        "href": "Base Model_Arch vs Structural Clashes_files\\cd000012.jpg",
+                        "gridLocation": "D-3 : L4",
+                        "createdAt": "2026-04-03T09:28:56",
+                        "clashPoint": {
+                            "x": 417600.378,
+                            "y": 78709.897,
+                            "z": 251.612
+                        }
+                    },
+                    "objects": [
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "2113320",
+                            "clashMetadata": {
+                                "layer": "L5",
+                                "itemName": "Floor",
+                                "itemType": "Floors: Floor: Finish Floor - Polished Concrete (Grey)"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "2113320"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Floor",
+                                "Item Type": "Floors: Floor: Finish Floor - Polished Concrete (Grey)"
+                            }
+                        },
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "608215",
+                            "clashMetadata": {
+                                "layer": "L1_35_Low",
+                                "itemName": "W10x49",
+                                "itemType": "Structural Columns"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "608215"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "W10x49",
+                                "Item Type": "Structural Columns"
+                            }
+                        }
+                    ],
+                    "severity": "LOW",
+                    "disciplines": [
+                        "ARC",
+                        "STR"
+                    ],
+                    "lead": [
+                        "W10x49"
+                    ]
+                },
+                {
+                    "clashName": "Clash13",
+                    "clashGuid": "d2259b00-ba86-453d-a74a-aeb13eb779ac",
+                    "clashMetadata": {
+                        "status": "active",
+                        "description": "Hard",
+                        "resultStatus": "Active",
+                        "distance": -1.127,
+                        "href": "Base Model_Arch vs Structural Clashes_files\\cd000013.jpg",
+                        "gridLocation": "Block 43 Left-D : L4",
+                        "createdAt": "2026-04-03T09:28:56",
+                        "clashPoint": {
+                            "x": 417622.363,
+                            "y": 78718.536,
+                            "z": 247.701
+                        }
+                    },
+                    "objects": [
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "887288",
+                            "clashMetadata": {
+                                "layer": "L1 - Block 37",
+                                "itemName": "Gypsum Wall Board",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "887288"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Gypsum Wall Board",
+                                "Item Type": "Solid"
+                            }
+                        },
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "792679",
+                            "clashMetadata": {
+                                "layer": "L4",
+                                "itemName": "Concrete, Cast-in-Place gray",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "792679"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Concrete, Cast-in-Place gray",
+                                "Item Type": "Solid"
+                            }
+                        }
+                    ],
+                    "severity": "LOW",
+                    "disciplines": [
+                        "ARC"
+                    ],
+                    "lead": [
+                        "Concrete, Cast-in-Place gray"
+                    ]
+                },
+                {
+                    "clashName": "Clash14",
+                    "clashGuid": "73bbee93-48f1-402f-a711-5f5dd0e7741d",
+                    "clashMetadata": {
+                        "status": "active",
+                        "description": "Hard",
+                        "resultStatus": "Active",
+                        "distance": -1.111,
+                        "href": "Base Model_Arch vs Structural Clashes_files\\cd000014.jpg",
+                        "gridLocation": "C-5 : L4",
+                        "createdAt": "2026-04-03T09:28:56",
+                        "clashPoint": {
+                            "x": 417617.881,
+                            "y": 78714.983,
+                            "z": 251.612
+                        }
+                    },
+                    "objects": [
+                        {
+                            "revitGlobalId": null,
+                            "elementId": null,
+                            "clashMetadata": {
+                                "layer": "L4",
+                                "itemName": "Two Story Studio Unit 406",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {},
+                            "rawSmartTags": {
+                                "Item Name": "Two Story Studio Unit 406",
+                                "Item Type": "Solid"
+                            }
+                        },
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "793259",
+                            "clashMetadata": {
+                                "layer": "L5 TOS",
+                                "itemName": "16K6",
+                                "itemType": "Structural Framing"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "793259"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "16K6",
+                                "Item Type": "Structural Framing"
+                            }
+                        }
+                    ],
+                    "severity": "LOW",
+                    "disciplines": [
+                        "ARC",
+                        "STR"
+                    ],
+                    "lead": [
+                        "16K6"
+                    ]
+                },
+                {
+                    "clashName": "Clash15",
+                    "clashGuid": "abf80212-7a4f-4c82-88b9-3fe6cea8537d",
+                    "clashMetadata": {
+                        "status": "active",
+                        "description": "Hard",
+                        "resultStatus": "Active",
+                        "distance": -1.088,
+                        "href": "Base Model_Arch vs Structural Clashes_files\\cd000015.jpg",
+                        "gridLocation": "Block 43 Left-D : L5",
+                        "createdAt": "2026-04-03T09:28:56",
+                        "clashPoint": {
+                            "x": 417623.022,
+                            "y": 78718.987,
+                            "z": 251.765
+                        }
+                    },
+                    "objects": [
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "887288",
+                            "clashMetadata": {
+                                "layer": "L1 - Block 37",
+                                "itemName": "Gypsum Wall Board",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "887288"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Gypsum Wall Board",
+                                "Item Type": "Solid"
+                            }
+                        },
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "792732",
+                            "clashMetadata": {
+                                "layer": "L5",
+                                "itemName": "Concrete, Cast-in-Place gray",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "792732"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Concrete, Cast-in-Place gray",
+                                "Item Type": "Solid"
+                            }
+                        }
+                    ],
+                    "severity": "LOW",
+                    "disciplines": [
+                        "ARC"
+                    ],
+                    "lead": [
+                        "Concrete, Cast-in-Place gray"
+                    ]
+                },
+                {
+                    "clashName": "Clash16",
+                    "clashGuid": "fbe00911-adbb-4ba9-bb3e-acb9c4f1d7f4",
+                    "clashMetadata": {
+                        "status": "active",
+                        "description": "Hard",
+                        "resultStatus": "Active",
+                        "distance": -1.088,
+                        "href": "Base Model_Arch vs Structural Clashes_files\\cd000016.jpg",
+                        "gridLocation": "Block 43 Left-D : L3",
+                        "createdAt": "2026-04-03T09:28:56",
+                        "clashPoint": {
+                            "x": 417623.058,
+                            "y": 78718.914,
+                            "z": 243.637
+                        }
+                    },
+                    "objects": [
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "887288",
+                            "clashMetadata": {
+                                "layer": "L1 - Block 37",
+                                "itemName": "Gypsum Wall Board",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "887288"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Gypsum Wall Board",
+                                "Item Type": "Solid"
+                            }
+                        },
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "688281",
+                            "clashMetadata": {
+                                "layer": "L3",
+                                "itemName": "Concrete, Cast-in-Place gray",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "688281"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Concrete, Cast-in-Place gray",
+                                "Item Type": "Solid"
+                            }
+                        }
+                    ],
+                    "severity": "LOW",
+                    "disciplines": [
+                        "ARC"
+                    ],
+                    "lead": [
+                        "Concrete, Cast-in-Place gray"
+                    ]
+                },
+                {
+                    "clashName": "Clash17",
+                    "clashGuid": "6cd44309-8976-46b6-b7ee-b9d3991b19f6",
+                    "clashMetadata": {
+                        "status": "active",
+                        "description": "Hard",
+                        "resultStatus": "Active",
+                        "distance": -1.053,
+                        "href": "Base Model_Arch vs Structural Clashes_files\\cd000017.jpg",
+                        "gridLocation": "Block 43 Left-D : L5",
+                        "createdAt": "2026-04-03T09:28:56",
+                        "clashPoint": {
+                            "x": 417622.67,
+                            "y": 78719.71,
+                            "z": 251.765
+                        }
+                    },
+                    "objects": [
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "887308",
+                            "clashMetadata": {
+                                "layer": "L1 - Block 37",
+                                "itemName": "Gypsum Wall Board",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "887308"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Gypsum Wall Board",
+                                "Item Type": "Solid"
+                            }
+                        },
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "792732",
+                            "clashMetadata": {
+                                "layer": "L5",
+                                "itemName": "Concrete, Cast-in-Place gray",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "792732"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Concrete, Cast-in-Place gray",
+                                "Item Type": "Solid"
+                            }
+                        }
+                    ],
+                    "severity": "LOW",
+                    "disciplines": [
+                        "ARC"
+                    ],
+                    "lead": [
+                        "Concrete, Cast-in-Place gray"
+                    ]
+                },
+                {
+                    "clashName": "Clash18",
+                    "clashGuid": "556d3d49-1e24-4595-9bea-8b20642aa77e",
+                    "clashMetadata": {
+                        "status": "active",
+                        "description": "Hard",
+                        "resultStatus": "Active",
+                        "distance": -1.053,
+                        "href": "Base Model_Arch vs Structural Clashes_files\\cd000018.jpg",
+                        "gridLocation": "Block 43 Left-D : L3",
+                        "createdAt": "2026-04-03T09:28:56",
+                        "clashPoint": {
+                            "x": 417623.005,
+                            "y": 78719.023,
+                            "z": 243.637
+                        }
+                    },
+                    "objects": [
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "887308",
+                            "clashMetadata": {
+                                "layer": "L1 - Block 37",
+                                "itemName": "Gypsum Wall Board",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "887308"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Gypsum Wall Board",
+                                "Item Type": "Solid"
+                            }
+                        },
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "688281",
+                            "clashMetadata": {
+                                "layer": "L3",
+                                "itemName": "Concrete, Cast-in-Place gray",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "688281"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Concrete, Cast-in-Place gray",
+                                "Item Type": "Solid"
+                            }
+                        }
+                    ],
+                    "severity": "LOW",
+                    "disciplines": [
+                        "ARC"
+                    ],
+                    "lead": [
+                        "Concrete, Cast-in-Place gray"
+                    ]
+                },
+                {
+                    "clashName": "Clash19",
+                    "clashGuid": "a7e89969-4ece-4ac3-8b3c-88996168bc5f",
+                    "clashMetadata": {
+                        "status": "active",
+                        "description": "Hard",
+                        "resultStatus": "Active",
+                        "distance": -1.05,
+                        "href": "Base Model_Arch vs Structural Clashes_files\\cd000019.jpg",
+                        "gridLocation": "Block 43 Left-D : M1",
+                        "createdAt": "2026-04-03T09:28:56",
+                        "clashPoint": {
+                            "x": 417622.323,
+                            "y": 78720.419,
+                            "z": 240.144
+                        }
+                    },
+                    "objects": [
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "887308",
+                            "clashMetadata": {
+                                "layer": "L1 - Block 37",
+                                "itemName": "Gypsum Wall Board",
+                                "itemType": "Solid"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "887308"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Gypsum Wall Board",
+                                "Item Type": "Solid"
+                            }
+                        },
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "611341",
+                            "clashMetadata": {
+                                "layer": "L2 TOS",
+                                "itemName": "W18x55",
+                                "itemType": "Structural Framing"
+                            },
+                            "rawAttributes": {
+                                "Element ID": "611341"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "W18x55",
+                                "Item Type": "Structural Framing"
+                            }
+                        }
+                    ],
+                    "severity": "MEDIUM",
+                    "disciplines": [
+                        "ARC",
+                        "STR"
+                    ],
+                    "lead": [
+                        "W18x55"
+                    ]
+                },
+                {
+                    "clashName": "Clash20",
+                    "clashGuid": "54f8482a-5007-4cdb-a9d8-d1085e41acb2",
+                    "clashMetadata": {
+                        "status": "active",
+                        "description": "Hard",
+                        "resultStatus": "Active",
+                        "distance": -1.007,
+                        "href": "Base Model_Arch vs Structural Clashes_files\\cd000020.jpg",
+                        "gridLocation": "D-1 : Parking",
+                        "createdAt": "2026-04-03T09:28:56",
+                        "clashPoint": {
+                            "x": 417590.921,
+                            "y": 78704.86,
+                            "z": 232.74
+                        }
+                    },
+                    "objects": [
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "2134315",
+                            "clashMetadata": {
+                                "layer": "Parking",
+                                "itemName": "Floor",
+                                "itemType": "Floors: Floor: Concrete Slab 6\""
+                            },
+                            "rawAttributes": {
+                                "Element ID": "2134315"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Floor",
+                                "Item Type": "Floors: Floor: Concrete Slab 6\""
+                            }
+                        },
+                        {
+                            "revitGlobalId": null,
+                            "elementId": "675720",
+                            "clashMetadata": {
+                                "layer": "Elevator Pit",
+                                "itemName": "Basic Wall",
+                                "itemType": "Walls: Basic Wall: Concrete 18\""
+                            },
+                            "rawAttributes": {
+                                "Element ID": "675720"
+                            },
+                            "rawSmartTags": {
+                                "Item Name": "Basic Wall",
+                                "Item Type": "Walls: Basic Wall: Concrete 18\""
+                            }
+                        }
+                    ],
+                    "severity": "LOW",
+                    "disciplines": [
+                        "ARC"
+                    ],
+                    "lead": [
+                        "Concrete Slab 6\""
+                    ]
+                }
+            ]
+        }
+    ]
+}
