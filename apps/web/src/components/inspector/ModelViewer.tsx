@@ -52,9 +52,9 @@ export function ModelViewer({ clashObjectApplicationIds }: ModelViewerProps) {
   }, [activeUrls.length])
 
   return (
-    <div className="relative min-h-0 flex-1 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-200/50 shadow-inner">
+    <div className="relative min-h-0 flex-1 overflow-hidden bg-neutral-200/50">
       {activeUrls.length === 0 ? (
-        <div className="flex h-full min-h-[320px] items-center justify-center p-6 text-center text-sm text-neutral-500">
+        <div className="absolute inset-0 flex min-h-[320px] items-center justify-center p-6 text-center text-sm text-neutral-500">
           Add at least one Speckle model URL on the landing page to load the
           3D view.
         </div>
