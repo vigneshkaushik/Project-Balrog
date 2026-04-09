@@ -13,6 +13,7 @@ export interface UseSpeckleViewerOptions {
   enableCamera?: boolean
   debug?: boolean
   authToken?: string
+  onModelsLoaded?: (viewer: Viewer) => void
 }
 
 export function useSpeckleViewer(
@@ -26,9 +27,12 @@ export function useSpeckleViewer(
     enableCamera = true,
     debug = false,
     authToken = '',
+    onModelsLoaded,
   } = options
 
   const viewerRef = useRef<Viewer | null>(null)
+  const onModelsLoadedRef = useRef(onModelsLoaded)
+  onModelsLoadedRef.current = onModelsLoaded
 
   useEffect(() => {
     if (!enabled) return
@@ -112,6 +116,9 @@ export function useSpeckleViewer(
               console.log('[useSpeckleViewer] Model loaded successfully')
             }
           }
+        }
+        if (!cancelled) {
+          onModelsLoadedRef.current?.(viewer)
         }
       } catch (err) {
         if (!cancelled) {

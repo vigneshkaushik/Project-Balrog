@@ -1,10 +1,21 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import type { Viewer } from '@speckle/viewer'
 import { useApp } from '../../context/useApp'
 import { useSpeckleViewer } from '../../hooks/useSpeckleViewer'
+import { zoomViewerToSmallestClashObject } from '../../lib/zoomToSmallestClashObject'
 
-export function ModelViewer() {
+export interface ModelViewerProps {
+  /**
+   * Speckle object / application ids for the current clash. When set, the viewer
+   * frames the object with the smallest axis-aligned bounds among these ids.
+   */
+  clashObjectApplicationIds?: string[]
+}
+
+export function ModelViewer({ clashObjectApplicationIds }: ModelViewerProps) {
   const { speckleUrls } = useApp()
   const containerRef = useRef<HTMLElement>(null)
+  const [loadedViewer, setLoadedViewer] = useState<Viewer | null>(null)
 
   const activeUrls = speckleUrls
     .map((u) => u.trim())
@@ -16,7 +27,29 @@ export function ModelViewer() {
     enabled: activeUrls.length > 0,
     debug: true,
     authToken,
+    onModelsLoaded: (viewer) => {
+      setLoadedViewer(viewer)
+    },
   })
+
+  const clashFramingKey = JSON.stringify(
+    (clashObjectApplicationIds ?? [])
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0),
+  )
+
+  useEffect(() => {
+    const ids =
+      clashFramingKey === '[]' ? [] : (JSON.parse(clashFramingKey) as string[])
+    if (ids.length === 0 || !loadedViewer) return
+    zoomViewerToSmallestClashObject(loadedViewer, ids)
+  }, [clashFramingKey, loadedViewer])
+
+  useEffect(() => {
+    if (activeUrls.length === 0) {
+      setLoadedViewer(null)
+    }
+  }, [activeUrls.length])
 
   return (
     <div className="relative min-h-0 flex-1 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-200/50 shadow-inner">

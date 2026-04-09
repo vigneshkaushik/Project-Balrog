@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 from collections import defaultdict
 
+from llama_index.core.llms import ChatMessage
 from llama_index.core.llms.llm import LLM
 from llama_index.core.memory import ChatMemoryBuffer
 
@@ -21,10 +22,16 @@ class ChatSessionStore:
     def _get_lock(self, conversation_id: str) -> asyncio.Lock:
         return self._locks[conversation_id]
 
-    def get_or_create_memory(self, conversation_id: str) -> ChatMemoryBuffer:
+    def get_or_create_memory(
+        self,
+        conversation_id: str,
+        *,
+        llm: LLM | None = None,
+    ) -> ChatMemoryBuffer:
+        use_llm = llm or self._llm
         if conversation_id not in self._memories:
             self._memories[conversation_id] = ChatMemoryBuffer.from_defaults(
-                llm=self._llm,
+                llm=use_llm,
                 token_limit=self._token_limit,
             )
         return self._memories[conversation_id]
@@ -36,3 +43,11 @@ class ChatSessionStore:
     def lock_for(self, conversation_id: str) -> asyncio.Lock:
         """Serialize requests for the same conversation to avoid corrupting memory."""
         return self._get_lock(conversation_id)
+
+    async def snapshot_messages(self, conversation_id: str) -> list[ChatMessage]:
+        """Return a copy of stored messages for this conversation, or [] if unknown."""
+        async with self.lock_for(conversation_id):
+            mem = self._memories.get(conversation_id)
+            if mem is None:
+                return []
+            return list(mem.get_all())
