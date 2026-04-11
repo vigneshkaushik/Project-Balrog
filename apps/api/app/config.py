@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 
 from pydantic import Field, computed_field, field_validator, model_validator
@@ -31,23 +32,27 @@ or searches in a loop. Ask one or two concrete clarifying questions (or state wh
 to proceed), then stop and wait for their reply. Prefer a short, direct clarification over \
 extra tool rounds when you lack enough detail to help meaningfully."""
 
+# Resolve `.env` next to `apps/api/` so settings load when the process cwd is the monorepo root.
+_API_ROOT = Path(__file__).resolve().parent.parent
+
 
 class AgentSettings(BaseSettings):
     """Configurable ReAct agent and LLM parameters."""
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=(str(_API_ROOT / ".env"), ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
         populate_by_name=True,
     )
 
+    # Default to Ollama so the API boots without cloud keys; use `.env` / `.env.example` for Anthropic, etc.
     llm_provider: Literal["anthropic", "openai", "ollama", "google"] = Field(
-        default="anthropic",
+        default="ollama",
         validation_alias="LLM_PROVIDER",
     )
     model_name: str = Field(
-        default="claude-sonnet-4-20250514",
+        default="llama3.2",
         validation_alias="MODEL_NAME",
     )
 

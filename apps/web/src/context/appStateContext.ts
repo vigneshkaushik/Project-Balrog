@@ -1,5 +1,5 @@
 import { createContext } from 'react'
-import type { Clash } from '../types'
+import type { Clash, ClashSeverity } from '../types'
 
 export interface SpeckleUrlRow {
   id: string
@@ -16,8 +16,9 @@ export interface AppState {
   appendSpeckleUrlRow: () => void
   setSpeckleUrlAt: (index: number, url: string) => void
   removeSpeckleUrlAt: (index: number) => void
-  severityThreshold: number
-  setSeverityThreshold: (n: number) => void
+  /** Show clashes at or above this severity (per inference: LOW, MEDIUM, CRITICAL). */
+  severityThreshold: ClashSeverity
+  setSeverityThreshold: (s: ClashSeverity) => void
   selectedClashId: string | null
   setSelectedClashId: (id: string | null) => void
   filteredClashes: Clash[]

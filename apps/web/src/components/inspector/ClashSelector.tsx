@@ -30,7 +30,10 @@ export function ClashSelector() {
       >
         {filteredClashes.map((c) => (
           <option key={c.id} value={c.id}>
-            {c.label} (severity {c.severity})
+            {c.label}
+            {c.severity != null
+              ? ` (${c.severity})`
+              : ' (severity not set)'}
           </option>
         ))}
       </select>
