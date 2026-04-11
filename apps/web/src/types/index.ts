@@ -25,11 +25,26 @@ export function clashMeetsMinimumSeverity(
   return SEVERITY_RANK[severity] >= SEVERITY_RANK[minimum]
 }
 
+export interface ClashObject {
+  revitGlobalId: string | null
+  elementId: string | null
+  itemName: string | null
+  itemType: string | null
+}
+
 export interface Clash {
   id: string
   label: string
   /** From inference; null if not yet assigned. */
   severity: ClashSeverity | null
+  disciplines?: string[]
+  lead?: string[]
+  testName?: string
+  description?: string | null
+  status?: string | null
+  distance?: number | null
+  clashPoint?: { x: number | null; y: number | null; z: number | null } | null
+  objects?: ClashObject[]
 }
 
 /** Structured agent trace (ReAct reasoning, tools) streamed from the API */

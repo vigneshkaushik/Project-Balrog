@@ -6,6 +6,11 @@ export interface SpeckleUrlRow {
   url: string
 }
 
+export interface UploadProgress {
+  completed: number
+  total: number
+}
+
 export interface AppState {
   clashes: Clash[]
   navisworksFileName: string | null
@@ -23,6 +28,11 @@ export interface AppState {
   setSelectedClashId: (id: string | null) => void
   filteredClashes: Clash[]
   clearSession: () => void
+
+  isUploading: boolean
+  uploadProgress: UploadProgress | null
+  uploadError: string | null
+  startClashUpload: () => void
 }
 
 export const AppContext = createContext<AppState | null>(null)

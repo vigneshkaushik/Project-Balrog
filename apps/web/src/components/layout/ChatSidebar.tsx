@@ -710,7 +710,7 @@ export function ChatSidebar() {
 				)}
 			</div>
 
-			<div className="shrink-0 border-t border-neutral-100 p-3">
+			<div className="shrink-0 p-3">
 				<div className="flex flex-col gap-2 rounded-xl border border-neutral-200 bg-neutral-50 px-2 py-2 focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/20">
 					<label htmlFor={inputId} className="sr-only">
 						Message
