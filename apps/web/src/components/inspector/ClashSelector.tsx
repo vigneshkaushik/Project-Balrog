@@ -4,15 +4,25 @@ import { useApp } from '../../context/useApp'
 export function ClashSelector() {
   const labelId = useId()
   const {
+    clashes,
     filteredClashes,
     selectedClashId,
     setSelectedClashId,
   } = useApp()
 
+  if (clashes.length === 0) {
+    return (
+      <div className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-500">
+        No clashes loaded yet.
+      </div>
+    )
+  }
+
   if (filteredClashes.length === 0) {
     return (
       <div className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-500">
-        No clashes match this severity filter.
+        No clashes match this severity filter. Set the minimum to LOW to
+        include clashes before severity inference finishes.
       </div>
     )
   }

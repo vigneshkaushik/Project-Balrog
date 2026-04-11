@@ -130,6 +130,40 @@ def _clash_payload(clash: dict[str, Any], *, minify: bool) -> dict[str, Any]:
     return clash
 
 
+def infer_single_batch(
+    clashes: list[dict[str, Any]],
+    *,
+    preprompt: str,
+    model: str,
+    api_key: str | None = None,
+    api_base: str | None = None,
+    minify: bool = True,
+    temperature: float = 0.0,
+) -> list[dict[str, Any]]:
+    """Run severity inference on a single batch of clashes (synchronous)."""
+    key = api_key or os.environ.get("OPENAI_API_KEY")
+    if not key:
+        raise ValueError("api_key is required (or set OPENAI_API_KEY).")
+    optimized = [_clash_payload(c, minify=minify) for c in clashes]
+    llm = OpenAI(
+        model=model,
+        api_key=key,
+        api_base=api_base,
+        temperature=temperature,
+    )
+    user_content = json.dumps(optimized, ensure_ascii=False)
+    messages = [
+        ChatMessage(role=MessageRole.SYSTEM, content=preprompt),
+        ChatMessage(role=MessageRole.USER, content=user_content),
+    ]
+    resp = llm.chat(messages)
+    text = _strip_code_fence(resp.message.content or "")
+    parsed = json.loads(text)
+    if not isinstance(parsed, list):
+        raise ValueError(f"Expected JSON array from model, got {type(parsed)}")
+    return parsed
+
+
 def infer_clash_severities(
     clashes: list[dict[str, Any]],
     *,
