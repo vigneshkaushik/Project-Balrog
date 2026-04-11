@@ -1,13 +1,15 @@
 import { useCallback, useMemo, useState, type ReactNode } from 'react'
-import type { Clash } from '../types'
+import type { Clash, ClashSeverity } from '../types'
+import { clashMeetsMinimumSeverity } from '../types'
 import { AppContext, type SpeckleUrlRow } from './appStateContext'
+
+const MOCK_SEVERITIES: ClashSeverity[] = ['LOW', 'MEDIUM', 'CRITICAL']
 
 function generateMockClashes(): Clash[] {
   const total = 200
   const clashes: Clash[] = []
   for (let i = 1; i <= total; i++) {
-    const phase = i % 17
-    const severity = Math.min(10, (phase * 3 + (i % 7)) % 11)
+    const severity = MOCK_SEVERITIES[i % MOCK_SEVERITIES.length]
     clashes.push({
       id: String(i),
       label: `Clash #${i}`,
@@ -27,7 +29,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     () => speckleUrlRows.map((r) => r.url),
     [speckleUrlRows],
   )
-  const [severityThreshold, setSeverityThreshold] = useState(0)
+  const [severityThreshold, setSeverityThreshold] =
+    useState<ClashSeverity>('LOW')
   const [selectedClashId, setSelectedClashId] = useState<string | null>(null)
 
   const setNavisworksReport = useCallback((file: File | null) => {
@@ -64,7 +67,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const filteredClashes = useMemo(
-    () => clashes.filter((c) => c.severity >= severityThreshold),
+    () =>
+      clashes.filter((c) =>
+        clashMeetsMinimumSeverity(c.severity, severityThreshold),
+      ),
     [clashes, severityThreshold],
   )
 
@@ -72,7 +78,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setClashes([])
     setNavisworksFileName(null)
     setSpeckleUrlRows([])
-    setSeverityThreshold(0)
+    setSeverityThreshold('LOW')
     setSelectedClashId(null)
   }, [])
 

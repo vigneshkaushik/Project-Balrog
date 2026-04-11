@@ -34,15 +34,20 @@ export function useSpeckleViewer(
   const onModelsLoadedRef = useRef(onModelsLoaded)
   onModelsLoadedRef.current = onModelsLoaded
 
+  // Stable dependency: callers often pass `urls.map(...).filter(...)` which is a
+  // new array every render and would retrigger this effect indefinitely.
+  const urlsKey = speckleUrls
+    .map((u) => u.trim())
+    .filter((u) => u.length > 0)
+    .join('\u0001')
+
   useEffect(() => {
     if (!enabled) return
 
     const el = containerRef.current
     if (!el) return
 
-    const urls = speckleUrls
-      .map((u) => u.trim())
-      .filter((u) => u.length > 0)
+    const urls = urlsKey.length > 0 ? urlsKey.split('\u0001') : []
 
     if (urls.length === 0) return
 
@@ -146,7 +151,7 @@ export function useSpeckleViewer(
     enableCamera,
     debug,
     authToken,
-    speckleUrls,
+    urlsKey,
   ])
 
   return viewerRef

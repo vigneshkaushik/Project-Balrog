@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
-import type { Viewer } from '@speckle/viewer'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { SelectionExtension, ViewerEvent, type Viewer } from '@speckle/viewer'
 import { useApp } from '../../context/useApp'
 import { useSpeckleViewer } from '../../hooks/useSpeckleViewer'
 import { zoomViewerToSmallestClashObject } from '../../lib/zoomToSmallestClashObject'
+import { SpeckleObjectOverlay } from './SpeckleObjectOverlay'
 
 export interface ModelViewerProps {
   /**
@@ -12,24 +13,38 @@ export interface ModelViewerProps {
   clashObjectApplicationIds?: string[]
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
 export function ModelViewer({ clashObjectApplicationIds }: ModelViewerProps) {
   const { speckleUrls } = useApp()
   const containerRef = useRef<HTMLElement>(null)
   const [loadedViewer, setLoadedViewer] = useState<Viewer | null>(null)
+  const [selectedObjectData, setSelectedObjectData] = useState<Record<
+    string,
+    unknown
+  > | null>(null)
 
-  const activeUrls = speckleUrls
-    .map((u) => u.trim())
-    .filter((u) => u.length > 0)
+  const activeUrls = useMemo(
+    () =>
+      speckleUrls
+        .map((u) => u.trim())
+        .filter((u) => u.length > 0),
+    [speckleUrls],
+  )
 
   const authToken = import.meta.env.VITE_SPECKLE_TOKEN ?? ''
+
+  const onModelsLoaded = useCallback((viewer: Viewer) => {
+    setLoadedViewer(viewer)
+  }, [])
 
   useSpeckleViewer(containerRef, activeUrls, {
     enabled: activeUrls.length > 0,
     debug: true,
     authToken,
-    onModelsLoaded: (viewer) => {
-      setLoadedViewer(viewer)
-    },
+    onModelsLoaded,
   })
 
   const clashFramingKey = JSON.stringify(
@@ -46,8 +61,24 @@ export function ModelViewer({ clashObjectApplicationIds }: ModelViewerProps) {
   }, [clashFramingKey, loadedViewer])
 
   useEffect(() => {
+    if (!loadedViewer) return
+
+    const selectionExtension = loadedViewer.getExtension(SelectionExtension)
+    if (!selectionExtension) return
+
+    const syncSelectedObject = () => {
+      const [nextSelectedObject] = selectionExtension.getSelectedObjects()
+      setSelectedObjectData(isRecord(nextSelectedObject) ? nextSelectedObject : null)
+    }
+
+    syncSelectedObject()
+    loadedViewer.on(ViewerEvent.ObjectClicked, syncSelectedObject)
+  }, [loadedViewer])
+
+  useEffect(() => {
     if (activeUrls.length === 0) {
       setLoadedViewer(null)
+      setSelectedObjectData(null)
     }
   }, [activeUrls.length])
 
@@ -59,11 +90,16 @@ export function ModelViewer({ clashObjectApplicationIds }: ModelViewerProps) {
           3D view.
         </div>
       ) : (
-        <section
-          ref={containerRef}
-          aria-label="Speckle 3D model viewer"
-          className="absolute inset-0 min-h-[320px]"
-        />
+        <>
+          <section
+            ref={containerRef}
+            aria-label="Speckle 3D model viewer"
+            className="absolute inset-0 min-h-[320px]"
+          />
+          {selectedObjectData ? (
+            <SpeckleObjectOverlay objectData={selectedObjectData} />
+          ) : null}
+        </>
       )}
     </div>
   )
