@@ -214,13 +214,15 @@ def create_react_agent(
     llm: LLM,
     *,
     tool_ids: Sequence[str],
+    system_prompt: str | None = None,
 ) -> ReActAgent:
-    """Build a single ReActAgent instance used for all chat sessions (memory is per session)."""
+    """Build a ReActAgent (chat uses ``settings.system_prompt`` unless overridden)."""
     tools = with_duckduckgo_tool_name_aliases(resolve_tools(tool_ids))
+    prompt = system_prompt if system_prompt is not None else settings.system_prompt
     return ReActAgent(
         name="CoordinationAgent",
         description="Assistant for BIM coordination and clash resolution support.",
-        system_prompt=settings.system_prompt,
+        system_prompt=prompt,
         llm=llm,
         tools=tools or None,
         streaming=True,

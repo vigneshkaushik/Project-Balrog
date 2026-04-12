@@ -38,6 +38,7 @@ You can also run **`./apps/api/dev.sh`** from the repository root; the script ch
 - `GET /health` — liveness
 - `POST /chat` — JSON body `{ "message": "...", "conversation_id": "<optional uuid>" }`, response is `text/event-stream` with events `metadata`, `token`, `thought_delta`, `agent_thought`, `tool_call`, `tool_result`, `done`, or `error`
 - `POST /clashes/upload` — `multipart/form-data` XML upload (`file` field), parses clashes, infers severity in parallel, appends `severity` + `disciplines` + `lead` into each clash object, returns enriched JSON
+- `POST /clashes/analyze-context` — JSON body with clash + Speckle neighborhood context; runs the configured ReAct agent (same tools as chat, including web search) and returns `{ "watch_out_for", "recommendations", "notes" }`
 
 ### Test chat with curl
 

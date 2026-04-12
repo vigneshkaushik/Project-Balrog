@@ -15,6 +15,7 @@ from app.config import get_settings
 from app.routes.agent_config import router as agent_config_router
 from app.routes.chat import ENABLED_AGENT_TOOL_IDS, router as chat_router
 from app.routes.clashes import router as clashes_router
+from app.utils.clash_analysis_prompt import merge_clash_analysis_system_prompt
 from app.user_agent_config import (
     default_config_path,
     effective_agent_settings,
@@ -41,6 +42,12 @@ async def lifespan(app: FastAPI):
 
     llm = create_llm(effective)
     agent = create_react_agent(effective, llm, tool_ids=ENABLED_AGENT_TOOL_IDS)
+    clash_analysis_agent = create_react_agent(
+        effective,
+        llm,
+        tool_ids=ENABLED_AGENT_TOOL_IDS,
+        system_prompt=merge_clash_analysis_system_prompt(effective.system_prompt),
+    )
     store = ChatSessionStore(llm)
 
     app.state.settings = settings
@@ -49,6 +56,7 @@ async def lifespan(app: FastAPI):
     app.state.user_agent_config = stored
     app.state.llm = llm
     app.state.agent = agent
+    app.state.clash_analysis_agent = clash_analysis_agent
     app.state.chat_store = store
     app.state.clash_session = ClashSessionStore()
 

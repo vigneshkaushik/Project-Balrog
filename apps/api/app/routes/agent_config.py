@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field, model_validator
 from app.agent import create_llm, create_react_agent
 from app.config import AgentSettings
 from app.routes.chat import ENABLED_AGENT_TOOL_IDS
+from app.utils.clash_analysis_prompt import merge_clash_analysis_system_prompt
 from app.user_agent_config import (
     MASKED_API_KEY_DISPLAY,
     PersistedUserAgentConfig,
@@ -155,5 +156,11 @@ def put_agent_config(
     request.app.state.llm = llm
     request.app.state.agent = create_react_agent(
         settings, llm, tool_ids=ENABLED_AGENT_TOOL_IDS,
+    )
+    request.app.state.clash_analysis_agent = create_react_agent(
+        settings,
+        llm,
+        tool_ids=ENABLED_AGENT_TOOL_IDS,
+        system_prompt=merge_clash_analysis_system_prompt(settings.system_prompt),
     )
     return _stored_to_public(persisted, base)

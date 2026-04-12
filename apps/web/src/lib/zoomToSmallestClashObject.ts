@@ -139,7 +139,10 @@ function unionBoxFromRenderViewsForNode(
   return hasAny && !box.isEmpty() ? box : null
 }
 
-function unionBoxForSpeckleObjectId(viewer: Viewer, objectId: string): Box3 | null {
+export function unionBoxForSpeckleObjectId(
+  viewer: Viewer,
+  objectId: string,
+): Box3 | null {
   const found = viewer.getWorldTree().findId(objectId)
   if (!found?.length) return null
 
@@ -147,6 +150,26 @@ function unionBoxForSpeckleObjectId(viewer: Viewer, objectId: string): Box3 | nu
   let hasAny = false
   for (const n of found) {
     const part = unionBoxFromRenderViewsForNode(viewer, n)
+    if (!part) continue
+    if (!hasAny) {
+      box.copy(part)
+      hasAny = true
+    } else {
+      box.union(part)
+    }
+  }
+  return hasAny && !box.isEmpty() ? box : null
+}
+
+/** Union world AABBs for all given Speckle object ids (clash participants). */
+export function unionBoxesForSpeckleObjectIds(
+  viewer: Viewer,
+  objectIds: readonly string[],
+): Box3 | null {
+  const box = new Box3()
+  let hasAny = false
+  for (const id of objectIds) {
+    const part = unionBoxForSpeckleObjectId(viewer, id)
     if (!part) continue
     if (!hasAny) {
       box.copy(part)

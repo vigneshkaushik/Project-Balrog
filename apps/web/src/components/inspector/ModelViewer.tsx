@@ -34,6 +34,10 @@ export interface ModelViewerProps {
 	 * Speckle scene for red highlight + zoom.
 	 */
 	clashObjectMatchKeys?: string[];
+	/** Fired when the viewer has finished loading models (same timing as internal highlight setup). */
+	onViewerReady?: (viewer: Viewer) => void;
+	/** Fired when the viewer is disposed (URL change, unmount). */
+	onViewerDisposed?: () => void;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -46,6 +50,8 @@ const CLASH_ISOLATE_STATE_KEY = "balrog-clash-isolate";
 export function ModelViewer({
 	clashSelectionId,
 	clashObjectMatchKeys,
+	onViewerReady,
+	onViewerDisposed,
 }: ModelViewerProps) {
 	const { speckleUrls, clashObjectViewerFocus } = useApp();
 	const containerRef = useRef<HTMLElement>(null);
@@ -66,13 +72,18 @@ export function ModelViewer({
 
 	const authToken = import.meta.env.VITE_SPECKLE_TOKEN ?? "";
 
-	const onModelsLoaded = useCallback((viewer: Viewer) => {
-		setLoadedViewer(viewer);
-	}, []);
+	const onModelsLoaded = useCallback(
+		(viewer: Viewer) => {
+			setLoadedViewer(viewer);
+			onViewerReady?.(viewer);
+		},
+		[onViewerReady],
+	);
 
-	const onViewerDisposed = useCallback(() => {
+	const handleViewerDisposed = useCallback(() => {
 		setLoadedViewer(null);
-	}, []);
+		onViewerDisposed?.();
+	}, [onViewerDisposed]);
 
 	const onLoadState = useCallback((state: SpeckleLoadState) => {
 		setSpeckleLoadState(state);
@@ -84,7 +95,7 @@ export function ModelViewer({
 		authToken,
 		onModelsLoaded,
 		onLoadState,
-		onViewerDisposed,
+		onViewerDisposed: handleViewerDisposed,
 	});
 
 	/** Includes `clashSelectionId` so changing clashes re-runs even when match keys are identical. */
