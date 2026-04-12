@@ -20,6 +20,7 @@ import {
 import { uploadClashReport } from '../lib/uploadClashReport'
 import {
   AppContext,
+  type ClashObjectViewerFocusRequest,
   type SpeckleUrlRow,
   type UploadProgress,
 } from './appStateContext'
@@ -59,7 +60,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
   const [severityThreshold, setSeverityThreshold] =
     useState<ClashSeverity>('LOW')
-  const [selectedClashId, setSelectedClashId] = useState<string | null>(null)
+  const [selectedClashId, setSelectedClashIdState] = useState<string | null>(
+    null,
+  )
+  const [clashObjectViewerFocus, setClashObjectViewerFocus] =
+    useState<ClashObjectViewerFocusRequest | null>(null)
+
+  const setSelectedClashId = useCallback((id: string | null) => {
+    setClashObjectViewerFocus(null)
+    setSelectedClashIdState(id)
+  }, [])
 
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(
@@ -131,7 +141,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [setSelectedClashId])
 
   const setNavisworksReport = useCallback((file: File | null) => {
     navisworksFileRef.current = file
@@ -144,7 +154,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setNavisworksFileName(file.name)
     setClashes([])
     setSelectedClashId(null)
-  }, [])
+  }, [setSelectedClashId])
 
   const startClashUpload = useCallback(() => {
     const file = navisworksFileRef.current
@@ -211,7 +221,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setIsUploading(false)
       setUploadError(err instanceof Error ? err.message : String(err))
     })
-  }, [])
+  }, [setSelectedClashId])
 
   const appendSpeckleUrlRow = useCallback(() => {
     setSpeckleUrlRows((prev) => [
@@ -233,6 +243,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSpeckleUrlRows((prev) => prev.filter((_, i) => i !== index))
   }, [])
 
+  const requestClashObjectViewerFocus = useCallback((matchKeys: string[]) => {
+    const keys = matchKeys.map((k) => k.trim()).filter((k) => k.length > 0)
+    if (keys.length === 0) {
+      setClashObjectViewerFocus(null)
+      return
+    }
+    setClashObjectViewerFocus((prev) => ({
+      id: (prev?.id ?? 0) + 1,
+      matchKeys: keys,
+    }))
+  }, [])
+
+  const clearClashObjectViewerFocus = useCallback(() => {
+    setClashObjectViewerFocus(null)
+  }, [])
+
   const filteredClashes = useMemo(
     () =>
       clashes.filter((c) =>
@@ -250,13 +276,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSpeckleUrlRows([])
     setSeverityThreshold('LOW')
     setSelectedClashId(null)
+    setClashObjectViewerFocus(null)
     setIsUploading(false)
     setUploadProgress(null)
     setUploadError(null)
     void deleteClashSession().catch(() => {
       /* best-effort */
     })
-  }, [])
+  }, [setSelectedClashId])
 
   const value = useMemo(
     () => ({
@@ -278,6 +305,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       uploadProgress,
       uploadError,
       startClashUpload,
+      clashObjectViewerFocus,
+      requestClashObjectViewerFocus,
+      clearClashObjectViewerFocus,
     }),
     [
       clashes,
@@ -290,12 +320,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
       removeSpeckleUrlAt,
       severityThreshold,
       selectedClashId,
+      setSelectedClashId,
       filteredClashes,
       clearSession,
       isUploading,
       uploadProgress,
       uploadError,
       startClashUpload,
+      clashObjectViewerFocus,
+      requestClashObjectViewerFocus,
+      clearClashObjectViewerFocus,
     ],
   )
 

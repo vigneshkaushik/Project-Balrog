@@ -47,7 +47,7 @@ export function ModelViewer({
 	clashSelectionId,
 	clashObjectMatchKeys,
 }: ModelViewerProps) {
-	const { speckleUrls } = useApp();
+	const { speckleUrls, clashObjectViewerFocus } = useApp();
 	const containerRef = useRef<HTMLElement>(null);
 	const [loadedViewer, setLoadedViewer] = useState<Viewer | null>(null);
 	const [selectedObjectData, setSelectedObjectData] = useState<Record<
@@ -272,6 +272,74 @@ export function ModelViewer({
 			}
 		};
 	}, [clashHighlightEffectKey, loadedViewer]);
+
+	/** Context → Objects list: select + zoom to one participant. */
+	useEffect(() => {
+		if (!loadedViewer || !clashObjectViewerFocus) return;
+
+		const keys = clashObjectViewerFocus.matchKeys;
+		if (keys.length === 0) return;
+
+		let selectionExt: SelectionExtension | null = null;
+		try {
+			if (loadedViewer.hasExtension(SelectionExtension)) {
+				selectionExt = loadedViewer.getExtension(SelectionExtension);
+			}
+		} catch {
+			return;
+		}
+		if (!selectionExt) return;
+
+		const { matchedObjectIds } = resolveClashObjectNodes(loadedViewer, keys);
+		if (matchedObjectIds.length === 0) {
+			if (import.meta.env.DEV) {
+				console.warn(
+					"[ModelViewer] Context object focus: no Speckle nodes for keys",
+					keys,
+				);
+			}
+			return;
+		}
+
+		try {
+			selectionExt.selectObjects(matchedObjectIds, false);
+			queueMicrotask(() => {
+				try {
+					const [first] = selectionExt.getSelectedObjects();
+					setSelectedObjectData(isRecord(first) ? first : null);
+				} catch {
+					/* disposed */
+				}
+			});
+		} catch (err) {
+			console.warn("[ModelViewer] Context object select failed:", err);
+			return;
+		}
+
+		let zoomRaf1 = 0;
+		let zoomRaf2 = 0;
+		const runZoom = () => {
+			try {
+				zoomViewerToSmallestClashObject(loadedViewer, keys, {
+					resolvedObjectIds: matchedObjectIds,
+					transition: true,
+					fit: 1.3,
+				});
+				loadedViewer.requestRender();
+			} catch (zoomErr) {
+				console.warn("[ModelViewer] Context object zoom failed:", zoomErr);
+			}
+		};
+		zoomRaf1 = requestAnimationFrame(() => {
+			zoomRaf2 = requestAnimationFrame(runZoom);
+		});
+		loadedViewer.requestRender();
+
+		return () => {
+			cancelAnimationFrame(zoomRaf1);
+			cancelAnimationFrame(zoomRaf2);
+		};
+	}, [loadedViewer, clashObjectViewerFocus]);
 
 	useEffect(() => {
 		if (!loadedViewer) return;

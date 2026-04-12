@@ -21,6 +21,18 @@ const SEVERITY_COLORS: Record<string, string> = {
 	LOW: "bg-emerald-100 text-emerald-700",
 };
 
+function matchKeysForClashObject(obj: {
+	elementId?: string;
+	revitGlobalId?: string;
+}): string[] {
+	const keys: string[] = [];
+	const e = obj.elementId?.trim();
+	if (e) keys.push(e);
+	const g = obj.revitGlobalId?.trim();
+	if (g) keys.push(g);
+	return keys;
+}
+
 export function ClashInspector() {
 	const navigate = useNavigate();
 	const { showToast } = useToast();
@@ -35,6 +47,7 @@ export function ClashInspector() {
 		uploadProgress,
 		uploadError,
 		clearSession,
+		requestClashObjectViewerFocus,
 	} = useApp();
 
 	const hasSpeckleUrl = speckleUrls.some((u) => u.trim().length > 0);
@@ -230,8 +243,8 @@ export function ClashInspector() {
 							<span className="h-0.5 w-12 rounded-full bg-neutral-300 transition group-hover:bg-neutral-400" />
 						</button>
 
-						<div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 gap-y-2 overflow-auto px-3 py-2 sm:grid-cols-[1fr_1px_1fr] sm:gap-y-0">
-							<div className="min-h-0 min-w-0 sm:pr-6">
+						<div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 grid-rows-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-y-2 overflow-hidden px-3 py-2 sm:grid-cols-[1fr_1px_1fr] sm:grid-rows-[minmax(0,1fr)] sm:gap-y-0 sm:items-stretch">
+							<div className="flex h-full min-h-0 min-w-0 flex-col sm:pr-6">
 								<AnalysisPanel
 									title="Context"
 									onRunAnalysis={() => setAnalysisHasRun(true)}
@@ -304,23 +317,35 @@ export function ClashInspector() {
 														Objects:
 													</span>
 													<ul className="mt-1 list-disc space-y-0.5 pl-5 text-xs">
-														{selected.objects.map((obj) => (
-															<li
-																key={
-																	obj.elementId ??
-																	obj.revitGlobalId ??
-																	obj.itemName
-																}
-															>
-																{obj.itemName ?? "Unnamed"}
-																{obj.itemType && (
-																	<span className="text-neutral-400">
-																		{" "}
-																		— {obj.itemType}
-																	</span>
-																)}
-															</li>
-														))}
+														{selected.objects.map((obj) => {
+															const keys = matchKeysForClashObject(obj);
+															return (
+																<li
+																	key={
+																		obj.elementId ??
+																		obj.revitGlobalId ??
+																		obj.itemName
+																	}
+																>
+																	<button
+																		type="button"
+																		disabled={keys.length === 0}
+																		className="-ml-0.5 w-[calc(100%+0.125rem)] rounded px-0.5 text-left hover:bg-neutral-100 hover:underline disabled:cursor-not-allowed disabled:no-underline disabled:opacity-60 disabled:hover:bg-transparent"
+																		onClick={() =>
+																			requestClashObjectViewerFocus(keys)
+																		}
+																	>
+																		{obj.itemName ?? "Unnamed"}
+																		{obj.itemType && (
+																			<span className="text-neutral-400">
+																				{" "}
+																				— {obj.itemType}
+																			</span>
+																		)}
+																	</button>
+																</li>
+															);
+														})}
 													</ul>
 												</div>
 											)}
@@ -340,7 +365,7 @@ export function ClashInspector() {
 								aria-hidden
 							/>
 
-							<div className="min-h-0 min-w-0 sm:pl-6">
+							<div className="flex h-full min-h-0 min-w-0 flex-col sm:pl-6">
 								<AnalysisPanel
 									title="Recommendations"
 									onRunAnalysis={() => setAnalysisHasRun(true)}
