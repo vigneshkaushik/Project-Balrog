@@ -5,14 +5,22 @@ from __future__ import annotations
 import asyncio
 import json
 import tempfile
+import uuid
 from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, File, HTTPException, Request, UploadFile
-from pydantic import BaseModel, Field
+from llama_index.core.agent.workflow import AgentOutput
+from llama_index.core.base.llms.types import TextBlock
+from llama_index.core.llms import ChatMessage
+from pydantic import BaseModel, ConfigDict, Field
 from sse_starlette.sse import EventSourceResponse
 
 from app.clash_session import ClashSessionStore
+from app.utils.clash_analysis_parse import (
+    normalize_analysis_result,
+    parse_clash_analysis_json,
+)
 from app.utils.clash_inference import (
     DEFAULT_CLASH_SEVERITY_PREPROMPT,
     batch_clashes,
@@ -26,6 +34,35 @@ UPLOAD_BATCH_SIZE = 20
 
 # SSE: allow slow per-chunk sends during long inference (matches clash LLM timeout).
 CLASH_UPLOAD_SSE_SEND_TIMEOUT_SEC = 5 * 60 * 60
+
+# Incoming clash-context analysis JSON (Navisworks + Speckle neighbors).
+MAX_ANALYZE_CONTEXT_BODY_CHARS = 600_000
+
+
+def _agent_message_text(msg: ChatMessage) -> str:
+    if msg.content:
+        return str(msg.content).strip()
+    parts: list[str] = []
+    for block in msg.blocks or []:
+        if isinstance(block, TextBlock):
+            parts.append(block.text)
+    return "\n".join(parts).strip()
+
+
+class ClashAnalyzeContextBody(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    clash: dict[str, Any]
+    clash_objects_original: list[dict[str, Any]] = Field(default_factory=list)
+    context_region: dict[str, Any] | None = None
+    nearby_speckle_objects: list[dict[str, Any]] = Field(default_factory=list)
+    meta: dict[str, Any] = Field(default_factory=dict)
+
+
+class ClashAnalyzeContextResponse(BaseModel):
+    watch_out_for: list[str]
+    recommendations: list[str]
+    notes: str | None = None
 
 
 def _get_clash_session(request: Request) -> ClashSessionStore:
@@ -60,6 +97,73 @@ async def delete_clash_session(request: Request) -> dict[str, str]:
     store = _get_clash_session(request)
     await store.clear()
     return {"status": "ok"}
+
+
+@router.post(
+    "/analyze-context",
+    response_model=ClashAnalyzeContextResponse,
+)
+async def analyze_clash_context(
+    request: Request,
+    body: ClashAnalyzeContextBody,
+) -> ClashAnalyzeContextResponse:
+    """Run the configured ReAct agent (with web search) on clash + Speckle context."""
+    wire = json.dumps(body.model_dump(), ensure_ascii=False, default=str)
+    if len(wire) > MAX_ANALYZE_CONTEXT_BODY_CHARS:
+        raise HTTPException(
+            status_code=413,
+            detail="Analysis payload too large. Reduce nearby objects or context size.",
+        )
+
+    payload_for_model = {
+        "clash": body.clash,
+        "clash_objects_original": body.clash_objects_original,
+        "context_region": body.context_region,
+        "nearby_speckle_objects": body.nearby_speckle_objects,
+        "meta": body.meta,
+    }
+    user_msg = json.dumps(payload_for_model, ensure_ascii=False, indent=2)
+    if len(user_msg) > MAX_ANALYZE_CONTEXT_BODY_CHARS:
+        raise HTTPException(
+            status_code=413,
+            detail="Serialized analysis context exceeds server limit.",
+        )
+
+    store = request.app.state.chat_store
+    llm = request.app.state.llm
+    agent = request.app.state.clash_analysis_agent
+    settings = request.app.state.effective_settings
+    conv_id = str(uuid.uuid4())
+    memory = store.get_or_create_memory(conv_id, llm=llm)
+
+    try:
+        async with store.lock_for(conv_id):
+            handler = agent.run(
+                user_msg=user_msg,
+                memory=memory,
+                max_iterations=settings.max_agent_iterations,
+            )
+            async for _ in handler.stream_events():
+                pass
+            result = await handler
+    finally:
+        store.delete(conv_id)
+
+    raw_text = ""
+    if isinstance(result, AgentOutput):
+        raw_text = _agent_message_text(result.response)
+
+    parsed = parse_clash_analysis_json(raw_text)
+    watch_out_for, recommendations, notes = normalize_analysis_result(
+        parsed,
+        raw_text=raw_text,
+    )
+
+    return ClashAnalyzeContextResponse(
+        watch_out_for=watch_out_for,
+        recommendations=recommendations,
+        notes=notes,
+    )
 
 
 def _collect_clashes(parsed_payload: dict[str, Any]) -> list[dict[str, Any]]:

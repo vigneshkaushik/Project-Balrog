@@ -44,6 +44,9 @@ function mapBackendClash(raw: ParsedClashResult, testName?: string): Clash {
       elementId: obj.elementId,
       itemName: obj.clashMetadata.itemName,
       itemType: obj.clashMetadata.itemType,
+      layer: obj.clashMetadata.layer ?? null,
+      rawAttributes: obj.rawAttributes,
+      rawSmartTags: obj.rawSmartTags,
     })),
   }
 }

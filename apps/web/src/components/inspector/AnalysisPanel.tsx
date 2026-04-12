@@ -4,13 +4,18 @@ interface AnalysisPanelProps {
   title: string
   children?: ReactNode
   onRunAnalysis?: () => void
+  runAnalysisDisabled?: boolean
+  runAnalysisPending?: boolean
 }
 
 export function AnalysisPanel({
   title,
   children,
   onRunAnalysis,
+  runAnalysisDisabled = false,
+  runAnalysisPending = false,
 }: AnalysisPanelProps) {
+  const busy = runAnalysisPending
   return (
     <section className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
       <h3 className="shrink-0 text-xs font-semibold uppercase tracking-wide text-neutral-500">
@@ -23,9 +28,10 @@ export function AnalysisPanel({
         <button
           type="button"
           onClick={onRunAnalysis}
-          className="cursor-pointer rounded-md bg-slate-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500"
+          disabled={runAnalysisDisabled || busy || !onRunAnalysis}
+          className="cursor-pointer rounded-md bg-slate-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-slate-600"
         >
-          Run Analysis
+          {busy ? 'Running…' : 'Run Analysis'}
         </button>
       </div>
     </section>

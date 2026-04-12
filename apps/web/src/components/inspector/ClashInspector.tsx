@@ -1,8 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import type { Viewer } from "@speckle/viewer";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../../context/ToastContext";
 import { useApp } from "../../context/useApp";
+import { buildClashContextAnalysisPayload } from "../../lib/clashContextRegion";
 import { clashReportGateMessage } from "../../lib/clashReportGateMessage";
+import { postClashAnalyzeContext } from "../../lib/postClashAnalysis";
 import { AnalysisPanel } from "./AnalysisPanel";
 import { ClashSelector } from "./ClashSelector";
 import { ModelViewer } from "./ModelViewer";
@@ -81,8 +84,25 @@ export function ClashInspector() {
 	);
 	const [sheetHeight, setSheetHeight] = useState(240);
 	const [isDraggingSheet, setIsDraggingSheet] = useState(false);
-	/** Upload / severity inference does not count as analysis. */
-	const [analysisHasRun, setAnalysisHasRun] = useState(false);
+	const [speckleViewer, setSpeckleViewer] = useState<Viewer | null>(null);
+	const [analysisLoading, setAnalysisLoading] = useState(false);
+	const [analysisWatchOut, setAnalysisWatchOut] = useState<string[]>([]);
+	const [analysisRecommendations, setAnalysisRecommendations] = useState<
+		string[]
+	>([]);
+	const [analysisNotes, setAnalysisNotes] = useState<string | null>(null);
+	const [analysisError, setAnalysisError] = useState<string | null>(null);
+	const [analysisCompleted, setAnalysisCompleted] = useState(false);
+
+	useEffect(() => {
+		// Clear prior Run Analysis output when the user picks another clash.
+		void selectedClashId;
+		setAnalysisWatchOut([]);
+		setAnalysisRecommendations([]);
+		setAnalysisNotes(null);
+		setAnalysisError(null);
+		setAnalysisCompleted(false);
+	}, [selectedClashId]);
 
 	useEffect(() => {
 		if (filteredClashes.length === 0) return;
@@ -131,6 +151,56 @@ export function ClashInspector() {
 	}, [isDraggingSheet]);
 
 	const selected = filteredClashes.find((c) => c.id === selectedClashId);
+	const nonEmptySpeckleCount = useMemo(
+		() => speckleUrls.filter((u) => u.trim().length > 0).length,
+		[speckleUrls],
+	);
+
+	const handleRunAnalysis = useCallback(async () => {
+		if (!selected) {
+			showToast("error", "Select a clash first.");
+			return;
+		}
+		if (!speckleViewer) {
+			showToast("error", "Wait for the Speckle model to finish loading.");
+			return;
+		}
+
+		setAnalysisLoading(true);
+		setAnalysisCompleted(false);
+		setAnalysisError(null);
+		setAnalysisWatchOut([]);
+		setAnalysisRecommendations([]);
+		setAnalysisNotes(null);
+
+		try {
+			const built = buildClashContextAnalysisPayload(speckleViewer, selected, {
+				speckleUrlCount: nonEmptySpeckleCount,
+			});
+			const res = await postClashAnalyzeContext({
+				clash: selected,
+				clash_objects_original: selected.objects ?? [],
+				context_region: built.context_region,
+				nearby_speckle_objects: built.nearby_speckle_objects,
+				meta: {
+					...built.meta,
+					unmatched_clash_keys: built.unmatched_clash_keys,
+				},
+			});
+			setAnalysisWatchOut(res.watch_out_for);
+			setAnalysisRecommendations(res.recommendations);
+			setAnalysisNotes(res.notes);
+			setAnalysisCompleted(true);
+		} catch (err) {
+			const msg =
+				err instanceof Error ? err.message : "Analysis request failed.";
+			setAnalysisError(msg);
+			showToast("error", msg);
+		} finally {
+			setAnalysisLoading(false);
+		}
+	}, [selected, speckleViewer, nonEmptySpeckleCount, showToast]);
+
 	const selectedClashObjectMatchKeys = useMemo(() => {
 		const keys = new Set<string>();
 		for (const obj of selected?.objects ?? []) {
@@ -185,6 +255,8 @@ export function ClashInspector() {
 				<ModelViewer
 					clashSelectionId={selectedClashId}
 					clashObjectMatchKeys={selectedClashObjectMatchKeys}
+					onViewerReady={setSpeckleViewer}
+					onViewerDisposed={() => setSpeckleViewer(null)}
 				/>
 
 				<div className="absolute left-3 top-3 z-10 w-80 max-w-[calc(100%-1.5rem)] space-y-3">
@@ -247,10 +319,20 @@ export function ClashInspector() {
 							<div className="flex h-full min-h-0 min-w-0 flex-col sm:pr-6">
 								<AnalysisPanel
 									title="Context"
-									onRunAnalysis={() => setAnalysisHasRun(true)}
+									onRunAnalysis={handleRunAnalysis}
+									runAnalysisPending={analysisLoading}
+									runAnalysisDisabled={!selected || !speckleViewer}
 								>
 									{selected ? (
 										<div className="space-y-3 text-sm text-neutral-700">
+											{analysisLoading ? (
+												<p className="text-xs italic text-neutral-500">
+													Running analysis…
+												</p>
+											) : null}
+											{analysisError ? (
+												<p className="text-xs text-red-600">{analysisError}</p>
+											) : null}
 											<p>
 												<span className="font-semibold text-neutral-900">
 													Clash:
@@ -283,6 +365,25 @@ export function ClashInspector() {
 													</span>
 												)}
 											</p>
+
+											{selected.disciplines &&
+												selected.disciplines.length > 0 && (
+													<p>
+														<span className="font-semibold text-neutral-900">
+															Disciplines:
+														</span>{" "}
+														{selected.disciplines.join(", ")}
+													</p>
+												)}
+
+											{selected.lead && selected.lead.length > 0 && (
+												<p>
+													<span className="font-semibold text-neutral-900">
+														Lead (stays in place):
+													</span>{" "}
+													{selected.lead.join(", ")}
+												</p>
+											)}
 
 											{selected.description && (
 												<p>
@@ -349,12 +450,29 @@ export function ClashInspector() {
 													</ul>
 												</div>
 											)}
+
+											{analysisWatchOut.length > 0 ? (
+												<div>
+													<p className="font-semibold text-neutral-900">
+														Things to watch out for
+													</p>
+													<ul className="mt-1 list-disc space-y-1 pl-5 text-xs">
+														{analysisWatchOut.map((line) => (
+															<li key={line}>{line}</li>
+														))}
+													</ul>
+												</div>
+											) : null}
+
+											{analysisNotes ? (
+												<p className="whitespace-pre-wrap text-xs text-neutral-600">
+													{analysisNotes}
+												</p>
+											) : null}
 										</div>
 									) : (
 										<p className="text-sm text-neutral-500">
-											{!analysisHasRun
-												? "Analysis has not been run"
-												: "Select a clash to see context."}
+											Select a clash to see context.
 										</p>
 									)}
 								</AnalysisPanel>
@@ -368,73 +486,38 @@ export function ClashInspector() {
 							<div className="flex h-full min-h-0 min-w-0 flex-col sm:pl-6">
 								<AnalysisPanel
 									title="Recommendations"
-									onRunAnalysis={() => setAnalysisHasRun(true)}
+									onRunAnalysis={handleRunAnalysis}
+									runAnalysisPending={analysisLoading}
+									runAnalysisDisabled={!selected || !speckleViewer}
 								>
 									{selected ? (
-										analysisHasRun ? (
-											<div className="space-y-3 text-sm text-neutral-700">
-												{selected.disciplines &&
-													selected.disciplines.length > 0 && (
-														<p>
-															<span className="font-semibold text-neutral-900">
-																Disciplines:
-															</span>{" "}
-															{selected.disciplines.join(", ")}
-														</p>
-													)}
-
-												{selected.lead && selected.lead.length > 0 && (
-													<p>
-														<span className="font-semibold text-neutral-900">
-															Lead (stays in place):
-														</span>{" "}
-														{selected.lead.join(", ")}
-													</p>
-												)}
-
-												{!selected.severity && isUploading ? (
-													<p className="text-xs italic text-neutral-400">
-														Severity inference in progress…
-													</p>
-												) : !selected.severity ? (
-													<p className="text-sm text-neutral-500">
-														Severity not available yet for this clash.
-													</p>
-												) : (
-													<div>
-														<p className="font-semibold text-neutral-900">
-															Suggested actions:
-														</p>
-														<ul className="mt-1 list-disc space-y-1 pl-5">
-															<li>
-																Confirm which trade owns the primary geometry.
-															</li>
-															<li>
-																Check whether the MEP route can be shifted or
-																rerouted.
-															</li>
-															<li>
-																Verify if clearance, maintenance access, or fire
-																code is affected.
-															</li>
-															<li>
-																Capture the issue and draft a coordination note
-																or RFI.
-															</li>
-														</ul>
-													</div>
-												)}
-											</div>
-										) : (
-											<p className="text-sm text-neutral-500">
-												Analysis has not been run
-											</p>
-										)
+										<div className="space-y-3 text-sm text-neutral-700">
+											{analysisLoading ? (
+												<p className="text-xs italic text-neutral-500">
+													Running analysis…
+												</p>
+											) : null}
+											{analysisRecommendations.length > 0 ? (
+												<ol className="list-decimal space-y-2 pl-5">
+													{analysisRecommendations.map((rec) => (
+														<li key={rec}>{rec}</li>
+													))}
+												</ol>
+											) : analysisCompleted ? (
+												<p className="text-sm text-neutral-500">
+													No recommendations were returned. Check Context or try
+													again.
+												</p>
+											) : (
+												<p className="text-sm text-neutral-500">
+													Run analysis to generate three ranked resolution
+													strategies for this clash.
+												</p>
+											)}
+										</div>
 									) : (
 										<p className="text-sm text-neutral-500">
-											{!analysisHasRun
-												? "Analysis has not been run"
-												: "Select a clash to see recommendations."}
+											Select a clash to see recommendations.
 										</p>
 									)}
 								</AnalysisPanel>
