@@ -65,39 +65,58 @@ _TOOL_BUNDLES: dict[str, Callable[[], list[FunctionTool]]] = {
 }
 
 
-def create_llm(settings: AgentSettings) -> LLM:
-    """Instantiate the configured LlamaIndex LLM for the selected provider."""
+def create_llm(
+    settings: AgentSettings,
+    *,
+    http_request_timeout: float | None = None,
+) -> LLM:
+    """Instantiate the configured LlamaIndex LLM for the selected provider.
+
+    ``http_request_timeout`` (seconds), when set, is passed through to the
+    provider client for long-running requests (e.g. clash severity batches).
+    """
+    t = http_request_timeout
+
     if settings.llm_provider == "anthropic":
         from llama_index.llms.anthropic import Anthropic
 
         assert settings.anthropic_api_key is not None
-        return Anthropic(
-            model=settings.llm_model_id,
-            api_key=settings.anthropic_api_key,
-            base_url=settings.anthropic_base_url,
-            temperature=settings.temperature,
-            max_tokens=settings.max_tokens,
-        )
+        kwargs: dict[str, object] = {
+            "model": settings.llm_model_id,
+            "api_key": settings.anthropic_api_key,
+            "base_url": settings.anthropic_base_url,
+            "temperature": settings.temperature,
+            "max_tokens": settings.max_tokens,
+        }
+        if t is not None:
+            kwargs["timeout"] = t
+        return Anthropic(**kwargs)
 
     if settings.llm_provider == "openai":
         assert settings.openai_api_key is not None
         if settings.openai_base_url is not None:
-            return OpenAICompatibleLLM(
-                model=settings.llm_model_id,
-                api_key=settings.openai_api_key,
-                api_base=settings.openai_base_url,
-                temperature=settings.temperature,
-                max_tokens=settings.max_tokens,
-                context_window=settings.openai_context_window,
-            )
+            kwargs2: dict[str, object] = {
+                "model": settings.llm_model_id,
+                "api_key": settings.openai_api_key,
+                "api_base": settings.openai_base_url,
+                "temperature": settings.temperature,
+                "max_tokens": settings.max_tokens,
+                "context_window": settings.openai_context_window,
+            }
+            if t is not None:
+                kwargs2["timeout"] = t
+            return OpenAICompatibleLLM(**kwargs2)
 
-        return OpenAI(
-            model=settings.llm_model_id,
-            api_key=settings.openai_api_key,
-            api_base=settings.openai_base_url,
-            temperature=settings.temperature,
-            max_tokens=settings.max_tokens,
-        )
+        kwargs3: dict[str, object] = {
+            "model": settings.llm_model_id,
+            "api_key": settings.openai_api_key,
+            "api_base": settings.openai_base_url,
+            "temperature": settings.temperature,
+            "max_tokens": settings.max_tokens,
+        }
+        if t is not None:
+            kwargs3["timeout"] = t
+        return OpenAI(**kwargs3)
 
     if settings.llm_provider == "google":
         from llama_index.llms.google_genai import GoogleGenAI
@@ -111,6 +130,21 @@ def create_llm(settings: AgentSettings) -> LLM:
         )
 
     if settings.llm_provider == "ollama":
+        if settings.openai_base_url is not None:
+            # OpenAI-compatible HTTP (e.g. Ollama /v1, LiteLLM, or other gateways).
+            api_key = settings.openai_api_key or "ollama"
+            kwargs4: dict[str, object] = {
+                "model": settings.llm_model_id,
+                "api_key": api_key,
+                "api_base": settings.openai_base_url,
+                "temperature": settings.temperature,
+                "max_tokens": settings.max_tokens,
+                "context_window": settings.openai_context_window,
+            }
+            if t is not None:
+                kwargs4["timeout"] = t
+            return OpenAICompatibleLLM(**kwargs4)
+
         from llama_index.llms.ollama import Ollama
 
         return Ollama(
@@ -118,7 +152,7 @@ def create_llm(settings: AgentSettings) -> LLM:
             base_url=settings.ollama_base_url,
             temperature=settings.temperature,
             context_window=settings.ollama_context_window,
-            request_timeout=120.0,
+            request_timeout=float(t) if t is not None else 120.0,
         )
 
     raise ValueError(f"Unknown LLM provider: {settings.llm_provider}")

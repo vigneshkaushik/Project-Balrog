@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../../context/ToastContext";
 import { useApp } from "../../context/useApp";
+import { saveClashSessionSpeckleUrls } from "../../lib/clashSession";
 import { clashReportGateMessage } from "../../lib/clashReportGateMessage";
 import { FileUpload } from "./FileUpload";
 import { SpeckleUrlInput } from "./SpeckleUrlInput";
@@ -14,6 +15,7 @@ export function LandingPage() {
 		setNavisworksReport,
 		navisworksFileName,
 		speckleUrls,
+		speckleUrlRows,
 		startClashUpload,
 	} = useApp();
 
@@ -23,9 +25,18 @@ export function LandingPage() {
 	const canContinue = hasClashReport && hasSpeckleUrl;
 	const buttonDisabled = !isDebuggingMode && !canContinue;
 
-	const handleGo = () => {
+	const handleGo = async () => {
 		if (!hasSpeckleUrl || !hasClashReport) {
 			showToast("error", clashReportGateMessage(hasSpeckleUrl, hasClashReport));
+			return;
+		}
+		try {
+			await saveClashSessionSpeckleUrls(speckleUrlRows.map((r) => r.url));
+		} catch {
+			showToast(
+				"error",
+				"Could not save Speckle URLs to the server. Check that the API is running.",
+			);
 			return;
 		}
 		startClashUpload();

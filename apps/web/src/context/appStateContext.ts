@@ -21,7 +21,7 @@ export interface AppState {
   appendSpeckleUrlRow: () => void
   setSpeckleUrlAt: (index: number, url: string) => void
   removeSpeckleUrlAt: (index: number) => void
-  /** Show clashes at or above this severity (per inference: LOW, MEDIUM, CRITICAL). */
+  /** Show only clashes whose inferred severity equals this level (LOW, MEDIUM, CRITICAL). */
   severityThreshold: ClashSeverity
   setSeverityThreshold: (s: ClashSeverity) => void
   selectedClashId: string | null

@@ -6,10 +6,10 @@ import json
 import re
 import uuid
 from collections.abc import AsyncIterator
-from typing import Any, Literal
+from typing import Any
 
 from fastapi import APIRouter, Query, Request
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field
 from sse_starlette import JSONServerSentEvent
 from sse_starlette.sse import EventSourceResponse
 from workflows.events import StopEvent
@@ -19,73 +19,12 @@ from llama_index.core.base.llms.types import MessageRole, TextBlock, ThinkingBlo
 from llama_index.core.llms import ChatMessage
 from llama_index.core.tools.types import ToolOutput
 
-from app.agent import create_llm, create_react_agent
 from app.config import AgentSettings
 from app.react_scratchpad import parse_react_scratchpad
-from app.user_agent_config import (
-    PersistedUserAgentConfig,
-    merge_persisted_api_key,
-)
 
 router = APIRouter()
 
-# Tool bundle ids for the ReAct agent (resolved in app.agent.resolve_tools).
 ENABLED_AGENT_TOOL_IDS: list[str] = ["duckduckgo"]
-
-
-class AgentConfigPayload(BaseModel):
-    """Client-selected LLM routing; merged with server env (API keys, shared agent options)."""
-
-    provider: Literal["anthropic", "openai", "google", "custom"]
-    model: str = Field(..., min_length=1)
-    base_url: str | None = None
-
-    @model_validator(mode="after")
-    def _validate_custom_base(self) -> AgentConfigPayload:
-        if self.provider == "custom":
-            if not (self.base_url and self.base_url.strip()):
-                raise ValueError("base_url is required when provider is custom")
-        return self
-
-
-def apply_agent_config_overrides(
-    base: AgentSettings,
-    override: AgentConfigPayload,
-) -> AgentSettings:
-    model = override.model.strip()
-    if override.provider == "custom":
-        bu = override.base_url.strip().rstrip("/") if override.base_url else ""
-        return base.model_copy(
-            update={
-                "llm_provider": "openai",
-                "model_name": model,
-                "openai_base_url": bu or None,
-            },
-        )
-    if override.provider == "anthropic":
-        return base.model_copy(
-            update={
-                "llm_provider": "anthropic",
-                "model_name": model,
-                "anthropic_base_url": None,
-            },
-        )
-    if override.provider == "openai":
-        return base.model_copy(
-            update={
-                "llm_provider": "openai",
-                "model_name": model,
-                "openai_base_url": None,
-            },
-        )
-    if override.provider == "google":
-        return base.model_copy(
-            update={
-                "llm_provider": "google",
-                "model_name": model,
-            },
-        )
-    raise ValueError(f"Unknown provider: {override.provider}")
 
 
 class ChatRequest(BaseModel):
@@ -205,36 +144,16 @@ async def _chat_sse_events(
         )
 
         store = request.app.state.chat_store
-        base_settings = request.app.state.settings
-        stored: PersistedUserAgentConfig | None = request.app.state.user_agent_config
-        if stored is not None:
-            agent_payload = AgentConfigPayload(
-                provider=stored.provider,
-                model=stored.model,
-                base_url=stored.base_url,
-            )
-            agent_settings = apply_agent_config_overrides(
-                base_settings,
-                agent_payload,
-            )
-            agent_settings = merge_persisted_api_key(agent_settings, stored)
-            llm = create_llm(agent_settings)
-            agent = create_react_agent(
-                agent_settings,
-                llm,
-                tool_ids=ENABLED_AGENT_TOOL_IDS,
-            )
-        else:
-            agent_settings = base_settings
-            llm = request.app.state.llm
-            agent = request.app.state.agent
+        settings: AgentSettings = request.app.state.effective_settings
+        llm = request.app.state.llm
+        agent = request.app.state.agent
 
         memory = store.get_or_create_memory(conversation_id, llm=llm)
         async with store.lock_for(conversation_id):
             handler = agent.run(
                 user_msg=payload.message,
                 memory=memory,
-                max_iterations=agent_settings.max_agent_iterations,
+                max_iterations=settings.max_agent_iterations,
             )
             async for ev in handler.stream_events():
                 if isinstance(ev, AgentStream):

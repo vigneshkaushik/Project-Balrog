@@ -407,8 +407,14 @@ export function ChatSidebar() {
 		setSettingsDraft((d) => ({
 			...d,
 			provider,
-			model: provider === "custom" ? d.model : MODEL_OPTIONS[provider][0],
-			baseUrl: provider === "custom" ? d.baseUrl : "",
+			model:
+				provider === "custom"
+					? d.model
+					: provider === "ollama"
+						? "llama3.2"
+						: MODEL_OPTIONS[provider][0],
+			baseUrl:
+				provider === "custom" || provider === "ollama" ? d.baseUrl : "",
 			apiKeyInput: "",
 		}));
 	};
@@ -424,6 +430,12 @@ export function ChatSidebar() {
 				return;
 			}
 		}
+		if (settingsDraft.provider === "ollama") {
+			if (!settingsDraft.model.trim()) {
+				setSettingsError("Model name is required for Ollama.");
+				return;
+			}
+		}
 		setSettingsError(null);
 		void (async () => {
 			try {
@@ -431,7 +443,8 @@ export function ChatSidebar() {
 					provider: settingsDraft.provider,
 					model: settingsDraft.model.trim(),
 					base_url:
-						settingsDraft.provider === "custom"
+						settingsDraft.provider === "custom" ||
+						settingsDraft.provider === "ollama"
 							? settingsDraft.baseUrl.trim()
 							: undefined,
 					api_key: settingsDraft.apiKeyInput.trim() || undefined,
@@ -516,6 +529,7 @@ export function ChatSidebar() {
 										<option value="anthropic">Anthropic</option>
 										<option value="openai">OpenAI</option>
 										<option value="google">Google</option>
+										<option value="ollama">Ollama</option>
 										<option value="custom">Custom (OpenAI-compatible)</option>
 									</select>
 								</div>
@@ -527,18 +541,33 @@ export function ChatSidebar() {
 									>
 										Base URL
 									</label>
+									{(settingsDraft.provider === "custom" ||
+										settingsDraft.provider === "ollama") && (
+										<p className="mb-1 text-[11px] text-neutral-500">
+											{settingsDraft.provider === "ollama"
+												? "Optional. Leave empty for native Ollama (server env). Set to an OpenAI-compatible URL (e.g. …/v1) to use the HTTP API."
+												: "Required for custom OpenAI-compatible endpoints."}
+										</p>
+									)}
 									<input
 										id="agent-base-url"
 										type="url"
 										value={settingsDraft.baseUrl}
-										disabled={settingsDraft.provider !== "custom"}
+										disabled={
+											settingsDraft.provider !== "custom" &&
+											settingsDraft.provider !== "ollama"
+										}
 										onChange={(e) =>
 											setSettingsDraft((d) => ({
 												...d,
 												baseUrl: e.target.value,
 											}))
 										}
-										placeholder="https://api.example.com/v1"
+										placeholder={
+											settingsDraft.provider === "ollama"
+												? "e.g. http://localhost:11434/v1 (optional)"
+												: "https://api.example.com/v1"
+										}
 										className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-400"
 									/>
 								</div>
@@ -550,7 +579,8 @@ export function ChatSidebar() {
 									>
 										Model
 									</label>
-									{settingsDraft.provider === "custom" ? (
+									{settingsDraft.provider === "custom" ||
+									settingsDraft.provider === "ollama" ? (
 										<input
 											id="agent-model"
 											type="text"
@@ -561,7 +591,11 @@ export function ChatSidebar() {
 													model: e.target.value,
 												}))
 											}
-											placeholder="e.g. my-model-id"
+											placeholder={
+												settingsDraft.provider === "ollama"
+													? "e.g. llama3.2"
+													: "e.g. my-model-id"
+											}
 											className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
 										/>
 									) : (

@@ -1,12 +1,22 @@
 import {
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
   type ReactNode,
 } from 'react'
-import type { Clash, ClashSeverity } from '../types'
-import { clashMeetsMinimumSeverity, normalizeClashSeverity } from '../types'
+import type {
+  Clash,
+  ClashInferenceResult,
+  ClashSeverity,
+  ParsedClashResult,
+} from '../types'
+import { clashMatchesSeverityExactly, normalizeClashSeverity } from '../types'
+import {
+  deleteClashSession,
+  fetchClashSession,
+} from '../lib/clashSession'
 import { uploadClashReport } from '../lib/uploadClashReport'
 import {
   AppContext,
@@ -14,36 +24,26 @@ import {
   type UploadProgress,
 } from './appStateContext'
 
-function mapBackendClash(
-  raw: Record<string, unknown>,
-  testName?: string,
-): Clash {
-  const meta = (raw.clashMetadata ?? {}) as Record<string, unknown>
-  const objects = Array.isArray(raw.objects) ? raw.objects : []
-
-  const guidRaw = raw.clashGuid as string | undefined
+function mapBackendClash(raw: ParsedClashResult, testName?: string): Clash {
+  const meta = raw.clashMetadata
+  const guidRaw = raw.clashGuid ?? undefined
   return {
     id: guidRaw?.trim()
       ? guidRaw.trim().toLowerCase()
       : crypto.randomUUID(),
-    label: (raw.clashName as string) ?? 'Unknown clash',
-    severity: normalizeClashSeverity(raw.severity),
-    disciplines: raw.disciplines as string[] | undefined,
-    lead: raw.lead as string[] | undefined,
-    testName,
-    description: (meta.description as string) ?? null,
-    status: (meta.status as string) ?? null,
-    distance: (meta.distance as number) ?? null,
-    clashPoint: (meta.clashPoint as Clash['clashPoint']) ?? null,
-    objects: objects.map((obj: Record<string, unknown>) => {
-      const objMeta = (obj.clashMetadata ?? {}) as Record<string, unknown>
-      return {
-        revitGlobalId: (obj.revitGlobalId as string) ?? null,
-        elementId: (obj.elementId as string) ?? null,
-        itemName: (objMeta.itemName as string) ?? null,
-        itemType: (objMeta.itemType as string) ?? null,
-      }
-    }),
+    label: raw.clashName ?? 'Unknown clash',
+    severity: null,
+    testName: testName ?? undefined,
+    description: meta.description,
+    status: meta.status,
+    distance: meta.distance,
+    clashPoint: meta.clashPoint,
+    objects: raw.objects.map((obj) => ({
+      revitGlobalId: obj.revitGlobalId,
+      elementId: obj.elementId,
+      itemName: obj.clashMetadata.itemName,
+      itemType: obj.clashMetadata.itemType,
+    })),
   }
 }
 
@@ -69,6 +69,69 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const navisworksFileRef = useRef<File | null>(null)
   const uploadAbortRef = useRef<AbortController | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const snap = await fetchClashSession()
+        if (cancelled || !snap.has_session) return
+        if (navisworksFileRef.current) return
+
+        setSpeckleUrlRows(
+          snap.speckle_urls.map((url) => ({
+            id: crypto.randomUUID(),
+            url,
+          })),
+        )
+
+        if (snap.navisworks_file_name) {
+          setNavisworksFileName(snap.navisworks_file_name)
+        }
+
+        if (!snap.parsed) {
+          return
+        }
+
+        const next: Clash[] = []
+        for (const test of snap.parsed.tests) {
+          const testLabel = test.testName ?? undefined
+          for (const raw of test.clashes) {
+            const clash = mapBackendClash(raw, testLabel)
+            const inf = snap.inference_by_clash_guid[clash.id]
+            if (inf) {
+              next.push({
+                ...clash,
+                severity: normalizeClashSeverity(inf.severity),
+                disciplines: inf.disciplines ?? clash.disciplines,
+                lead: inf.lead ?? clash.lead,
+              })
+            } else {
+              next.push(clash)
+            }
+          }
+        }
+        setClashes(next)
+        setUploadProgress(
+          next.length > 0
+            ? {
+                completed: snap.inference_complete ? next.length : 0,
+                total: next.length,
+              }
+            : null,
+        )
+        if (next.length > 0) {
+          setSeverityThreshold('LOW')
+          setSelectedClashId(next[0].id)
+        }
+      } catch {
+        /* offline or API down — keep empty local state */
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const setNavisworksReport = useCallback((file: File | null) => {
     navisworksFileRef.current = file
@@ -100,13 +163,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       file,
       {
         onParsed: (payload) => {
-          const tests = (
-            payload as { tests?: { testName?: string; clashes?: Record<string, unknown>[] }[] }
-          ).tests ?? []
           const next: Clash[] = []
-          for (const test of tests) {
-            for (const raw of test.clashes ?? []) {
-              next.push(mapBackendClash(raw, test.testName))
+          for (const test of payload.tests) {
+            const testLabel = test.testName ?? undefined
+            for (const raw of test.clashes) {
+              next.push(mapBackendClash(raw, testLabel))
             }
           }
           setClashes(next)
@@ -117,9 +178,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
           }
         },
         onBatchResult: ({ results, completed, total }) => {
-          const byGuid = new Map<string, Record<string, unknown>>()
+          const byGuid = new Map<string, ClashInferenceResult>()
           for (const row of results) {
-            const guid = row.clash as string | undefined
+            const guid = row.clash
             if (guid?.trim()) byGuid.set(guid.trim().toLowerCase(), row)
           }
           setClashes((prev) =>
@@ -129,8 +190,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
               return {
                 ...clash,
                 severity: normalizeClashSeverity(inf.severity),
-                disciplines: (inf.disciplines as string[]) ?? clash.disciplines,
-                lead: (inf.lead as string[]) ?? clash.lead,
+                disciplines: inf.disciplines ?? clash.disciplines,
+                lead: inf.lead ?? clash.lead,
               }
             }),
           )
@@ -175,7 +236,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const filteredClashes = useMemo(
     () =>
       clashes.filter((c) =>
-        clashMeetsMinimumSeverity(c.severity, severityThreshold),
+        clashMatchesSeverityExactly(c.severity, severityThreshold),
       ),
     [clashes, severityThreshold],
   )
@@ -192,6 +253,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setIsUploading(false)
     setUploadProgress(null)
     setUploadError(null)
+    void deleteClashSession().catch(() => {
+      /* best-effort */
+    })
   }, [])
 
   const value = useMemo(

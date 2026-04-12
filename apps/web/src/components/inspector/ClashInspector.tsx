@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../../context/ToastContext";
 import { useApp } from "../../context/useApp";
@@ -34,6 +34,7 @@ export function ClashInspector() {
 		isUploading,
 		uploadProgress,
 		uploadError,
+		clearSession,
 	} = useApp();
 
 	const hasSpeckleUrl = speckleUrls.some((u) => u.trim().length > 0);
@@ -116,11 +117,21 @@ export function ClashInspector() {
 		};
 	}, [isDraggingSheet]);
 
+	const selected = filteredClashes.find((c) => c.id === selectedClashId);
+	const selectedClashObjectMatchKeys = useMemo(() => {
+		const keys = new Set<string>();
+		for (const obj of selected?.objects ?? []) {
+			const e = obj.elementId?.trim();
+			if (e) keys.add(e);
+			const g = obj.revitGlobalId?.trim();
+			if (g) keys.add(g);
+		}
+		return [...keys];
+	}, [selected]);
+
 	if (!hasSession) {
 		return null;
 	}
-
-	const selected = filteredClashes.find((c) => c.id === selectedClashId);
 	const progressPct =
 		uploadProgress && uploadProgress.total > 0
 			? Math.round((uploadProgress.completed / uploadProgress.total) * 100)
@@ -158,9 +169,38 @@ export function ClashInspector() {
 				ref={containerRef}
 				className="relative flex min-h-0 min-w-0 flex-1 overflow-hidden"
 			>
-				<ModelViewer />
+				<ModelViewer
+					clashSelectionId={selectedClashId}
+					clashObjectMatchKeys={selectedClashObjectMatchKeys}
+				/>
 
-				<div className="absolute left-3 top-3 z-10 w-80 max-w-[calc(100%-1.5rem)] space-y-2">
+				<div className="absolute left-3 top-3 z-10 w-80 max-w-[calc(100%-1.5rem)] space-y-3">
+					<button
+						type="button"
+						onClick={() => {
+							clearSession();
+							navigate("/");
+						}}
+						className="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white/95 px-2.5 py-1.5 text-xs font-medium text-neutral-700 shadow-sm backdrop-blur-md transition hover:border-neutral-300 hover:bg-white hover:text-neutral-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/50"
+						title="Upload a new clash report and edit Speckle URLs"
+					>
+						<svg
+							className="h-3.5 w-3.5 shrink-0 text-neutral-500"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+							strokeWidth={2}
+							aria-hidden="true"
+						>
+							<title>Upload</title>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+							/>
+						</svg>
+						<span>New report & URLs</span>
+					</button>
 					<SeverityFilter />
 					<ClashSelector />
 				</div>

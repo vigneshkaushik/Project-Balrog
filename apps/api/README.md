@@ -19,9 +19,19 @@ Edit **`.env`** to pick one provider path:
 
 ## Run
 
+From **`apps/api`** (after **`uv sync`**):
+
+```bash
+./dev.sh
+```
+
+Equivalent:
+
 ```bash
 uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
+
+You can also run **`./apps/api/dev.sh`** from the repository root; the script changes into its own directory before starting Uvicorn.
 
 ## Endpoints
 

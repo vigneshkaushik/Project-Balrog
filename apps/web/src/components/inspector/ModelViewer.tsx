@@ -1,27 +1,47 @@
-import { SelectionExtension, type Viewer, ViewerEvent } from "@speckle/viewer";
+import {
+	FilteringExtension,
+	SelectionExtension,
+	type SelectionExtensionOptions,
+	type Viewer,
+	ViewerEvent,
+} from "@speckle/viewer";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useApp } from "../../context/useApp";
 import {
 	type SpeckleLoadState,
 	useSpeckleViewer,
 } from "../../hooks/useSpeckleViewer";
-import { zoomViewerToSmallestClashObject } from "../../lib/zoomToSmallestClashObject";
+import {
+	resolveClashObjectNodes,
+	zoomViewerToSmallestClashObject,
+} from "../../lib/zoomToSmallestClashObject";
 import { SpeckleLoadProgressBar } from "./SpeckleLoadProgressBar";
 import { SpeckleObjectOverlay } from "./SpeckleObjectOverlay";
 
 export interface ModelViewerProps {
 	/**
-	 * Speckle object / application ids for the current clash. When set, the viewer
-	 * frames the object with the smallest axis-aligned bounds among these ids.
+	 * When the selected clash changes, re-run highlight even if the id list matches
+	 * another clash (e.g. both empty).
 	 */
-	clashObjectApplicationIds?: string[];
+	clashSelectionId?: string | null;
+	/**
+	 * Clash-side identifiers (`elementId`, `revitGlobalId`, …) resolved against the
+	 * Speckle scene for red highlight + zoom.
+	 */
+	clashObjectMatchKeys?: string[];
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-export function ModelViewer({ clashObjectApplicationIds }: ModelViewerProps) {
+/** `FilteringExtension` state key for clash isolate / ghost (must be stable). */
+const CLASH_ISOLATE_STATE_KEY = "balrog-clash-isolate";
+
+export function ModelViewer({
+	clashSelectionId,
+	clashObjectMatchKeys,
+}: ModelViewerProps) {
 	const { speckleUrls } = useApp();
 	const containerRef = useRef<HTMLElement>(null);
 	const [loadedViewer, setLoadedViewer] = useState<Viewer | null>(null);
@@ -45,6 +65,10 @@ export function ModelViewer({ clashObjectApplicationIds }: ModelViewerProps) {
 		setLoadedViewer(viewer);
 	}, []);
 
+	const onViewerDisposed = useCallback(() => {
+		setLoadedViewer(null);
+	}, []);
+
 	const onLoadState = useCallback((state: SpeckleLoadState) => {
 		setSpeckleLoadState(state);
 	}, []);
@@ -55,20 +79,166 @@ export function ModelViewer({ clashObjectApplicationIds }: ModelViewerProps) {
 		authToken,
 		onModelsLoaded,
 		onLoadState,
+		onViewerDisposed,
 	});
 
-	const clashFramingKey = JSON.stringify(
-		(clashObjectApplicationIds ?? [])
+	/** Includes `clashSelectionId` so changing clashes re-runs even when match keys are identical. */
+	const clashHighlightEffectKey = JSON.stringify({
+		selectionId: clashSelectionId ?? "",
+		keys: (clashObjectMatchKeys ?? [])
 			.map((s) => s.trim())
 			.filter((s) => s.length > 0),
-	);
+	});
 
 	useEffect(() => {
-		const ids =
-			clashFramingKey === "[]" ? [] : (JSON.parse(clashFramingKey) as string[]);
-		if (ids.length === 0 || !loadedViewer) return;
-		zoomViewerToSmallestClashObject(loadedViewer, ids);
-	}, [clashFramingKey, loadedViewer]);
+		if (!loadedViewer) {
+			if (import.meta.env.DEV) {
+				console.debug(
+					"[ModelViewer] Clash highlight skipped: viewer not ready yet",
+				);
+			}
+			return;
+		}
+
+		const { keys: ids, selectionId } = JSON.parse(clashHighlightEffectKey) as {
+			selectionId: string;
+			keys: string[];
+		};
+
+		let filteringExt: FilteringExtension | null = null;
+		let selectionExt: SelectionExtension | null = null;
+		let prevSelectionOptions: SelectionExtensionOptions | null = null;
+
+		try {
+			if (loadedViewer.hasExtension(FilteringExtension)) {
+				filteringExt = loadedViewer.getExtension(FilteringExtension);
+			}
+		} catch (err) {
+			console.warn("[ModelViewer] FilteringExtension unavailable:", err);
+		}
+
+		let zoomRaf1 = 0;
+		let zoomRaf2 = 0;
+
+		try {
+			if (filteringExt) {
+				filteringExt.resetFilters();
+			}
+
+			if (ids.length === 0) {
+				loadedViewer.requestRender();
+				return () => {
+					cancelAnimationFrame(zoomRaf1);
+					cancelAnimationFrame(zoomRaf2);
+					try {
+						filteringExt?.resetFilters();
+					} catch {
+						/* disposed */
+					}
+					try {
+						if (selectionExt && prevSelectionOptions) {
+							selectionExt.clearSelection();
+							selectionExt.options = prevSelectionOptions;
+						}
+					} catch {
+						/* disposed */
+					}
+				};
+			}
+
+			const { matchedObjectIds, unmatchedElementIds } =
+				resolveClashObjectNodes(loadedViewer, ids);
+
+			if (import.meta.env.DEV) {
+				console.debug("[ModelViewer] clash selection → Speckle", {
+					selectionId,
+					clashKeys: ids,
+					matchedObjectCount: matchedObjectIds.length,
+				});
+			}
+
+			if (unmatchedElementIds.length > 0) {
+				console.warn(
+					"[ModelViewer] No Speckle nodes matched clash identifiers:",
+					unmatchedElementIds,
+				);
+			}
+
+			if (matchedObjectIds.length > 0) {
+				if (filteringExt) {
+					filteringExt.isolateObjects(
+						matchedObjectIds,
+						CLASH_ISOLATE_STATE_KEY,
+						true,
+						true,
+					);
+					filteringExt.setUserObjectColors([
+						{ objectIds: matchedObjectIds, color: "#ff0000" },
+					]);
+				} else if (loadedViewer.hasExtension(SelectionExtension)) {
+					try {
+						selectionExt = loadedViewer.getExtension(SelectionExtension);
+						prevSelectionOptions = selectionExt.options;
+						selectionExt.options = {
+							selectionMaterialData: {
+								...selectionExt.options.selectionMaterialData,
+								color: 0xff0000,
+							},
+						};
+						selectionExt.clearSelection();
+						selectionExt.selectObjects(matchedObjectIds, true);
+					} catch (selErr) {
+						console.warn(
+							"[ModelViewer] SelectionExtension clash highlight failed:",
+							selErr,
+						);
+					}
+				} else {
+					console.warn(
+						"[ModelViewer] No FilteringExtension or SelectionExtension; cannot highlight clashes",
+					);
+				}
+
+				const viewerForZoom = loadedViewer;
+				const runZoom = () => {
+					try {
+						zoomViewerToSmallestClashObject(viewerForZoom, ids, {
+							resolvedObjectIds: matchedObjectIds,
+							transition: true,
+							fit: 1.3,
+						});
+						viewerForZoom.requestRender();
+					} catch (zoomErr) {
+						console.warn("[ModelViewer] clash zoom failed:", zoomErr);
+					}
+				};
+				zoomRaf1 = requestAnimationFrame(() => {
+					zoomRaf2 = requestAnimationFrame(runZoom);
+				});
+				loadedViewer.requestRender();
+			}
+		} catch (err) {
+			console.error("[ModelViewer] Clash highlight / zoom failed:", err);
+		}
+
+		return () => {
+			cancelAnimationFrame(zoomRaf1);
+			cancelAnimationFrame(zoomRaf2);
+			try {
+				filteringExt?.resetFilters();
+			} catch {
+				/* viewer may already be disposed */
+			}
+			try {
+				if (selectionExt && prevSelectionOptions) {
+					selectionExt.clearSelection();
+					selectionExt.options = prevSelectionOptions;
+				}
+			} catch {
+				/* viewer may already be disposed */
+			}
+		};
+	}, [clashHighlightEffectKey, loadedViewer]);
 
 	useEffect(() => {
 		if (!loadedViewer) return;
@@ -77,10 +247,14 @@ export function ModelViewer({ clashObjectApplicationIds }: ModelViewerProps) {
 		if (!selectionExtension) return;
 
 		const syncSelectedObject = () => {
-			const [nextSelectedObject] = selectionExtension.getSelectedObjects();
-			setSelectedObjectData(
-				isRecord(nextSelectedObject) ? nextSelectedObject : null,
-			);
+			try {
+				const [nextSelectedObject] = selectionExtension.getSelectedObjects();
+				setSelectedObjectData(
+					isRecord(nextSelectedObject) ? nextSelectedObject : null,
+				);
+			} catch (err) {
+				console.warn("[ModelViewer] Selection sync failed:", err);
+			}
 		};
 
 		syncSelectedObject();
