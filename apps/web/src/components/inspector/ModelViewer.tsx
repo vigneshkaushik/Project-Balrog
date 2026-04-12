@@ -1,4 +1,5 @@
 import {
+	DefaultObjectPickConfiguration,
 	FilteringExtension,
 	SelectionExtension,
 	type SelectionExtensionOptions,
@@ -11,6 +12,10 @@ import {
 	type SpeckleLoadState,
 	useSpeckleViewer,
 } from "../../hooks/useSpeckleViewer";
+import {
+	expandClashPickAllowIds,
+	renderViewAllowedForClashPick,
+} from "../../lib/speckleExpandPickAllow";
 import {
 	resolveClashObjectNodes,
 	zoomViewerToSmallestClashObject,
@@ -119,6 +124,10 @@ export function ModelViewer({
 
 		let zoomRaf1 = 0;
 		let zoomRaf2 = 0;
+		let pickFilterTouched = false;
+		let prevPickFilter:
+			| typeof DefaultObjectPickConfiguration.pickedObjectsFilter
+			| null = null;
 
 		try {
 			if (filteringExt) {
@@ -175,6 +184,21 @@ export function ModelViewer({
 					filteringExt.setUserObjectColors([
 						{ objectIds: matchedObjectIds, color: "#ff0000" },
 					]);
+					const renderer = loadedViewer.getRenderer();
+					prevPickFilter = renderer.objectPickConfiguration.pickedObjectsFilter;
+					const pickAllow = expandClashPickAllowIds(
+						loadedViewer,
+						matchedObjectIds,
+					);
+					renderer.objectPickConfiguration = {
+						pickedObjectsFilter: (args) => {
+							if (!DefaultObjectPickConfiguration.pickedObjectsFilter(args)) {
+								return false;
+							}
+							return renderViewAllowedForClashPick(pickAllow, args[0]);
+						},
+					};
+					pickFilterTouched = true;
 				} else if (loadedViewer.hasExtension(SelectionExtension)) {
 					try {
 						selectionExt = loadedViewer.getExtension(SelectionExtension);
@@ -224,6 +248,15 @@ export function ModelViewer({
 		return () => {
 			cancelAnimationFrame(zoomRaf1);
 			cancelAnimationFrame(zoomRaf2);
+			if (pickFilterTouched) {
+				try {
+					loadedViewer.getRenderer().objectPickConfiguration = {
+						pickedObjectsFilter: prevPickFilter,
+					};
+				} catch {
+					/* viewer may already be disposed */
+				}
+			}
 			try {
 				filteringExt?.resetFilters();
 			} catch {
