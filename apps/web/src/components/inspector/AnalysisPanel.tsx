@@ -12,12 +12,14 @@ export function AnalysisPanel({
   onRunAnalysis,
 }: AnalysisPanelProps) {
   return (
-    <section className="flex min-h-0 min-w-0 flex-col">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+    <section className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      <h3 className="shrink-0 text-xs font-semibold uppercase tracking-wide text-neutral-500">
         {title}
       </h3>
-      <div className="mt-2 min-h-0 flex-1 text-sm text-neutral-700">{children}</div>
-      <div className="mt-3 flex justify-end">
+      <div className="mt-2 min-h-0 flex-1 overflow-y-auto overscroll-contain text-sm text-neutral-700">
+        {children}
+      </div>
+      <div className="mt-3 flex shrink-0 justify-end">
         <button
           type="button"
           onClick={onRunAnalysis}

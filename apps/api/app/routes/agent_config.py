@@ -8,14 +8,14 @@ from typing import Literal
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field, model_validator
 
-from app.agent import create_llm
+from app.agent import create_llm, create_react_agent
 from app.config import AgentSettings
-from app.routes.chat import AgentConfigPayload, apply_agent_config_overrides
+from app.routes.chat import ENABLED_AGENT_TOOL_IDS
 from app.user_agent_config import (
     MASKED_API_KEY_DISPLAY,
     PersistedUserAgentConfig,
+    effective_agent_settings,
     env_key_configured_for_ui_provider,
-    merge_persisted_api_key,
     save_user_agent_config,
 )
 
@@ -31,7 +31,7 @@ class AgentConfigPublicResponse(BaseModel):
 
 
 class AgentConfigPutBody(BaseModel):
-    provider: Literal["anthropic", "openai", "google", "custom"]
+    provider: Literal["anthropic", "openai", "google", "custom", "ollama"]
     model: str = Field(..., min_length=1)
     base_url: str | None = None
     api_key: str | None = Field(
@@ -47,16 +47,15 @@ class AgentConfigPutBody(BaseModel):
         return self
 
 
-def _settings_to_public_when_no_store(base: AgentSettings) -> AgentConfigPublicResponse:
-    if base.llm_provider in ("anthropic", "openai", "google"):
-        prov = base.llm_provider
-        model = base.llm_model_id
-    elif base.llm_provider == "ollama":
-        prov = "anthropic"
-        model = "claude-sonnet-4-20250514"
-    else:
-        prov = "anthropic"
-        model = base.model_name
+def _env_to_public(base: AgentSettings) -> AgentConfigPublicResponse:
+    """Build public response from env-only settings (no persisted config file)."""
+    prov = base.llm_provider
+    model = base.llm_model_id
+    bu: str | None = None
+    if prov == "openai" and base.openai_base_url:
+        bu = base.openai_base_url
+    elif prov == "ollama":
+        bu = base.openai_base_url or base.ollama_base_url
     has_key = env_key_configured_for_ui_provider(
         anthropic_key=base.anthropic_api_key,
         openai_key=base.openai_api_key,
@@ -66,7 +65,7 @@ def _settings_to_public_when_no_store(base: AgentSettings) -> AgentConfigPublicR
     return AgentConfigPublicResponse(
         provider=prov,
         model=model,
-        base_url=None,
+        base_url=bu,
         api_key_set=has_key,
         api_key_masked=MASKED_API_KEY_DISPLAY if has_key else None,
     )
@@ -76,17 +75,21 @@ def _stored_to_public(
     cfg: PersistedUserAgentConfig,
     base: AgentSettings,
 ) -> AgentConfigPublicResponse:
+    """Build public response from persisted config file."""
     bu: str | None = None
-    if cfg.provider == "custom" and cfg.base_url and cfg.base_url.strip():
-        bu = cfg.base_url.strip().rstrip("/")
-    stored_key = cfg.api_key.strip() if cfg.api_key else ""
+    if cfg.provider in ("custom", "ollama"):
+        if cfg.base_url and cfg.base_url.strip():
+            bu = cfg.base_url.strip().rstrip("/")
+        elif cfg.provider == "ollama":
+            bu = base.ollama_base_url
+    stored_key = bool(cfg.api_key and cfg.api_key.strip())
     env_key = env_key_configured_for_ui_provider(
         anthropic_key=base.anthropic_api_key,
         openai_key=base.openai_api_key,
         google_key=base.google_api_key,
         provider=cfg.provider,
     )
-    has_key = bool(stored_key) or env_key
+    has_key = stored_key or env_key
     return AgentConfigPublicResponse(
         provider=cfg.provider,
         model=cfg.model,
@@ -101,7 +104,7 @@ def get_agent_config(request: Request) -> AgentConfigPublicResponse:
     base: AgentSettings = request.app.state.settings
     cfg: PersistedUserAgentConfig | None = request.app.state.user_agent_config
     if cfg is None:
-        return _settings_to_public_when_no_store(base)
+        return _env_to_public(base)
     return _stored_to_public(cfg, base)
 
 
@@ -123,8 +126,12 @@ def put_agent_config(
         resolved_key = None
 
     bu: str | None = None
-    if body.provider == "custom":
-        bu = body.base_url.strip().rstrip("/") if body.base_url else ""
+    if body.provider in ("custom", "ollama"):
+        bu = (
+            body.base_url.strip().rstrip("/")
+            if body.base_url and body.base_url.strip()
+            else None
+        )
 
     try:
         persisted = PersistedUserAgentConfig(
@@ -136,18 +143,17 @@ def put_agent_config(
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
-    payload = AgentConfigPayload(
-        provider=persisted.provider,
-        model=persisted.model,
-        base_url=persisted.base_url,
-    )
     try:
-        agent_settings = apply_agent_config_overrides(base, payload)
-        agent_settings = merge_persisted_api_key(agent_settings, persisted)
-        create_llm(agent_settings)
+        settings = effective_agent_settings(base, persisted)
+        llm = create_llm(settings)
     except Exception as exc:  # noqa: BLE001 — return safe message to client
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
     save_user_agent_config(path, persisted)
     request.app.state.user_agent_config = persisted
+    request.app.state.effective_settings = settings
+    request.app.state.llm = llm
+    request.app.state.agent = create_react_agent(
+        settings, llm, tool_ids=ENABLED_AGENT_TOOL_IDS,
+    )
     return _stored_to_public(persisted, base)

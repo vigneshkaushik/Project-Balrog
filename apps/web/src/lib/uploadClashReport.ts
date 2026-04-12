@@ -1,12 +1,14 @@
 import { getApiBaseUrl } from './apiBase'
+import type {
+  ClashInferenceBatchPayload,
+  ClashInferenceResult,
+  ClashUploadErrorPayload,
+  ParsedClashReportPayload,
+} from '../types'
 
 export interface UploadClashHandlers {
-  onParsed: (payload: Record<string, unknown>) => void
-  onBatchResult: (data: {
-    results: Record<string, unknown>[]
-    completed: number
-    total: number
-  }) => void
+  onParsed: (payload: ParsedClashReportPayload) => void
+  onBatchResult: (data: ClashInferenceBatchPayload) => void
   onDone: () => void
   onError: (detail: string) => void
 }
@@ -81,18 +83,14 @@ export async function uploadClashReport(
     }
     const { event } = parsed
     if (event === 'parsed' && payload && typeof payload === 'object') {
-      handlers.onParsed(payload as Record<string, unknown>)
+      handlers.onParsed(payload as ParsedClashReportPayload)
       return
     }
     if (event === 'batch_result' && payload && typeof payload === 'object') {
-      const p = payload as {
-        results?: Record<string, unknown>[]
-        completed?: number
-        total?: number
-      }
+      const p = payload as Partial<ClashInferenceBatchPayload>
       if (Array.isArray(p.results)) {
         handlers.onBatchResult({
-          results: p.results,
+          results: p.results as ClashInferenceResult[],
           completed: Number(p.completed),
           total: Number(p.total),
         })
@@ -104,7 +102,7 @@ export async function uploadClashReport(
       return
     }
     if (event === 'error' && payload && typeof payload === 'object') {
-      const detail = (payload as { detail?: string }).detail
+      const detail = (payload as Partial<ClashUploadErrorPayload>).detail
       handlers.onError(typeof detail === 'string' ? detail : 'Unknown error')
     }
   }

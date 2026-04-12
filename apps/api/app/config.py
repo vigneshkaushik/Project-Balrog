@@ -67,7 +67,12 @@ class AgentSettings(BaseSettings):
     openai_base_url: str | None = Field(
         default=None,
         validation_alias="OPENAI_BASE_URL",
-        description="Optional custom OpenAI-compatible API base URL.",
+        description=(
+            "OpenAI-compatible API base URL (e.g. http://host:port/v1). "
+            "When LLM_PROVIDER=openai, uses this instead of OpenAI cloud. "
+            "When LLM_PROVIDER=ollama, if set, uses this OpenAI-compatible endpoint instead of "
+            "the native Ollama client (OLLAMA_BASE_URL is then unused for the LLM)."
+        ),
     )
     openai_context_window: int = Field(
         default=32_768,

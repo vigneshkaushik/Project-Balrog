@@ -22,19 +22,22 @@ This document maps the **FastAPI** backend: entrypoint, configuration, AI agent 
 
 | File / symbol | Role |
 | ------------- | ---- |
-| `main.py` → `lifespan` | On startup: reads **`get_settings()`**, resolves **`user_agent_config_path`** (default **`apps/api/data/agent_user_config.json`** or **`AGENT_USER_CONFIG_PATH`**), loads **`load_user_agent_config`**, builds **`create_llm`**, **`create_react_agent(..., tool_ids=ENABLED_AGENT_TOOL_IDS)`**, **`ChatSessionStore(llm)`**, attaches all to **`app.state`**. |
+| `main.py` → `lifespan` | On startup: reads **`get_settings()`** (env), loads persisted UI config from disk via **`load_user_agent_config`**, merges both into **`effective_agent_settings`**, builds **`create_llm`** + **`create_react_agent`** + **`ChatSessionStore`**, attaches all to **`app.state`**. |
 | `main.py` → `app` | **`FastAPI`** title/description, **`CORSMiddleware`** from **`settings.cors_origins`**, includes **`chat`**, **`agent_config`**, and **`clashes`** routers, exposes **`GET /health`**. |
 
 **Runtime state (`request.app.state`)**
 
 | Attribute | Type (conceptual) | Purpose |
 | --------- | ----------------- | ------- |
-| `settings` | `AgentSettings` | Model/provider, prompts, iteration caps, CORS, optional persisted config path |
+| `settings` | `AgentSettings` | Immutable env-based settings (`.env` snapshot at startup) |
+| `effective_settings` | `AgentSettings` | **Active** settings: env merged with persisted UI config. Updated on **`PUT /agent-config`**. Used by chat and clash inference. |
 | `user_agent_config_path` | `Path` | JSON file for UI-saved agent settings |
-| `user_agent_config` | `PersistedUserAgentConfig \| None` | Loaded/saved provider, model, optional **`base_url`** (custom OpenAI-compatible), optional **`api_key`**; updated on **`PUT /agent-config`** |
-| `llm` | LlamaIndex `LLM` | Default env-based client (memory token counting baseline) |
-| `agent` | `ReActAgent` | Default env-based agent when no persisted UI config exists |
+| `user_agent_config` | `PersistedUserAgentConfig \| None` | Loaded/saved provider, model, optional **`base_url`**, optional **`api_key`**; updated on **`PUT /agent-config`** |
+| `llm` | LlamaIndex `LLM` | Active LLM instance built from `effective_settings`. Updated on **`PUT /agent-config`**. |
+| `agent` | `ReActAgent` | Active agent built from `effective_settings`. Updated on **`PUT /agent-config`**. |
 | `chat_store` | `ChatSessionStore` | In-memory **`ChatMemoryBuffer`** per **`conversation_id`** |
+
+**Config precedence:** `.env` defines the **provider family** at startup (`LLM_PROVIDER`). On-disk `agent_user_config.json` is merged only when its saved provider matches that family (e.g. both Ollama or both OpenAI). If the file still says `openai` but `.env` says `ollama`, the file is **ignored** until you save again from the UI or align `.env` with the file. When there is no applicable saved file, `effective_settings == settings` (pure env). After `PUT /agent-config`, the server updates `effective_settings`, `llm`, and `agent` in place — no restart needed.
 
 ---
 
@@ -48,7 +51,7 @@ This document maps the **FastAPI** backend: entrypoint, configuration, AI agent 
 | Cross-provider validation | **`_validate_llm_provider_config`**: requires the matching cloud API key (**`GOOGLE_API_KEY`** when **`google`**), allows `org/model` ids for **OpenAI-compatible** servers when **`OPENAI_BASE_URL`** is set, and requires **`MODEL_NAME`** or **`OLLAMA_MODEL`** for Ollama. |
 | Cloud credentials | **`ANTHROPIC_API_KEY`**, **`OPENAI_API_KEY`**, **`GOOGLE_API_KEY`** — trimmed; blank becomes unset. Keys for inactive providers are ignored. |
 | Persisted UI config path | **`AGENT_USER_CONFIG_PATH`** — optional override for the JSON file written by **`PUT /agent-config`**. |
-| Cloud base URLs | **`ANTHROPIC_BASE_URL`** and **`OPENAI_BASE_URL`** are optional custom endpoints for Anthropic-compatible / OpenAI-compatible servers. Blank becomes unset. **`OPENAI_CONTEXT_WINDOW`** supports arbitrary model ids on compatible servers. |
+| Cloud base URLs | **`ANTHROPIC_BASE_URL`** and **`OPENAI_BASE_URL`** are optional custom endpoints for Anthropic-compatible / OpenAI-compatible servers. Blank becomes unset. When **`LLM_PROVIDER=ollama`** and **`OPENAI_BASE_URL`** is set, the backend uses the OpenAI-compatible client instead of the native Ollama client. **`OPENAI_CONTEXT_WINDOW`** supports arbitrary model ids on compatible servers. |
 | Ollama-only | **`OLLAMA_BASE_URL`**, **`OLLAMA_MODEL`**, **`OLLAMA_CONTEXT_WINDOW`** (`num_ctx`; avoids **`POST /api/show`**). Ignored when not using Ollama. |
 | Sampling / agent limits | **`TEMPERATURE`**, **`MAX_TOKENS`** (cloud completion cap), **`MAX_AGENT_ITERATIONS`**. |
 | Agent persona | **`SYSTEM_PROMPT`** (empty string falls back to built-in coordination assistant default). |
@@ -64,7 +67,7 @@ See **`apps/api/.env.example`** for copy-paste env names and comments.
 
 | Function / object | Responsibility |
 | ----------------- | -------------- |
-| **`create_llm`** | Instantiates LlamaIndex **`Anthropic`**, **`OpenAI`**, **`GoogleGenAI`**, or **`Ollama`**. **`model=`** is always **`settings.llm_model_id`**. Anthropic optionally receives **`anthropic_base_url`**. OpenAI cloud uses the standard wrapper; when **`OPENAI_BASE_URL`** is set, the backend uses a small **OpenAI-compatible wrapper** that accepts arbitrary model ids and uses **`OPENAI_CONTEXT_WINDOW`**. **Google** uses **`google_api_key`**. Ollama uses **`context_window`** and **`ollama_base_url`**. |
+| **`create_llm`** | Instantiates LlamaIndex **`Anthropic`**, **`OpenAI`**, **`GoogleGenAI`**, or **`Ollama`**. **`model=`** is always **`settings.llm_model_id`**. Anthropic optionally receives **`anthropic_base_url`**. OpenAI cloud uses the standard wrapper; when **`OPENAI_BASE_URL`** is set, the backend uses a small **OpenAI-compatible wrapper** (`OpenAICompatibleLLM`) that accepts arbitrary model ids and uses **`OPENAI_CONTEXT_WINDOW`**. **Google** uses **`google_api_key`**. Ollama uses **`context_window`** and **`ollama_base_url`** (native client), or the OpenAI-compatible wrapper when **`OPENAI_BASE_URL`** is set. |
 | **`_TOOL_REGISTRY`** | Maps string ids to **`FunctionTool`** instances (extensible). Today includes a demo **`echo`** tool. |
 | **`resolve_tools`** | Maps registry/bundle ids to **`FunctionTool`** instances; raises if an unknown id is requested. |
 | **`create_react_agent`** | Constructs **`ReActAgent`** with name/description, **`system_prompt`**, **`llm`**, **`tool_ids`**, **`streaming=True`**. |
@@ -89,9 +92,9 @@ See **`apps/api/.env.example`** for copy-paste env names and comments.
 
 | Piece | Responsibility |
 | ----- | ---------------- |
-| **`PersistedUserAgentConfig`** | Pydantic model: **`provider`** (`anthropic` \| `openai` \| `google` \| **`custom`**), **`model`**, optional **`base_url`** (required when **`custom`**), optional **`api_key`**. |
+| **`PersistedUserAgentConfig`** | Pydantic model: **`provider`** (`anthropic` \| `openai` \| `google` \| `custom` \| **`ollama`**), **`model`**, optional **`base_url`** (required when **`custom`**; optional for **`ollama`** to use OpenAI-compatible mode), optional **`api_key`**. |
 | **`load_user_agent_config` / `save_user_agent_config`** | Read/write JSON with a file lock and atomic replace; default path via **`default_config_path()`** under **`apps/api/data/`** (directory gitignored except **`.gitignore`**). |
-| **`merge_persisted_api_key`** | Merges stored secret into **`AgentSettings`** for the active UI provider (custom → OpenAI key). |
+| **`effective_agent_settings(base, stored)`** | Merges persisted UI config into env-based **`AgentSettings`** — maps UI provider to **`llm_provider`**, overrides model/base-url, and substitutes the stored API key into the correct field. Returns unmodified env settings when no persisted config exists. Called at **startup** and on **`PUT /agent-config`**. |
 | **`env_key_configured_for_ui_provider`** | Used by **`GET /agent-config`** to report whether a key exists from env and/or file. |
 
 ---
@@ -100,10 +103,8 @@ See **`apps/api/.env.example`** for copy-paste env names and comments.
 
 | Endpoint | Method | Description |
 | -------- | ------ | ----------- |
-| **`/agent-config`** | `GET` | Public snapshot: **`provider`**, **`model`**, **`base_url`**, **`api_key_set`**, **`api_key_masked`** (display mask only—never the raw secret). If no file exists, reflects env defaults where possible. |
-| **`/agent-config`** | `PUT` | Saves JSON config. **`api_key`** optional: omit or empty to **keep** an existing stored key. Validates by building effective settings and calling **`create_llm`**. Updates **`app.state.user_agent_config`**. |
-
-**Shared merge logic:** **`AgentConfigPayload`** and **`apply_agent_config_overrides`** live in **`app/routes/chat.py`** and are imported by **`agent_config.py`** so PUT and chat use the same provider/model/base-url rules.
+| **`/agent-config`** | `GET` | Public snapshot: **`provider`**, **`model`**, **`base_url`**, **`api_key_set`**, **`api_key_masked`** (display mask only—never the raw secret). If no file exists, reflects env defaults. |
+| **`/agent-config`** | `PUT` | Saves JSON config. **`api_key`** optional: omit or empty to **keep** an existing stored key. Validates by building effective settings and calling **`create_llm`**. Updates **`app.state.user_agent_config`**, **`app.state.effective_settings`**, **`app.state.llm`**, and **`app.state.agent`** so the new config takes effect immediately without a restart. |
 
 ---
 
@@ -121,7 +122,7 @@ See **`apps/api/.env.example`** for copy-paste env names and comments.
 | **`message`** | string, required | User text (min length 1). |
 | **`conversation_id`** | string, optional | Thread id; if omitted, server generates a UUID and returns it in the first SSE event. |
 
-**Chat routing:** If **`app.state.user_agent_config`** is set, each request builds a fresh LLM + **`ReActAgent`** from **env `AgentSettings`** merged with **`apply_agent_config_overrides`** + **`merge_persisted_api_key`**, and passes that LLM into **`get_or_create_memory`**. If no persisted config, the startup **`app.state.agent`** / **`llm`** are used. The client does **not** send per-request provider overrides in the chat body.
+**Chat routing:** every request uses the cached **`app.state.agent`** and **`app.state.llm`** (built from `effective_settings`). When the user changes settings via `PUT /agent-config`, those are refreshed in place. The client does **not** send per-request provider overrides in the chat body.
 
 **SSE events (`text/event-stream`)**
 
@@ -144,27 +145,14 @@ Implementation walks **`handler.stream_events()`**, mapping **`AgentStream`**, *
 
 | Endpoint | Method | Description |
 | -------- | ------ | ----------- |
-| **`/clashes/upload`** | `POST` | Upload a Navisworks clash report XML (`multipart/form-data` field: **`file`**), parse all clashes, run LLM severity inference in parallel, merge inference into each clash by **`clashGuid`**, and return enriched JSON payload. |
+| **`/clashes/upload`** | `POST` | Upload a Navisworks clash report XML (`multipart/form-data` field: **`file`**), parse all clashes, run LLM severity inference in batches, and stream results via SSE. Uses **`app.state.effective_settings`** for model/key/base-url. |
 
 **Flow**
 
 1. Validate uploaded file extension (`.xml`) and non-empty payload.
 2. Save bytes to a temp file and parse with **`app/utils/clash_parser.py`** (`parse_clash_xml`).
-3. Collect clashes across all tests and infer severity via **`app/utils/clash_inference.py`** (`infer_clash_severities`).
-4. Merge inference rows by id:
-   - inference row key: `clash`
-   - parsed clash key: `clashGuid`
-5. Append only:
-   - `severity`
-   - `disciplines`
-   - `lead`
-6. Return the full parsed payload with these fields added per matched clash.
-
-**Current runtime defaults in route**
-
-- Prompt: `DEFAULT_CLASH_SEVERITY_PREPROMPT`
-- Model/base url/key: from `request.app.state.settings`
-- Inference params: `max_batch_size=40`, `max_workers=3`, `temperature=0.0`, `minify=True`
+3. Collect clashes across all tests and infer severity via **`app/utils/clash_inference.py`** (`infer_single_batch`).
+4. Stream SSE events: **`parsed`** (full payload), **`batch_result`** (per batch with `results`, `completed`, `total`), **`done`** or **`error`**.
 
 ---
 
@@ -185,7 +173,7 @@ Core packages: **FastAPI**, **Uvicorn**, **`llama-index-core`**, provider LLM ex
 
 ## How this fits the product
 
-**Project Balrog** (see root **[README.md](../README.md)**) targets AI-assisted **BIM clash resolution**. The backend delivers a **streaming coordination assistant** consumed by the web **`ChatSidebar`** via **`POST /chat`** (SSE), with **optional persisted LLM settings** via **`GET` / `PUT /agent-config`**. Clash ingestion, Speckle orchestration, and analysis panels may grow into additional routers or tools under **`app/`**; this guide reflects the **current** modular boundaries so new work stays consistent.
+**Project Balrog** (see root **[README.md](../README.md)**) targets AI-assisted **BIM clash resolution**. The backend delivers a **streaming coordination assistant** consumed by the web **`ChatSidebar`** via **`POST /chat`** (SSE), with **persisted LLM settings** via **`GET` / `PUT /agent-config`**. Clash ingestion, Speckle orchestration, and analysis panels may grow into additional routers or tools under **`app/`**; this guide reflects the **current** modular boundaries so new work stays consistent.
 
 ---
 

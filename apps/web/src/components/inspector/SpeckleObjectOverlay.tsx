@@ -96,7 +96,11 @@ function getArrayItemKey(label: string, item: unknown): string {
 
   if (isPrimitive(item)) return `${label}-${formatPrimitive(item)}`
 
-  return `${label}-${JSON.stringify(item)}`
+  try {
+    return `${label}-${JSON.stringify(item)}`
+  } catch {
+    return `${label}-(non-serializable)`
+  }
 }
 
 function ValueView({
@@ -299,7 +303,7 @@ export function SpeckleObjectOverlay({ objectData }: SpeckleObjectOverlayProps) 
 
       <button
         type="button"
-        className={`flex w-full shrink-0 items-start gap-2 px-4 py-3 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/40 ${
+        className={`flex w-full shrink-0 cursor-pointer items-start gap-2 px-4 py-3 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/40 ${
           expanded ? 'border-b border-neutral-200' : ''
         }`}
         aria-expanded={expanded}

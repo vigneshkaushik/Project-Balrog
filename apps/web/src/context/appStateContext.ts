@@ -11,6 +11,13 @@ export interface UploadProgress {
   total: number
 }
 
+/** Request focusing one clash-side object in the Speckle viewer (selection + zoom). */
+export interface ClashObjectViewerFocusRequest {
+  /** Increments on each request so repeating the same object still runs the effect. */
+  id: number
+  matchKeys: string[]
+}
+
 export interface AppState {
   clashes: Clash[]
   navisworksFileName: string | null
@@ -21,7 +28,7 @@ export interface AppState {
   appendSpeckleUrlRow: () => void
   setSpeckleUrlAt: (index: number, url: string) => void
   removeSpeckleUrlAt: (index: number) => void
-  /** Show clashes at or above this severity (per inference: LOW, MEDIUM, CRITICAL). */
+  /** Show only clashes whose inferred severity equals this level (LOW, MEDIUM, CRITICAL). */
   severityThreshold: ClashSeverity
   setSeverityThreshold: (s: ClashSeverity) => void
   selectedClashId: string | null
@@ -33,6 +40,10 @@ export interface AppState {
   uploadProgress: UploadProgress | null
   uploadError: string | null
   startClashUpload: () => void
+
+  clashObjectViewerFocus: ClashObjectViewerFocusRequest | null
+  requestClashObjectViewerFocus: (matchKeys: string[]) => void
+  clearClashObjectViewerFocus: () => void
 }
 
 export const AppContext = createContext<AppState | null>(null)

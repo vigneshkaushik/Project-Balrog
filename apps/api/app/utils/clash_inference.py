@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
-import os
 import re
 import threading
 import time
@@ -12,9 +11,13 @@ from typing import Any
 
 from llama_index.core.base.llms.types import MessageRole
 from llama_index.core.llms import ChatMessage
-from llama_index.llms.openai import OpenAI
 
+from app.agent import create_llm
+from app.config import AgentSettings
 from app.utils.clash_parser import optimize_clash_for_agent
+
+# Long-running SSE upload: allow each LLM batch call to run up to this many seconds.
+CLASH_UPLOAD_LLM_HTTP_TIMEOUT_SEC = 5 * 60 * 60
 
 DEFAULT_CLASH_SEVERITY_PREPROMPT = """
 Role: You are a BIM Coordination Engine. Your mission is to analyze multi-object BIM clashes and provide a strategic resolution plan by identifying the "Lead" (the element that stays) and the "Movers" (the elements that must reroute).
@@ -134,22 +137,16 @@ def infer_single_batch(
     clashes: list[dict[str, Any]],
     *,
     preprompt: str,
-    model: str,
-    api_key: str | None = None,
-    api_base: str | None = None,
+    settings: AgentSettings,
     minify: bool = True,
     temperature: float = 0.0,
 ) -> list[dict[str, Any]]:
     """Run severity inference on a single batch of clashes (synchronous)."""
-    key = api_key or os.environ.get("OPENAI_API_KEY")
-    if not key:
-        raise ValueError("api_key is required (or set OPENAI_API_KEY).")
     optimized = [_clash_payload(c, minify=minify) for c in clashes]
-    llm = OpenAI(
-        model=model,
-        api_key=key,
-        api_base=api_base,
-        temperature=temperature,
+    llm_settings = settings.model_copy(update={"temperature": temperature})
+    llm = create_llm(
+        llm_settings,
+        http_request_timeout=CLASH_UPLOAD_LLM_HTTP_TIMEOUT_SEC,
     )
     user_content = json.dumps(optimized, ensure_ascii=False)
     messages = [
@@ -168,9 +165,7 @@ def infer_clash_severities(
     clashes: list[dict[str, Any]],
     *,
     preprompt: str,
-    model: str,
-    api_key: str | None = None,
-    api_base: str | None = None,
+    settings: AgentSettings,
     max_batch_size: int = 40,
     max_chars: int | None = None,
     minify: bool = True,
@@ -178,17 +173,13 @@ def infer_clash_severities(
     max_workers: int = 3,
     debug: bool = False,
 ) -> list[dict[str, Any]]:
-    """Infer clash severities using parallel OpenAI/LlamaIndex batch calls."""
+    """Infer clash severities using parallel LLM batch calls (same routing as chat)."""
     t_global = time.perf_counter()
 
     def _dbg(msg: str) -> None:
         if debug:
             dt = time.perf_counter() - t_global
             print(f"[infer +{dt:8.3f}s] {msg}")
-
-    key = api_key or os.environ.get("OPENAI_API_KEY")
-    if not key:
-        raise ValueError("api_key is required (or set OPENAI_API_KEY).")
 
     optimized = [_clash_payload(c, minify=minify) for c in clashes]
     batches = batch_clashes(
@@ -201,7 +192,8 @@ def infer_clash_severities(
     worker_count = 1 if len(batches) <= 1 or max_workers <= 1 else min(max_workers, len(batches))
     _dbg(
         f"clashes={len(clashes)} batches={len(batches)} max_batch_size={max_batch_size} "
-        f"worker_count={worker_count} model={model} api_base={api_base or 'default'}"
+        f"worker_count={worker_count} provider={settings.llm_provider} "
+        f"model={settings.llm_model_id}"
     )
     _dbg("batch sizes: " + ", ".join(str(len(chunk)) for chunk in batches))
 
@@ -211,11 +203,10 @@ def infer_clash_severities(
         _dbg(f"batch {index} START thread={thread_name} chunk_size={len(chunk)}")
 
         llm_init_start = time.perf_counter()
-        llm = OpenAI(
-            model=model,
-            api_key=key,
-            api_base=api_base,
-            temperature=temperature,
+        llm_settings = settings.model_copy(update={"temperature": temperature})
+        llm = create_llm(
+            llm_settings,
+            http_request_timeout=CLASH_UPLOAD_LLM_HTTP_TIMEOUT_SEC,
         )
         llm_init_elapsed = time.perf_counter() - llm_init_start
 

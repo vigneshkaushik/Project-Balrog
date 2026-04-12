@@ -1,6 +1,11 @@
 import { getApiBaseUrl } from './apiBase'
 
-export type AgentProvider = 'anthropic' | 'openai' | 'google' | 'custom'
+export type AgentProvider =
+  | 'anthropic'
+  | 'openai'
+  | 'google'
+  | 'custom'
+  | 'ollama'
 
 /** Public shape from GET /agent-config (no raw secrets). */
 export interface AgentConfigPublic {
@@ -19,28 +24,31 @@ export const DEFAULT_AGENT_CONFIG: AgentConfigPublic = {
   api_key_masked: null,
 }
 
-export const MODEL_OPTIONS: Record<Exclude<AgentProvider, 'custom'>, string[]> =
-  {
-    anthropic: [
-      'claude-sonnet-4-20250514',
-      'claude-3-5-sonnet-20241022',
-      'claude-3-opus-20240229',
-    ],
-    openai: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'o1', 'o1-mini'],
-    google: [
-      'gemini-2.0-flash',
-      'gemini-1.5-pro',
-      'gemini-1.5-flash',
-      'gemini-2.0-flash-thinking-exp-01-21',
-    ],
-  }
+export const MODEL_OPTIONS: Record<
+  Exclude<AgentProvider, 'custom' | 'ollama'>,
+  string[]
+> = {
+  anthropic: [
+    'claude-sonnet-4-20250514',
+    'claude-3-5-sonnet-20241022',
+    'claude-3-opus-20240229',
+  ],
+  openai: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'o1', 'o1-mini'],
+  google: [
+    'gemini-2.0-flash',
+    'gemini-1.5-pro',
+    'gemini-1.5-flash',
+    'gemini-2.0-flash-thinking-exp-01-21',
+  ],
+}
 
 function isAgentProvider(v: string): v is AgentProvider {
   return (
     v === 'anthropic' ||
     v === 'openai' ||
     v === 'google' ||
-    v === 'custom'
+    v === 'custom' ||
+    v === 'ollama'
   )
 }
 
@@ -64,7 +72,7 @@ function normalizePublic(raw: unknown): AgentConfigPublic {
     typeof o.api_key_masked === 'string' && o.api_key_masked.length > 0
       ? o.api_key_masked
       : null
-  if (provider !== 'custom') {
+  if (provider !== 'custom' && provider !== 'ollama') {
     const opts = MODEL_OPTIONS[provider]
     if (!opts.includes(model)) {
       return {
@@ -79,7 +87,8 @@ function normalizePublic(raw: unknown): AgentConfigPublic {
   return {
     provider,
     model,
-    base_url: provider === 'custom' ? base_url : null,
+    base_url:
+      provider === 'custom' || provider === 'ollama' ? base_url : null,
     api_key_set,
     api_key_masked,
   }
@@ -107,6 +116,9 @@ export async function saveAgentConfigToServer(payload: {
     model: payload.model,
   }
   if (payload.provider === 'custom') {
+    body.base_url = payload.base_url?.trim() ?? ''
+  }
+  if (payload.provider === 'ollama') {
     body.base_url = payload.base_url?.trim() ?? ''
   }
   if (payload.api_key != null && payload.api_key !== '') {

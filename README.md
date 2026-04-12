@@ -98,8 +98,10 @@ cd apps/api
 cp .env.example .env
 # Edit .env: set LLM provider, API keys, and CORS if your frontend URL differs.
 uv sync
-uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000
+./dev.sh
 ```
+
+The **`dev.sh`** script runs Uvicorn with reload on `0.0.0.0:8000` via **`uv run`** (same as `uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000`). Run it from **`apps/api`**, or invoke **`./apps/api/dev.sh`** from the repo root.
 
 - Health check: [http://localhost:8000/health](http://localhost:8000/health)
 - More detail: [apps/api/README.md](apps/api/README.md)
