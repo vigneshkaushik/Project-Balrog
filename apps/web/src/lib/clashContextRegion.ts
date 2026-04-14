@@ -38,6 +38,9 @@ const HIDDEN_KEYS = new Set([
 const PRIORITY_KEYS = [
 	"id",
 	"name",
+	"itemName",
+	"itemType",
+	"item_type",
 	"type",
 	"speckle_type",
 	"applicationId",
@@ -84,7 +87,7 @@ export function summarizeSpeckleRaw(
 				out[key] = v;
 				budget -= s.length;
 			}
-			break;
+			continue;
 		}
 		if (Array.isArray(v)) {
 			out[key] = `(${v.length} items)`;
@@ -159,7 +162,28 @@ function boxToPayload(
 export interface NearbySpeckleObjectPayload {
 	id: string;
 	speckle_type: string | null;
+	name?: string | null;
+	item_type?: string | null;
 	summary: Record<string, unknown>;
+}
+
+function pickTextFromSummary(
+	summary: Record<string, unknown>,
+	keys: readonly string[],
+): string | null {
+	for (const key of keys) {
+		const v = summary[key];
+		if (typeof v === "string" && v.trim().length > 0) return v.trim();
+	}
+	for (const nestedKey of ["properties", "parameters"]) {
+		const nested = summary[nestedKey];
+		if (!isRecord(nested)) continue;
+		for (const key of keys) {
+			const v = nested[key];
+			if (typeof v === "string" && v.trim().length > 0) return v.trim();
+		}
+	}
+	return null;
 }
 
 /**
@@ -269,9 +293,24 @@ export function buildClashContextAnalysisPayload(
 		capped = scored.length > MAX_NEARBY_OBJECTS;
 		const take = scored.slice(0, MAX_NEARBY_OBJECTS);
 		for (const row of take) {
+			const name = pickTextFromSummary(row.summary, [
+				"itemName",
+				"name",
+				"Name",
+				"family",
+			]);
+			const itemType = pickTextFromSummary(row.summary, [
+				"itemType",
+				"item_type",
+				"type",
+				"Type",
+				"category",
+			]);
 			nearby.push({
 				id: row.id,
 				speckle_type: row.st,
+				name,
+				item_type: itemType,
 				summary: row.summary,
 			});
 		}

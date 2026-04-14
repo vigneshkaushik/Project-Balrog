@@ -1,8 +1,14 @@
-import { useId } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useApp } from '../../context/useApp'
 
-export function ClashSelector() {
+interface ClashSelectorProps {
+  disabled?: boolean
+}
+
+export function ClashSelector({ disabled = false }: ClashSelectorProps) {
   const labelId = useId()
+  const listboxId = useId()
+  const containerRef = useRef<HTMLDivElement>(null)
   const {
     clashes,
     filteredClashes,
@@ -10,6 +16,34 @@ export function ClashSelector() {
     selectedClashId,
     setSelectedClashId,
   } = useApp()
+  const [query, setQuery] = useState('')
+  const [isOpen, setIsOpen] = useState(false)
+  const normalizedQuery = query.trim().toLowerCase()
+  const selectedClash = filteredClashes.find((c) => c.id === selectedClashId)
+  const nameFilteredClashes = useMemo(
+    () =>
+      filteredClashes.filter((c) =>
+        c.label.toLowerCase().includes(normalizedQuery),
+      ),
+    [filteredClashes, normalizedQuery],
+  )
+
+  useEffect(() => {
+    if (!isOpen) {
+      setQuery(selectedClash?.label ?? '')
+    }
+  }, [selectedClash, isOpen])
+
+  useEffect(() => {
+    if (!isOpen) return
+    const onPointerDown = (event: PointerEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    window.addEventListener('pointerdown', onPointerDown)
+    return () => window.removeEventListener('pointerdown', onPointerDown)
+  }, [isOpen])
 
   if (clashes.length === 0) {
     return (
@@ -40,38 +74,108 @@ export function ClashSelector() {
   }
 
   return (
-    <div className="relative group">
+    <div ref={containerRef} className="relative group">
       <label htmlFor={labelId} className="sr-only">
         Select clash
       </label>
-      
-      <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-neutral-400 group-focus-within:text-primary transition-colors">
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-        </svg>
+
+      <div className="flex w-full">
+        <input
+          id={labelId}
+          type="text"
+          role="combobox"
+          aria-expanded={isOpen}
+          aria-controls={listboxId}
+          aria-autocomplete="list"
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value)
+            setIsOpen(true)
+          }}
+          onFocus={() => setIsOpen(true)}
+          onClick={() => setIsOpen(true)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              setIsOpen(false)
+              setQuery(selectedClash?.label ?? '')
+            }
+          }}
+          placeholder="Select or type clash name"
+          disabled={disabled}
+          className={`min-w-0 flex-1 rounded-l-lg border border-r-0 border-neutral-200 bg-white/95 px-3 py-2.5 text-sm font-semibold text-neutral-800 shadow-sm outline-none backdrop-blur-sm transition-all ${
+            disabled
+              ? 'cursor-not-allowed opacity-60'
+              : 'hover:border-neutral-300 hover:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10'
+          }`}
+        />
+        <button
+          type="button"
+          aria-label={isOpen ? 'Close clash options' : 'Open clash options'}
+          onClick={() => setIsOpen((prev) => !prev)}
+          disabled={disabled}
+          className={`flex w-10 shrink-0 items-center justify-center rounded-r-lg border border-neutral-200 bg-white/95 text-neutral-500 shadow-sm transition ${
+            disabled
+              ? 'cursor-not-allowed opacity-60'
+              : 'cursor-pointer hover:border-neutral-300 hover:bg-white hover:text-neutral-700'
+          }`}
+        >
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
       </div>
 
-      <select
-        id={labelId}
-        value={selectedClashId ?? ''}
-        onChange={(e) => setSelectedClashId(e.target.value || null)}
-        className="w-full appearance-none rounded-lg border border-neutral-200 bg-white/95 pl-9 pr-10 py-2.5 text-sm font-semibold text-neutral-800 shadow-sm outline-none backdrop-blur-sm transition-all hover:border-neutral-300 hover:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10"
-      >
-        <option value="" className="font-sans py-2">
-          No clash selected
-        </option>
-        {filteredClashes.map((c) => (
-          <option key={c.id} value={c.id} className="font-sans py-2">
-            {c.label} {c.severity ? `— ${c.severity}` : ''}
-          </option>
-        ))}
-      </select>
+      {!disabled && isOpen ? (
+        <div
+          id={listboxId}
+          role="listbox"
+          className="absolute left-0 right-0 top-[calc(100%+0.35rem)] z-20 max-h-72 overflow-auto rounded-lg border border-neutral-200 bg-white py-1 shadow-lg"
+        >
+          <button
+            type="button"
+            className="block w-full cursor-pointer px-3 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-100"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              setSelectedClashId(null)
+              setQuery('')
+              setIsOpen(false)
+            }}
+          >
+            De-select Clash
+          </button>
 
-      <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-neutral-400 group-hover:text-neutral-600 transition-colors">
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </div>
+          {nameFilteredClashes.length === 0 ? (
+            <div className="px-3 py-2 text-xs text-neutral-500">
+              No clashes match the current name filter.
+            </div>
+          ) : (
+            nameFilteredClashes.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                className="block w-full cursor-pointer px-3 py-2 text-left text-sm text-neutral-800 hover:bg-neutral-100"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => {
+                  setSelectedClashId(c.id)
+                  setQuery(c.label)
+                  setIsOpen(false)
+                }}
+              >
+                {c.label}
+                {c.severity ? (
+                  <span className="text-neutral-400"> — {c.severity}</span>
+                ) : null}
+              </button>
+            ))
+          )}
+        </div>
+      ) : null}
+
+      {disabled ? (
+        <p className="mt-1 text-[11px] text-neutral-500">
+          Clash selector unlocks after the Speckle model finishes loading.
+        </p>
+      ) : null}
     </div>
   )
 }

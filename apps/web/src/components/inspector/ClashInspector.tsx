@@ -28,8 +28,8 @@ const SEVERITY_COLORS: Record<string, string> = {
 };
 
 function matchKeysForClashObject(obj: {
-	elementId?: string;
-	revitGlobalId?: string;
+	elementId?: string | null;
+	revitGlobalId?: string | null;
 }): string[] {
 	const keys: string[] = [];
 	const e = obj.elementId?.trim();
@@ -323,13 +323,42 @@ export function ClashInspector() {
 										Nearby objects (
 										{analysisContextPreview.nearby_speckle_objects.length})
 									</div>
-									<pre className="max-h-[55vh] overflow-auto px-3 py-2 text-[11px] leading-relaxed text-neutral-700">
-										{JSON.stringify(
-											analysisContextPreview.nearby_speckle_objects,
-											null,
-											2,
+									<div className="max-h-[55vh] space-y-2 overflow-auto px-3 py-2 text-[11px] leading-relaxed text-neutral-700">
+										{analysisContextPreview.nearby_speckle_objects.length ===
+										0 ? (
+											<p className="text-xs text-neutral-500">
+												No nearby objects found for this context region.
+											</p>
+										) : (
+											analysisContextPreview.nearby_speckle_objects.map(
+												(obj) => (
+													<div
+														key={obj.id}
+														className="rounded-md border border-neutral-200 bg-white p-2"
+													>
+														<p className="text-xs font-semibold text-neutral-800">
+															{obj.name ?? "Unnamed object"}
+														</p>
+														<div className="mt-1 flex flex-wrap gap-1 text-[10px]">
+															<span className="rounded bg-neutral-100 px-1.5 py-0.5 text-neutral-700">
+																ID: {obj.id}
+															</span>
+															{obj.item_type ? (
+																<span className="rounded bg-blue-50 px-1.5 py-0.5 text-blue-700">
+																	Item type: {obj.item_type}
+																</span>
+															) : null}
+															{obj.speckle_type ? (
+																<span className="rounded bg-violet-50 px-1.5 py-0.5 text-violet-700">
+																	Geometry: {obj.speckle_type}
+																</span>
+															) : null}
+														</div>
+													</div>
+												),
+											)
 										)}
-									</pre>
+									</div>
 								</div>
 							</div>
 						</section>
@@ -372,7 +401,7 @@ export function ClashInspector() {
 						<span>New report & URLs</span>
 					</button>
 					<SeverityFilter />
-					<ClashSelector />
+					<ClashSelector disabled={!speckleViewer} />
 				</div>
 
 				<div className="pointer-events-none absolute inset-x-0 bottom-0 z-20">
