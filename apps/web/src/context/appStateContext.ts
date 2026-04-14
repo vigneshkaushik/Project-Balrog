@@ -31,6 +31,8 @@ export interface AppState {
   /** Show only clashes whose inferred severity equals this level (LOW, MEDIUM, CRITICAL). */
   severityThreshold: ClashSeverity
   setSeverityThreshold: (s: ClashSeverity) => void
+  highlightFilteredSeverity: boolean
+  setHighlightFilteredSeverity: (next: boolean) => void
   selectedClashId: string | null
   setSelectedClashId: (id: string | null) => void
   filteredClashes: Clash[]

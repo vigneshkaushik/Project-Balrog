@@ -213,10 +213,8 @@ export function buildClashContextAnalysisPayload(
 	let capped = false;
 
 	if (expanded && !expanded.isEmpty()) {
-		const views = viewer
-			.getWorldTree()
-			.getRenderTree()
-			.getRenderableRenderViews();
+		const worldTree = viewer.getWorldTree();
+		const renderTree = worldTree.getRenderTree();
 		type Scored = {
 			id: string;
 			dist: number;
@@ -228,29 +226,44 @@ export function buildClashContextAnalysisPayload(
 		const center = new Vector3();
 		expanded.getCenter(center);
 
-		for (const rv of views) {
-			const aabb = rv.aabb;
-			if (!aabb || aabb.isEmpty()) continue;
-			if (!expanded.intersectsBox(aabb)) continue;
-			const id = rv.renderData.id;
-			if (!id) continue;
+		worldTree.walk((node) => {
+			const renderViews = renderTree.getRenderViewsForNode(node);
+			if (!renderViews || renderViews.length === 0) return true;
 
-			const box = aabb.clone();
+			const nodeBox = new Box3();
+			let hasAabb = false;
+			let speckleType: string | null = null;
+			for (const rv of renderViews) {
+				const aabb = rv.aabb;
+				if (!aabb || aabb.isEmpty()) continue;
+				if (!hasAabb) {
+					nodeBox.copy(aabb);
+					hasAabb = true;
+				} else {
+					nodeBox.union(aabb);
+				}
+				if (speckleType == null && typeof rv.speckleType === "string") {
+					speckleType = rv.speckleType;
+				}
+			}
+			if (!hasAabb || nodeBox.isEmpty()) return true;
+			if (!expanded.intersectsBox(nodeBox)) return true;
+
+			const id = node.model?.id;
+			if (!id || typeof id !== "string") return true;
+
 			const c = new Vector3();
-			box.getCenter(c);
+			nodeBox.getCenter(c);
 			const dist = c.distanceToSquared(center);
-
-			const found = viewer.getWorldTree().findId(id);
-			const node = found?.[0];
-			const raw = node?.model?.raw;
-			const st = typeof rv.speckleType === "string" ? rv.speckleType : null;
+			const raw = node.model?.raw;
 			const summary = isRecord(raw) ? summarizeSpeckleRaw(raw) : { id };
 
 			const prev = bestById.get(id);
 			if (!prev || dist < prev.dist) {
-				bestById.set(id, { id, dist, summary, st });
+				bestById.set(id, { id, dist, summary, st: speckleType });
 			}
-		}
+			return true;
+		});
 
 		const scored = [...bestById.values()].sort((a, b) => a.dist - b.dist);
 		capped = scored.length > MAX_NEARBY_OBJECTS;

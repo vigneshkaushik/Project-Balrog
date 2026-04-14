@@ -34,6 +34,7 @@ export interface ModelViewerProps {
 	 * Speckle scene for red highlight + zoom.
 	 */
 	clashObjectMatchKeys?: string[];
+	clashHighlightMode?: "single" | "severity" | "none";
 	/** Fired when the viewer has finished loading models (same timing as internal highlight setup). */
 	onViewerReady?: (viewer: Viewer) => void;
 	/** Fired when the viewer is disposed (URL change, unmount). */
@@ -50,6 +51,7 @@ const CLASH_ISOLATE_STATE_KEY = "balrog-clash-isolate";
 export function ModelViewer({
 	clashSelectionId,
 	clashObjectMatchKeys,
+	clashHighlightMode = "none",
 	onViewerReady,
 	onViewerDisposed,
 }: ModelViewerProps) {
@@ -101,6 +103,7 @@ export function ModelViewer({
 	/** Includes `clashSelectionId` so changing clashes re-runs even when match keys are identical. */
 	const clashHighlightEffectKey = JSON.stringify({
 		selectionId: clashSelectionId ?? "",
+		mode: clashHighlightMode,
 		keys: (clashObjectMatchKeys ?? [])
 			.map((s) => s.trim())
 			.filter((s) => s.length > 0),
@@ -116,8 +119,11 @@ export function ModelViewer({
 			return;
 		}
 
-		const { keys: ids, selectionId } = JSON.parse(clashHighlightEffectKey) as {
+		const { keys: ids, selectionId, mode } = JSON.parse(
+			clashHighlightEffectKey,
+		) as {
 			selectionId: string;
+			mode: "single" | "severity" | "none";
 			keys: string[];
 		};
 
@@ -234,22 +240,24 @@ export function ModelViewer({
 					);
 				}
 
-				const viewerForZoom = loadedViewer;
-				const runZoom = () => {
-					try {
-						zoomViewerToSmallestClashObject(viewerForZoom, ids, {
-							resolvedObjectIds: matchedObjectIds,
-							transition: true,
-							fit: 1.3,
-						});
-						viewerForZoom.requestRender();
-					} catch (zoomErr) {
-						console.warn("[ModelViewer] clash zoom failed:", zoomErr);
-					}
-				};
-				zoomRaf1 = requestAnimationFrame(() => {
-					zoomRaf2 = requestAnimationFrame(runZoom);
-				});
+				if (mode === "single") {
+					const viewerForZoom = loadedViewer;
+					const runZoom = () => {
+						try {
+							zoomViewerToSmallestClashObject(viewerForZoom, ids, {
+								resolvedObjectIds: matchedObjectIds,
+								transition: true,
+								fit: 1.3,
+							});
+							viewerForZoom.requestRender();
+						} catch (zoomErr) {
+							console.warn("[ModelViewer] clash zoom failed:", zoomErr);
+						}
+					};
+					zoomRaf1 = requestAnimationFrame(() => {
+						zoomRaf2 = requestAnimationFrame(runZoom);
+					});
+				}
 				loadedViewer.requestRender();
 			}
 		} catch (err) {

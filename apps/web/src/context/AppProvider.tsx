@@ -63,6 +63,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
   const [severityThreshold, setSeverityThreshold] =
     useState<ClashSeverity>('LOW')
+  const [highlightFilteredSeverity, setHighlightFilteredSeverityState] =
+    useState(false)
   const [selectedClashId, setSelectedClashIdState] = useState<string | null>(
     null,
   )
@@ -71,7 +73,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const setSelectedClashId = useCallback((id: string | null) => {
     setClashObjectViewerFocus(null)
+    if (id) {
+      setHighlightFilteredSeverityState(false)
+    }
     setSelectedClashIdState(id)
+  }, [])
+
+  const setHighlightFilteredSeverity = useCallback((next: boolean) => {
+    setHighlightFilteredSeverityState(next)
+    if (next) {
+      setSelectedClashIdState(null)
+      setClashObjectViewerFocus(null)
+    }
   }, [])
 
   const [isUploading, setIsUploading] = useState(false)
@@ -135,7 +148,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         )
         if (next.length > 0) {
           setSeverityThreshold('LOW')
-          setSelectedClashId(next[0].id)
+          setSelectedClashId(null)
         }
       } catch {
         /* offline or API down — keep empty local state */
@@ -187,7 +200,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           setUploadProgress({ completed: 0, total: next.length })
           if (next.length > 0) {
             setSeverityThreshold('LOW')
-            setSelectedClashId(next[0].id)
+            setSelectedClashId(null)
           }
         },
         onBatchResult: ({ results, completed, total }) => {
@@ -278,6 +291,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     navisworksFileRef.current = null
     setSpeckleUrlRows([])
     setSeverityThreshold('LOW')
+    setHighlightFilteredSeverityState(false)
     setSelectedClashId(null)
     setClashObjectViewerFocus(null)
     setIsUploading(false)
@@ -300,6 +314,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       removeSpeckleUrlAt,
       severityThreshold,
       setSeverityThreshold,
+      highlightFilteredSeverity,
+      setHighlightFilteredSeverity,
       selectedClashId,
       setSelectedClashId,
       filteredClashes,
@@ -322,6 +338,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setSpeckleUrlAt,
       removeSpeckleUrlAt,
       severityThreshold,
+      highlightFilteredSeverity,
+      setHighlightFilteredSeverity,
       selectedClashId,
       setSelectedClashId,
       filteredClashes,

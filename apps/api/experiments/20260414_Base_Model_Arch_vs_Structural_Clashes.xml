@@ -1,0 +1,4610 @@
+<?xml version='1.0' encoding='utf-8'?>
+<exchange units="m" filename="" filepath="">
+  <batchtest name="Report" internal_name="Report" units="m">
+    <clashtests>
+      <clashtest name="Arch vs Struct" test_type="hard" status="ok" tolerance="0.001" merge_composites="1">
+        <linkage mode="none" />
+        <rules />
+        <summary total="100" new="0" active="3987" reviewed="0" approved="0" resolved="0">
+          <testtype>Hard</testtype>
+          <teststatus>OK</teststatus>
+        </summary>
+        <clashresults>
+          <clashresult name="Clash1" guid="f99fba96-1ab8-4f60-bc31-407511924e0d" href="Base Model_Arch vs Structural Clashes_files\cd000001.jpg" status="active" distance="-4.216">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417625.629" y="78709.244" z="247.548" />
+            </clashpoint>
+            <gridlocation>B-6 : L3</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>748873</value>
+                </objectattribute>
+                <layer>L2</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>792679</value>
+                </objectattribute>
+                <layer>L4</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Metal Deck</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash2" guid="68bb1b6b-42c5-4f2d-8a71-fab3fed54848" href="Base Model_Arch vs Structural Clashes_files\cd000002.jpg" status="active" distance="-3.637">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417632.194" y="78721.969" z="247.548" />
+            </clashpoint>
+            <gridlocation>C-8 : L3</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>748363</value>
+                </objectattribute>
+                <layer>L2</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>792679</value>
+                </objectattribute>
+                <layer>L4</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Metal Deck</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash3" guid="d1e6a973-bfdb-4ca4-8873-3808e0b35b07" href="Base Model_Arch vs Structural Clashes_files\cd000003.jpg" status="active" distance="-2.910">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417615.190" y="78714.751" z="247.701" />
+            </clashpoint>
+            <gridlocation>D-5 : L4</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>685081</value>
+                </objectattribute>
+                <layer>L2</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>792679</value>
+                </objectattribute>
+                <layer>L4</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Concrete, Cast-in-Place gray</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash4" guid="c7efa973-3c4a-490b-a85f-5af42dff9bb6" href="Base Model_Arch vs Structural Clashes_files\cd000004.jpg" status="active" distance="-2.663">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417630.055" y="78726.352" z="243.637" />
+            </clashpoint>
+            <gridlocation>D-8 : L3</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>748363</value>
+                </objectattribute>
+                <layer>L2</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>688281</value>
+                </objectattribute>
+                <layer>L3</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Concrete, Cast-in-Place gray</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash5" guid="b110c94f-dbdf-4927-bc28-ec96895403fc" href="Base Model_Arch vs Structural Clashes_files\cd000005.jpg" status="active" distance="-1.453">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417621.945" y="78716.794" z="247.701" />
+            </clashpoint>
+            <gridlocation>C-6 : L4</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1235583</value>
+                </objectattribute>
+                <layer>L2</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>792679</value>
+                </objectattribute>
+                <layer>L4</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Concrete, Cast-in-Place gray</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash6" guid="1f6f1ca3-915b-4372-8d7a-e62bd0e5a097" href="Base Model_Arch vs Structural Clashes_files\cd000006.jpg" status="active" distance="-1.419">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417617.189" y="78714.645" z="251.612" />
+            </clashpoint>
+            <gridlocation>C-5 : L4</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L4</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Two Story Studio Unit 406</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>792732</value>
+                </objectattribute>
+                <layer>L5</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Metal Deck</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash7" guid="92a9fee5-6eeb-4f6e-bd59-ef821926a561" href="Base Model_Arch vs Structural Clashes_files\cd000007.jpg" status="active" distance="-1.411">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417616.876" y="78714.492" z="243.478" />
+            </clashpoint>
+            <gridlocation>C-5 : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L2</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Two Story Studio Unit 204</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>778332</value>
+                </objectattribute>
+                <layer>L3 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>16K6</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash8" guid="56db11b4-ae1d-4363-a2d3-eee464a796ad" href="Base Model_Arch vs Structural Clashes_files\cd000008.jpg" status="active" distance="-1.360">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417616.830" y="78714.470" z="251.606" />
+            </clashpoint>
+            <gridlocation>C-5 : L4</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L4</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Two Story Studio Unit 406</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>793260</value>
+                </objectattribute>
+                <layer>L5 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>16K6</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash9" guid="7ecb9dcd-4d75-4729-a3c8-2ce7a37bbb93" href="Base Model_Arch vs Structural Clashes_files\cd000009.jpg" status="active" distance="-1.349">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417615.616" y="78713.878" z="243.484" />
+            </clashpoint>
+            <gridlocation>C-5 : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L2</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Two Story Studio Unit 204</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>688281</value>
+                </objectattribute>
+                <layer>L3</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Metal Deck</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash10" guid="890d784d-850b-4d74-a4bc-3dc52c764618" href="Base Model_Arch vs Structural Clashes_files\cd000010.jpg" status="active" distance="-1.250">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417600.402" y="78709.850" z="247.548" />
+            </clashpoint>
+            <gridlocation>D-3 : L3</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>2113168</value>
+                </objectattribute>
+                <layer>L4</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Floor</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Floors: Floor: Finish Floor - Polished Concrete (Grey)</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>608215</value>
+                </objectattribute>
+                <layer>L1_35_Low</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W10x49</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Columns</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash11" guid="52bdb5f8-eacd-44ac-b1da-f23b65228e6b" href="Base Model_Arch vs Structural Clashes_files\cd000011.jpg" status="active" distance="-1.250">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417600.425" y="78709.803" z="243.484" />
+            </clashpoint>
+            <gridlocation>D-3 : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>2077111</value>
+                </objectattribute>
+                <layer>L3</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Floor</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Floors: Floor: Finish Floor - Polished Concrete (Grey)</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>608215</value>
+                </objectattribute>
+                <layer>L1_35_Low</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W10x49</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Columns</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash12" guid="18c29a73-7c8f-4c11-85e7-e18298e0d458" href="Base Model_Arch vs Structural Clashes_files\cd000012.jpg" status="active" distance="-1.250">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417600.378" y="78709.897" z="251.612" />
+            </clashpoint>
+            <gridlocation>D-3 : L4</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>2113320</value>
+                </objectattribute>
+                <layer>L5</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Floor</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Floors: Floor: Finish Floor - Polished Concrete (Grey)</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>608215</value>
+                </objectattribute>
+                <layer>L1_35_Low</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W10x49</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Columns</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash13" guid="d2259b00-ba86-453d-a74a-aeb13eb779ac" href="Base Model_Arch vs Structural Clashes_files\cd000013.jpg" status="active" distance="-1.127">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417622.363" y="78718.536" z="247.701" />
+            </clashpoint>
+            <gridlocation>Block 43 Left-D : L4</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>887288</value>
+                </objectattribute>
+                <layer>L1 - Block 37</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>792679</value>
+                </objectattribute>
+                <layer>L4</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Concrete, Cast-in-Place gray</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash14" guid="73bbee93-48f1-402f-a711-5f5dd0e7741d" href="Base Model_Arch vs Structural Clashes_files\cd000014.jpg" status="active" distance="-1.111">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417617.881" y="78714.983" z="251.612" />
+            </clashpoint>
+            <gridlocation>C-5 : L4</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L4</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Two Story Studio Unit 406</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>793259</value>
+                </objectattribute>
+                <layer>L5 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>16K6</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash15" guid="abf80212-7a4f-4c82-88b9-3fe6cea8537d" href="Base Model_Arch vs Structural Clashes_files\cd000015.jpg" status="active" distance="-1.088">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417623.022" y="78718.987" z="251.765" />
+            </clashpoint>
+            <gridlocation>Block 43 Left-D : L5</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>887288</value>
+                </objectattribute>
+                <layer>L1 - Block 37</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>792732</value>
+                </objectattribute>
+                <layer>L5</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Concrete, Cast-in-Place gray</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash16" guid="fbe00911-adbb-4ba9-bb3e-acb9c4f1d7f4" href="Base Model_Arch vs Structural Clashes_files\cd000016.jpg" status="active" distance="-1.088">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417623.058" y="78718.914" z="243.637" />
+            </clashpoint>
+            <gridlocation>Block 43 Left-D : L3</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>887288</value>
+                </objectattribute>
+                <layer>L1 - Block 37</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>688281</value>
+                </objectattribute>
+                <layer>L3</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Concrete, Cast-in-Place gray</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash17" guid="6cd44309-8976-46b6-b7ee-b9d3991b19f6" href="Base Model_Arch vs Structural Clashes_files\cd000017.jpg" status="active" distance="-1.053">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417622.670" y="78719.710" z="251.765" />
+            </clashpoint>
+            <gridlocation>Block 43 Left-D : L5</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>887308</value>
+                </objectattribute>
+                <layer>L1 - Block 37</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>792732</value>
+                </objectattribute>
+                <layer>L5</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Concrete, Cast-in-Place gray</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash18" guid="556d3d49-1e24-4595-9bea-8b20642aa77e" href="Base Model_Arch vs Structural Clashes_files\cd000018.jpg" status="active" distance="-1.053">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417623.005" y="78719.023" z="243.637" />
+            </clashpoint>
+            <gridlocation>Block 43 Left-D : L3</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>887308</value>
+                </objectattribute>
+                <layer>L1 - Block 37</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>688281</value>
+                </objectattribute>
+                <layer>L3</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Concrete, Cast-in-Place gray</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash19" guid="a7e89969-4ece-4ac3-8b3c-88996168bc5f" href="Base Model_Arch vs Structural Clashes_files\cd000019.jpg" status="active" distance="-1.050">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417622.323" y="78720.419" z="240.144" />
+            </clashpoint>
+            <gridlocation>Block 43 Left-D : M1</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>887308</value>
+                </objectattribute>
+                <layer>L1 - Block 37</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>611341</value>
+                </objectattribute>
+                <layer>L2 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W18x55</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash20" guid="54f8482a-5007-4cdb-a9d8-d1085e41acb2" href="Base Model_Arch vs Structural Clashes_files\cd000020.jpg" status="active" distance="-1.007">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417590.921" y="78704.860" z="232.740" />
+            </clashpoint>
+            <gridlocation>D-1 : Parking</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>2134315</value>
+                </objectattribute>
+                <layer>Parking</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Floor</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Floors: Floor: Concrete Slab 6"</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>675720</value>
+                </objectattribute>
+                <layer>Elevator Pit</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Basic Wall</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Walls: Basic Wall: Concrete 18"</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash21" guid="d4532b00-5e4d-4478-a688-052fb4050c7e" href="Base Model_Arch vs Structural Clashes_files\cd000021.jpg" status="active" distance="-0.995">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417623.059" y="78718.876" z="240.360" />
+            </clashpoint>
+            <gridlocation>Block 43 Left-D : M1</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>887288</value>
+                </objectattribute>
+                <layer>L1 - Block 37</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>687839</value>
+                </objectattribute>
+                <layer>L2</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Concrete, Cast-in-Place gray</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash22" guid="a05f141e-37b9-4efd-bb05-670a4b0d9ab2" href="Base Model_Arch vs Structural Clashes_files\cd000022.jpg" status="active" distance="-0.945">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417617.926" y="78715.005" z="243.484" />
+            </clashpoint>
+            <gridlocation>C-5 : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L2</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Two Story Studio Unit 204</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>778331</value>
+                </objectattribute>
+                <layer>L3 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>16K6</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash23" guid="c96ffc0b-28ad-4034-9030-0aa5a39757d9" href="Base Model_Arch vs Structural Clashes_files\cd000023.jpg" status="active" distance="-0.914">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417622.263" y="78720.543" z="242.961" />
+            </clashpoint>
+            <gridlocation>Block 43 Left-D : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>887308</value>
+                </objectattribute>
+                <layer>L1 - Block 37</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>626984</value>
+                </objectattribute>
+                <layer>L3 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W18x55</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash24" guid="faadece1-fdd4-4126-bb3d-998e7fe0d1f9" href="Base Model_Arch vs Structural Clashes_files\cd000024.jpg" status="active" distance="-0.877">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417626.086" y="78722.488" z="254.689" />
+            </clashpoint>
+            <gridlocation>D-7 : Block 39 - Parapet</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>2091821</value>
+                </objectattribute>
+                <layer>L5</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Plywood, Sheathing</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>608213</value>
+                </objectattribute>
+                <layer>L1_37_Med</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W10x49</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Columns</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash25" guid="52004e03-d878-45db-8557-8c9f9af9ee1c" href="Base Model_Arch vs Structural Clashes_files\cd000025.jpg" status="active" distance="-0.877">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417626.089" y="78722.483" z="254.260" />
+            </clashpoint>
+            <gridlocation>D-7 : R1</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>2091833</value>
+                </objectattribute>
+                <layer>L5</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Metal Stud Layer</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>608213</value>
+                </objectattribute>
+                <layer>L1_37_Med</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W10x49</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Columns</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash26" guid="4aef87e8-bb44-43de-b9ba-45bf5d116596" href="Base Model_Arch vs Structural Clashes_files\cd000026.jpg" status="active" distance="-0.877">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417626.111" y="78722.438" z="250.514" />
+            </clashpoint>
+            <gridlocation>D-7 : L4</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>2089521</value>
+                </objectattribute>
+                <layer>L4</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Metal Stud Layer</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>608213</value>
+                </objectattribute>
+                <layer>L1_37_Med</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W10x49</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Columns</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash27" guid="8face596-d9c1-4aee-ab5e-23921ece982a" href="Base Model_Arch vs Structural Clashes_files\cd000027.jpg" status="active" distance="-0.877">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417626.113" y="78722.434" z="250.196" />
+            </clashpoint>
+            <gridlocation>D-7 : L4</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>2089535</value>
+                </objectattribute>
+                <layer>L4</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Metal Stud Layer</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>608213</value>
+                </objectattribute>
+                <layer>L1_37_Med</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W10x49</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Columns</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash28" guid="c0ebd1fb-fe32-4ca6-9e35-935605beb35d" href="Base Model_Arch vs Structural Clashes_files\cd000028.jpg" status="active" distance="-0.877">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417626.135" y="78722.390" z="246.561" />
+            </clashpoint>
+            <gridlocation>D-7 : L3</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>2091744</value>
+                </objectattribute>
+                <layer>L3</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Plywood, Sheathing</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>608213</value>
+                </objectattribute>
+                <layer>L1_37_Med</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W10x49</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Columns</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash29" guid="2d9c5d68-9c23-4886-abab-5b66c1400d6f" href="Base Model_Arch vs Structural Clashes_files\cd000029.jpg" status="active" distance="-0.877">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417626.137" y="78722.385" z="246.132" />
+            </clashpoint>
+            <gridlocation>D-7 : L3</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>2091756</value>
+                </objectattribute>
+                <layer>L3</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Metal Stud Layer</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>608213</value>
+                </objectattribute>
+                <layer>L1_37_Med</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W10x49</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Columns</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash30" guid="cd5b0e45-7d3f-49ba-a5d4-cbd58de51e40" href="Base Model_Arch vs Structural Clashes_files\cd000030.jpg" status="active" distance="-0.877">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417626.156" y="78722.345" z="242.856" />
+            </clashpoint>
+            <gridlocation>D-7 : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>2091679</value>
+                </objectattribute>
+                <layer>L2</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Metal Stud Layer</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>608213</value>
+                </objectattribute>
+                <layer>L1_37_Med</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W10x49</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Columns</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash31" guid="acd2da5d-1438-4b48-8b14-c8bb542c28a5" href="Base Model_Arch vs Structural Clashes_files\cd000031.jpg" status="active" distance="-0.812">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417622.865" y="78718.954" z="247.548" />
+            </clashpoint>
+            <gridlocation>Block 43 Left-D : L3</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>887308</value>
+                </objectattribute>
+                <layer>L1 - Block 37</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>792679</value>
+                </objectattribute>
+                <layer>L4</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Metal Deck</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash32" guid="325f4dc9-7835-4db9-afa9-255512b198f2" href="Base Model_Arch vs Structural Clashes_files\cd000032.jpg" status="active" distance="-0.801">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417632.257" y="78709.713" z="247.548" />
+            </clashpoint>
+            <gridlocation>A-7 : L3</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>2117157</value>
+                </objectattribute>
+                <layer>L4</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Concrete, Precast</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>608229</value>
+                </objectattribute>
+                <layer>L1_37_Med</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W14x109</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Columns</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash33" guid="ccf934c4-6f15-44bc-8479-3788aa31d659" href="Base Model_Arch vs Structural Clashes_files\cd000033.jpg" status="active" distance="-0.801">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417632.259" y="78709.708" z="243.484" />
+            </clashpoint>
+            <gridlocation>A-7 : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>2117042</value>
+                </objectattribute>
+                <layer>L3</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Concrete, Precast</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>608229</value>
+                </objectattribute>
+                <layer>L1_37_Med</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W14x109</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Columns</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash34" guid="37e7bbaa-3a90-4ea2-8f7d-e485892fc163" href="Base Model_Arch vs Structural Clashes_files\cd000034.jpg" status="active" distance="-0.800">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417622.865" y="78718.954" z="240.208" />
+            </clashpoint>
+            <gridlocation>Block 43 Left-D : M1</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>887308</value>
+                </objectattribute>
+                <layer>L1 - Block 37</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>687839</value>
+                </objectattribute>
+                <layer>L2</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Metal Deck</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash35" guid="4cd45bc9-0504-403a-af93-ab5531be834e" href="Base Model_Arch vs Structural Clashes_files\cd000035.jpg" status="active" distance="-0.796">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417626.154" y="78722.350" z="243.284" />
+            </clashpoint>
+            <gridlocation>D-7 : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>2091667</value>
+                </objectattribute>
+                <layer>L2</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Plywood, Sheathing</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>608213</value>
+                </objectattribute>
+                <layer>L1_37_Med</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W10x49</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Columns</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash36" guid="c471c44f-e982-47a0-9a46-2138da381979" href="Base Model_Arch vs Structural Clashes_files\cd000036.jpg" status="active" distance="-0.699">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417616.507" y="78711.373" z="247.701" />
+            </clashpoint>
+            <gridlocation>Block 39 Left-X Axis : L4</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>748858</value>
+                </objectattribute>
+                <layer>L2</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>792679</value>
+                </objectattribute>
+                <layer>L4</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Concrete, Cast-in-Place gray</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash37" guid="42918c55-9c21-42f5-aa6e-b0efeb396aad" href="Base Model_Arch vs Structural Clashes_files\cd000037.jpg" status="active" distance="-0.699">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417611.038" y="78722.224" z="236.842" />
+            </clashpoint>
+            <gridlocation>Block 39 Left-E : L1 - Block 37</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1363212</value>
+                </objectattribute>
+                <layer>L1 - Block 35</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Concrete, Cast-in-Place gray</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>670327</value>
+                </objectattribute>
+                <layer>L1_37_Med</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Floor</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Floors: Floor: Concrete 10</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash38" guid="f9c2f2dd-43ab-4e23-8701-30270b7ef997" href="Base Model_Arch vs Structural Clashes_files\cd000038.jpg" status="active" distance="-0.577">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417592.280" y="78706.193" z="232.740" />
+            </clashpoint>
+            <gridlocation>D-2 : Parking</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>2134315</value>
+                </objectattribute>
+                <layer>Parking</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Floor</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Floors: Floor: Concrete Slab 6"</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>676066</value>
+                </objectattribute>
+                <layer>Elevator Pit</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Basic Wall</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Walls: Basic Wall: Concrete 12"</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash39" guid="fdaf5c19-6a1a-4411-8575-b35b67edd570" href="Base Model_Arch vs Structural Clashes_files\cd000039.jpg" status="active" distance="-0.563">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417634.397" y="78717.448" z="252.476" />
+            </clashpoint>
+            <gridlocation>B.1-8 : Block 37 - Parapet</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1411951</value>
+                </objectattribute>
+                <layer>L5</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Prairie Dropseed 5'-0"</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Planting</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>596480</value>
+                </objectattribute>
+                <layer>L1_43_High</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Basic Wall</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Walls: Basic Wall: Concrete 12"</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash40" guid="19c211d5-ac86-44c1-b11c-b1ec4c184029" href="Base Model_Arch vs Structural Clashes_files\cd000040.jpg" status="active" distance="-0.523">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417611.590" y="78709.513" z="255.153" />
+            </clashpoint>
+            <gridlocation>C-4 : Block 39 - Parapet</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1316989</value>
+                </objectattribute>
+                <layer>L5</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>702900</value>
+                </objectattribute>
+                <layer>R2 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W18x55</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash41" guid="e7fb0341-4003-44ac-9d12-c44ca1adf96a" href="Base Model_Arch vs Structural Clashes_files\cd000041.jpg" status="active" distance="-0.502">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417640.342" y="78722.303" z="243.078" />
+            </clashpoint>
+            <gridlocation>X Axis-9 : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>2080024</value>
+                </objectattribute>
+                <layer>L1 - Block 43</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Metal Furring</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>631248</value>
+                </objectattribute>
+                <layer>L3 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>16K6</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash42" guid="24997cc3-cdec-4f59-8412-ff2ba88481b7" href="Base Model_Arch vs Structural Clashes_files\cd000042.jpg" status="active" distance="-0.485">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417608.313" y="78708.060" z="251.765" />
+            </clashpoint>
+            <gridlocation>Block 37 Left-C : L5</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L5</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Office Unit 501</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>642990</value>
+                </objectattribute>
+                <layer>L3</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W10x49</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Columns</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash43" guid="cbbf9d9c-fc72-431d-a58d-06889ef9ef00" href="Base Model_Arch vs Structural Clashes_files\cd000043.jpg" status="active" distance="-0.477">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417600.402" y="78709.850" z="247.548" />
+            </clashpoint>
+            <gridlocation>D-3 : L3</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L3</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Office Unit 301</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>608215</value>
+                </objectattribute>
+                <layer>L1_35_Low</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W10x49</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Columns</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash44" guid="718bfa4c-db4c-4d4f-88f0-113c284cb477" href="Base Model_Arch vs Structural Clashes_files\cd000044.jpg" status="active" distance="-0.477">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417600.378" y="78709.897" z="251.612" />
+            </clashpoint>
+            <gridlocation>D-3 : L4</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L4</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Office Unit 401</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>608215</value>
+                </objectattribute>
+                <layer>L1_35_Low</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W10x49</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Columns</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash45" guid="952cac27-539b-4b65-9c22-76407c613bd2" href="Base Model_Arch vs Structural Clashes_files\cd000045.jpg" status="active" distance="-0.477">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417600.378" y="78709.899" z="251.765" />
+            </clashpoint>
+            <gridlocation>D-3 : L5</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L5</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Office Unit 501</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>608215</value>
+                </objectattribute>
+                <layer>L1_35_Low</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W10x49</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Columns</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash46" guid="5a18c28e-73e3-494e-b0e8-767a85313a33" href="Base Model_Arch vs Structural Clashes_files\cd000046.jpg" status="active" distance="-0.471">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417630.609" y="78713.740" z="237.452" />
+            </clashpoint>
+            <gridlocation>B-7 : L1 - Block 37</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1423991</value>
+                </objectattribute>
+                <layer>L1 - Block 37</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Oak Flooring, Espresso</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>630174</value>
+                </objectattribute>
+                <layer>L1_37_Med</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W10x49</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Columns</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash47" guid="0f439208-7ae3-4c95-8b16-1ad2a02f9594" href="Base Model_Arch vs Structural Clashes_files\cd000047.jpg" status="active" distance="-0.468">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417621.124" y="78721.468" z="247.548" />
+            </clashpoint>
+            <gridlocation>Block 43 Left-D : L3</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>888013</value>
+                </objectattribute>
+                <layer>L1 - Block 37</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>792318</value>
+                </objectattribute>
+                <layer>L4 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>16K6</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash48" guid="a0e27d17-5e94-4f64-a249-5b81c3bcfa16" href="Base Model_Arch vs Structural Clashes_files\cd000048.jpg" status="active" distance="-0.467">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417597.721" y="78702.851" z="243.017" />
+            </clashpoint>
+            <gridlocation>C-2 : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1701566</value>
+                </objectattribute>
+                <layer>L3</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>648901</value>
+                </objectattribute>
+                <layer>L3 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W18x86</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash49" guid="92b171c9-7bf9-406c-bf33-974f406a883b" href="Base Model_Arch vs Structural Clashes_files\cd000049.jpg" status="active" distance="-0.467">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417593.406" y="78700.745" z="243.017" />
+            </clashpoint>
+            <gridlocation>C-1 : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1701566</value>
+                </objectattribute>
+                <layer>L3</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>651162</value>
+                </objectattribute>
+                <layer>L3 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W18x86</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash50" guid="50163bd7-3c99-413b-b3a0-27f005f8b258" href="Base Model_Arch vs Structural Clashes_files\cd000050.jpg" status="active" distance="-0.467">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417603.628" y="78705.734" z="243.017" />
+            </clashpoint>
+            <gridlocation>C-3 : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1699930</value>
+                </objectattribute>
+                <layer>L3</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>651713</value>
+                </objectattribute>
+                <layer>L3 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W18x86</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash51" guid="d413c1d5-b74f-4ecc-b264-43d6b27e782d" href="Base Model_Arch vs Structural Clashes_files\cd000051.jpg" status="active" distance="-0.467">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417604.993" y="78706.400" z="243.017" />
+            </clashpoint>
+            <gridlocation>C-3 : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1699930</value>
+                </objectattribute>
+                <layer>L3</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>652306</value>
+                </objectattribute>
+                <layer>L3 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W18x86</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash52" guid="ca32a19e-cdb2-41d3-9a66-4a74b36b0910" href="Base Model_Arch vs Structural Clashes_files\cd000052.jpg" status="active" distance="-0.467">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417597.659" y="78705.195" z="243.017" />
+            </clashpoint>
+            <gridlocation>C-2 : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L1 - Block 35</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Café 101</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>648901</value>
+                </objectattribute>
+                <layer>L3 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W18x86</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash53" guid="d62f8f63-81bb-4b39-a808-0b8bede80d91" href="Base Model_Arch vs Structural Clashes_files\cd000053.jpg" status="active" distance="-0.467">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417603.566" y="78708.078" z="243.017" />
+            </clashpoint>
+            <gridlocation>C-3 : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L1 - Block 35</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Café 101</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>651713</value>
+                </objectattribute>
+                <layer>L3 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W18x86</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash54" guid="00162f2a-13da-4b71-8425-1bd6d6f00108" href="Base Model_Arch vs Structural Clashes_files\cd000054.jpg" status="active" distance="-0.467">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417603.566" y="78708.078" z="243.017" />
+            </clashpoint>
+            <gridlocation>C-3 : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>735573</value>
+                </objectattribute>
+                <layer>L1 - Block 35</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>651713</value>
+                </objectattribute>
+                <layer>L3 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W18x86</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash55" guid="c670b29c-a089-45fb-8672-adf317f39f4f" href="Base Model_Arch vs Structural Clashes_files\cd000055.jpg" status="active" distance="-0.467">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417599.277" y="78705.984" z="243.017" />
+            </clashpoint>
+            <gridlocation>C-3 : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L1 - Block 35</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Café 101</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>651714</value>
+                </objectattribute>
+                <layer>L3 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W18x86</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash56" guid="70591af9-d3e4-4b0a-85a7-cf7c70cf1b5d" href="Base Model_Arch vs Structural Clashes_files\cd000056.jpg" status="active" distance="-0.467">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417604.931" y="78708.744" z="243.017" />
+            </clashpoint>
+            <gridlocation>Block 37 Left-C : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L1 - Block 35</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Café 101</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>652306</value>
+                </objectattribute>
+                <layer>L3 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W18x86</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash57" guid="850128eb-981f-4fc3-9720-8e283af66cb4" href="Base Model_Arch vs Structural Clashes_files\cd000057.jpg" status="active" distance="-0.467">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417604.931" y="78708.744" z="243.017" />
+            </clashpoint>
+            <gridlocation>Block 37 Left-C : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>735573</value>
+                </objectattribute>
+                <layer>L1 - Block 35</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>652306</value>
+                </objectattribute>
+                <layer>L3 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W18x86</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash58" guid="0b2e918d-e882-414e-9525-e006bb6c037f" href="Base Model_Arch vs Structural Clashes_files\cd000058.jpg" status="active" distance="-0.464">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417599.069" y="78703.152" z="243.017" />
+            </clashpoint>
+            <gridlocation>C-2 : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1699930</value>
+                </objectattribute>
+                <layer>L3</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Metal Panels 50"x60" - White</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>651714</value>
+                </objectattribute>
+                <layer>L3 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W18x86</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash59" guid="d6d3a92d-fe84-4142-98be-b1295f055f76" href="Base Model_Arch vs Structural Clashes_files\cd000059.jpg" status="active" distance="-0.460">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417615.465" y="78713.631" z="251.153" />
+            </clashpoint>
+            <gridlocation>Block 39 Left-C : L4</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>750321</value>
+                </objectattribute>
+                <layer>L4</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>793119</value>
+                </objectattribute>
+                <layer>L5 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W18x55</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash60" guid="99524462-6331-4886-b684-bb5083e631e2" href="Base Model_Arch vs Structural Clashes_files\cd000060.jpg" status="active" distance="-0.460">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417615.568" y="78713.854" z="247.089" />
+            </clashpoint>
+            <gridlocation>C-5 : L3</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>750267</value>
+                </objectattribute>
+                <layer>L3</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>792229</value>
+                </objectattribute>
+                <layer>L4 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W18x55</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash61" guid="e8e943bf-ceac-4397-bf56-41028a8e4aa7" href="Base Model_Arch vs Structural Clashes_files\cd000061.jpg" status="active" distance="-0.460">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417615.465" y="78713.631" z="255.217" />
+            </clashpoint>
+            <gridlocation>Block 39 Left-C : Block 39 - Parapet</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>750375</value>
+                </objectattribute>
+                <layer>L5</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>705825</value>
+                </objectattribute>
+                <layer>R2 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W18x55</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash62" guid="01fe6f9e-8e95-44a5-92ac-4ff84f3dd355" href="Base Model_Arch vs Structural Clashes_files\cd000062.jpg" status="active" distance="-0.457">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417621.187" y="78721.326" z="243.079" />
+            </clashpoint>
+            <gridlocation>Block 43 Left-D : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>888013</value>
+                </objectattribute>
+                <layer>L1 - Block 37</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>708948</value>
+                </objectattribute>
+                <layer>L3 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>16K6</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash63" guid="e04e11aa-f454-4440-b405-cca1b0de4f92" href="Base Model_Arch vs Structural Clashes_files\cd000063.jpg" status="active" distance="-0.457">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417599.006" y="78711.123" z="238.963" />
+            </clashpoint>
+            <gridlocation>D-3 : L1 - Block 43</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L1 - Block 35</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Café 101</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>664154</value>
+                </objectattribute>
+                <layer>M1 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>18LH04</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash64" guid="b67118f2-1538-44a9-8877-42ca8d3e98be" href="Base Model_Arch vs Structural Clashes_files\cd000064.jpg" status="active" distance="-0.457">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417596.012" y="78709.662" z="238.963" />
+            </clashpoint>
+            <gridlocation>D-2 : L1 - Block 43</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L1 - Block 35</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Café 101</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>664151</value>
+                </objectattribute>
+                <layer>M1 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>18LH04</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash65" guid="0369a319-0398-4809-a570-09eacd7df65e" href="Base Model_Arch vs Structural Clashes_files\cd000065.jpg" status="active" distance="-0.457">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417597.010" y="78710.149" z="238.963" />
+            </clashpoint>
+            <gridlocation>D-3 : L1 - Block 43</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L1 - Block 35</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Café 101</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>664152</value>
+                </objectattribute>
+                <layer>M1 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>18LH04</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash66" guid="16fa39e4-0f5e-49a9-8804-2d3dc0ddda6a" href="Base Model_Arch vs Structural Clashes_files\cd000066.jpg" status="active" distance="-0.457">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417598.008" y="78710.636" z="238.963" />
+            </clashpoint>
+            <gridlocation>D-3 : L1 - Block 43</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L1 - Block 35</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Café 101</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>664153</value>
+                </objectattribute>
+                <layer>M1 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>18LH04</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash67" guid="17e58697-6f1d-4dac-8f1e-d152fc502bfd" href="Base Model_Arch vs Structural Clashes_files\cd000067.jpg" status="active" distance="-0.457">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417620.129" y="78719.115" z="232.740" />
+            </clashpoint>
+            <gridlocation>D-Y Axis : Parking</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>2134315</value>
+                </objectattribute>
+                <layer>Parking</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Floor</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Floors: Floor: Concrete Slab 6"</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>691308</value>
+                </objectattribute>
+                <layer>Elevator Pit</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Basic Wall</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Walls: Basic Wall: Concrete 18"</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash68" guid="74b39c09-d662-4a0e-b112-142f10945b88" href="Base Model_Arch vs Structural Clashes_files\cd000068.jpg" status="active" distance="-0.457">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417597.619" y="78713.965" z="238.963" />
+            </clashpoint>
+            <gridlocation>E-3 : L1 - Block 43</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L1 - Block 35</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Café Kitchen 102</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>664154</value>
+                </objectattribute>
+                <layer>M1 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>18LH04</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash69" guid="1588ab27-c77c-42aa-8a4c-2a8b28eece6c" href="Base Model_Arch vs Structural Clashes_files\cd000069.jpg" status="active" distance="-0.457">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417599.562" y="78712.719" z="238.963" />
+            </clashpoint>
+            <gridlocation>D-3 : L1 - Block 43</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L1 - Block 35</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Café Kitchen 102</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>664155</value>
+                </objectattribute>
+                <layer>M1 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>18LH04</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash70" guid="0b0a021b-d8d9-40e6-86c3-429c85186102" href="Base Model_Arch vs Structural Clashes_files\cd000070.jpg" status="active" distance="-0.457">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417601.614" y="78713.375" z="238.963" />
+            </clashpoint>
+            <gridlocation>D-3 : L1 - Block 43</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1247521</value>
+                </objectattribute>
+                <layer>L1 - Block 35</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>664157</value>
+                </objectattribute>
+                <layer>M1 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>18LH04</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash71" guid="8c3e8056-f18a-4f87-9b77-418e4fa42db9" href="Base Model_Arch vs Structural Clashes_files\cd000071.jpg" status="active" distance="-0.457">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417597.619" y="78713.965" z="238.963" />
+            </clashpoint>
+            <gridlocation>E-3 : L1 - Block 43</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1135969</value>
+                </objectattribute>
+                <layer>L1 - Block 35</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>664154</value>
+                </objectattribute>
+                <layer>M1 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>18LH04</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash72" guid="fc3466bc-a7d3-41df-8c8a-80369e943ebe" href="Base Model_Arch vs Structural Clashes_files\cd000072.jpg" status="active" distance="-0.457">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417594.571" y="78712.615" z="238.963" />
+            </clashpoint>
+            <gridlocation>E-2 : L1 - Block 43</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L1 - Block 35</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Café Kitchen 102</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>664151</value>
+                </objectattribute>
+                <layer>M1 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>18LH04</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash73" guid="ad733b60-d903-4c2f-aaa7-8d70daff1487" href="Base Model_Arch vs Structural Clashes_files\cd000073.jpg" status="active" distance="-0.457">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417595.623" y="78712.991" z="238.963" />
+            </clashpoint>
+            <gridlocation>E-3 : L1 - Block 43</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L1 - Block 35</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Café Kitchen 102</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>664152</value>
+                </objectattribute>
+                <layer>M1 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>18LH04</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash74" guid="c8213ba3-dce4-4b9f-bbf3-5a17acd7defd" href="Base Model_Arch vs Structural Clashes_files\cd000074.jpg" status="active" distance="-0.457">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417596.621" y="78713.478" z="238.963" />
+            </clashpoint>
+            <gridlocation>E-3 : L1 - Block 43</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L1 - Block 35</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Café Kitchen 102</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>664153</value>
+                </objectattribute>
+                <layer>M1 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>18LH04</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash75" guid="225c82aa-aeec-4225-9291-d2bdfa53981d" href="Base Model_Arch vs Structural Clashes_files\cd000075.jpg" status="active" distance="-0.457">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417594.960" y="78709.286" z="238.963" />
+            </clashpoint>
+            <gridlocation>D-2 : L1 - Block 43</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L1 - Block 35</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Café Kitchen 102</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>664150</value>
+                </objectattribute>
+                <layer>M1 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>18LH04</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash76" guid="70a56fad-dd67-4bfb-9a2c-63f071db17e1" href="Base Model_Arch vs Structural Clashes_files\cd000076.jpg" status="active" distance="-0.457">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417594.571" y="78712.615" z="238.963" />
+            </clashpoint>
+            <gridlocation>E-2 : L1 - Block 43</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1135969</value>
+                </objectattribute>
+                <layer>L1 - Block 35</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>664151</value>
+                </objectattribute>
+                <layer>M1 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>18LH04</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash77" guid="8f2d55f3-30e0-4c59-9b33-9c6b563bba77" href="Base Model_Arch vs Structural Clashes_files\cd000077.jpg" status="active" distance="-0.457">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417595.623" y="78712.991" z="238.963" />
+            </clashpoint>
+            <gridlocation>E-3 : L1 - Block 43</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1135969</value>
+                </objectattribute>
+                <layer>L1 - Block 35</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>664152</value>
+                </objectattribute>
+                <layer>M1 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>18LH04</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash78" guid="664d05a8-8caa-42b6-9966-90c088dc488c" href="Base Model_Arch vs Structural Clashes_files\cd000078.jpg" status="active" distance="-0.457">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417596.621" y="78713.478" z="238.963" />
+            </clashpoint>
+            <gridlocation>E-3 : L1 - Block 43</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1135969</value>
+                </objectattribute>
+                <layer>L1 - Block 35</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>664153</value>
+                </objectattribute>
+                <layer>M1 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>18LH04</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash79" guid="4c7e982a-67ce-40bd-bf53-33b0471cb285" href="Base Model_Arch vs Structural Clashes_files\cd000079.jpg" status="active" distance="-0.449">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417624.713" y="78716.094" z="255.676" />
+            </clashpoint>
+            <gridlocation>Block 43 Left-C : Block 39 - Parapet</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1055450</value>
+                </objectattribute>
+                <layer>L5</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Metal Panels 50"x60" - White</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>726678</value>
+                </objectattribute>
+                <layer>R2</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Metal Deck</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash80" guid="96d2f859-6d15-4e3d-8912-3d2049fcf219" href="Base Model_Arch vs Structural Clashes_files\cd000080.jpg" status="active" distance="-0.448">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417594.563" y="78706.959" z="239.573" />
+            </clashpoint>
+            <gridlocation>D-2 : M1</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1374411</value>
+                </objectattribute>
+                <layer>L1 - Block 35</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>621720</value>
+                </objectattribute>
+                <layer>M1</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Concrete, Cast-in-Place gray</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash81" guid="56a14fc2-7c5d-405f-b8a6-6fa9c1d2e89d" href="Base Model_Arch vs Structural Clashes_files\cd000081.jpg" status="active" distance="-0.442">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417621.234" y="78721.349" z="239.865" />
+            </clashpoint>
+            <gridlocation>Block 43 Left-D : M1</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>888013</value>
+                </objectattribute>
+                <layer>L1 - Block 37</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>610662</value>
+                </objectattribute>
+                <layer>L2 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>16K6</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash82" guid="5a8da221-bd19-46c1-b9d1-8bad70712310" href="Base Model_Arch vs Structural Clashes_files\cd000082.jpg" status="active" distance="-0.440">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417594.776" y="78706.934" z="251.612" />
+            </clashpoint>
+            <gridlocation>D-2 : L4</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L4</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Office Unit 401</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>663713</value>
+                </objectattribute>
+                <layer>L1_35_Low</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W10x49</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Columns</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash83" guid="3b654605-43e1-40b2-81c9-ef05d1a0372d" href="Base Model_Arch vs Structural Clashes_files\cd000083.jpg" status="active" distance="-0.440">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417594.776" y="78706.934" z="251.765" />
+            </clashpoint>
+            <gridlocation>D-2 : L5</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L5</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Office Unit 501</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>663713</value>
+                </objectattribute>
+                <layer>L1_35_Low</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W10x49</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Columns</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash84" guid="9d09c9d2-f739-4828-98e9-f5e13413bedf" href="Base Model_Arch vs Structural Clashes_files\cd000084.jpg" status="active" distance="-0.440">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417594.779" y="78706.936" z="247.548" />
+            </clashpoint>
+            <gridlocation>D-2 : L3</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <layer>L3</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Office Unit 301</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>663713</value>
+                </objectattribute>
+                <layer>L1_35_Low</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W10x49</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Columns</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash85" guid="2beddf44-a1fb-4a87-8804-b77f9af013b6" href="Base Model_Arch vs Structural Clashes_files\cd000085.jpg" status="active" distance="-0.438">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417600.855" y="78716.986" z="239.573" />
+            </clashpoint>
+            <gridlocation>Block 37 Left-E : M1</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1302690</value>
+                </objectattribute>
+                <layer>M1</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>621720</value>
+                </objectattribute>
+                <layer>M1</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Concrete, Cast-in-Place gray</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash86" guid="fd8d2049-f5c8-4869-b0cf-cb84f1bcf337" href="Base Model_Arch vs Structural Clashes_files\cd000086.jpg" status="active" distance="-0.430">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417599.193" y="78703.569" z="243.054" />
+            </clashpoint>
+            <gridlocation>C-2 : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1701566</value>
+                </objectattribute>
+                <layer>L3</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>651714</value>
+                </objectattribute>
+                <layer>L3 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W18x86</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash87" guid="887a343e-eebc-4d42-82fe-99d2f926b66d" href="Base Model_Arch vs Structural Clashes_files\cd000087.jpg" status="active" distance="-0.430">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417605.129" y="78706.823" z="243.054" />
+            </clashpoint>
+            <gridlocation>C-3 : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1701566</value>
+                </objectattribute>
+                <layer>L3</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Metal Panels 50"x60" - White</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>652306</value>
+                </objectattribute>
+                <layer>L3 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W18x86</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash88" guid="0f1057aa-dbb0-41eb-a870-5f02311d71b4" href="Base Model_Arch vs Structural Clashes_files\cd000088.jpg" status="active" distance="-0.430">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417597.533" y="78704.844" z="243.326" />
+            </clashpoint>
+            <gridlocation>C-2 : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>735573</value>
+                </objectattribute>
+                <layer>L1 - Block 35</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Metal Panels 50"x60" - White</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>648901</value>
+                </objectattribute>
+                <layer>L3 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W18x86</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash89" guid="30c032a6-5e80-477a-a09c-f86266237767" href="Base Model_Arch vs Structural Clashes_files\cd000089.jpg" status="active" distance="-0.430">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417599.139" y="78705.627" z="243.054" />
+            </clashpoint>
+            <gridlocation>C-3 : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>735573</value>
+                </objectattribute>
+                <layer>L1 - Block 35</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Metal Panels 50"x60" - White</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>651714</value>
+                </objectattribute>
+                <layer>L3 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W18x86</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash90" guid="04c35f73-aed3-4f7c-8360-27104bbf1408" href="Base Model_Arch vs Structural Clashes_files\cd000090.jpg" status="active" distance="-0.429">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417624.400" y="78715.766" z="255.157" />
+            </clashpoint>
+            <gridlocation>Block 43 Left-C : Block 39 - Parapet</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1055598</value>
+                </objectattribute>
+                <layer>L5</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>704715</value>
+                </objectattribute>
+                <layer>R2 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W18x55</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash91" guid="bd51597b-daef-4daf-8def-09d498573dea" href="Base Model_Arch vs Structural Clashes_files\cd000091.jpg" status="active" distance="-0.427">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417621.156" y="78721.483" z="251.206" />
+            </clashpoint>
+            <gridlocation>Block 43 Left-D : L4</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>888013</value>
+                </objectattribute>
+                <layer>L1 - Block 37</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>793205</value>
+                </objectattribute>
+                <layer>L5 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>16K6</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash92" guid="ce278d17-787b-4170-ac1c-1da24653e641" href="Base Model_Arch vs Structural Clashes_files\cd000092.jpg" status="active" distance="-0.426">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417615.555" y="78713.675" z="243.058" />
+            </clashpoint>
+            <gridlocation>C-5 : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>748511</value>
+                </objectattribute>
+                <layer>L2</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>632060</value>
+                </objectattribute>
+                <layer>L3 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W18x55</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash93" guid="a19b9d01-ed49-411a-9e0c-052d78793d69" href="Base Model_Arch vs Structural Clashes_files\cd000093.jpg" status="active" distance="-0.419">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417630.828" y="78724.413" z="240.208" />
+            </clashpoint>
+            <gridlocation>D-8 : M1</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1362837</value>
+                </objectattribute>
+                <layer>L1 - Block 43</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>687839</value>
+                </objectattribute>
+                <layer>L2</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Metal Deck</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash94" guid="55226099-380b-4c99-871e-72d5fbb4b6ed" href="Base Model_Arch vs Structural Clashes_files\cd000094.jpg" status="active" distance="-0.419">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417627.146" y="78707.172" z="243.637" />
+            </clashpoint>
+            <gridlocation>A-Block 43 Left : L3</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1504319</value>
+                </objectattribute>
+                <layer>L1 - Block 37</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Metal Furring</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>688281</value>
+                </objectattribute>
+                <layer>L3</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Concrete, Cast-in-Place gray</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash95" guid="e3076290-00cb-4578-8131-e997b4d117cf" href="Base Model_Arch vs Structural Clashes_files\cd000095.jpg" status="active" distance="-0.419">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417625.285" y="78710.984" z="243.637" />
+            </clashpoint>
+            <gridlocation>B-Block 43 Left : L3</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1363706</value>
+                </objectattribute>
+                <layer>L1 - Block 37</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>688281</value>
+                </objectattribute>
+                <layer>L3</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Concrete, Cast-in-Place gray</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash96" guid="89a346af-31d8-425b-b8a7-5590b6477526" href="Base Model_Arch vs Structural Clashes_files\cd000096.jpg" status="active" distance="-0.419">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417616.794" y="78711.820" z="254.165" />
+            </clashpoint>
+            <gridlocation>C-5 : R1</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1373207</value>
+                </objectattribute>
+                <layer>L5</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>727212</value>
+                </objectattribute>
+                <layer>R2 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Metal Deck</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash97" guid="61630701-5e0e-4f1f-ac95-509fcf1d05bc" href="Base Model_Arch vs Structural Clashes_files\cd000097.jpg" status="active" distance="-0.419">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417618.355" y="78707.424" z="243.637" />
+            </clashpoint>
+            <gridlocation>B-Block 39 Left : L3</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1275998</value>
+                </objectattribute>
+                <layer>L1 - Block 37</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Gypsum Wall Board</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>688281</value>
+                </objectattribute>
+                <layer>L3</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Concrete, Cast-in-Place gray</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash98" guid="159b7529-ae4d-4d28-8e41-381292202a3c" href="Base Model_Arch vs Structural Clashes_files\cd000098.jpg" status="active" distance="-0.416">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417603.486" y="78706.021" z="243.054" />
+            </clashpoint>
+            <gridlocation>C-3 : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1701566</value>
+                </objectattribute>
+                <layer>L3</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Metal Panels 50"x60" - White</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>651713</value>
+                </objectattribute>
+                <layer>L3 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W18x86</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash99" guid="377d7f7b-0400-4462-b95f-10167d4d8bbb" href="Base Model_Arch vs Structural Clashes_files\cd000099.jpg" status="active" distance="-0.410">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417593.415" y="78700.393" z="243.017" />
+            </clashpoint>
+            <gridlocation>C-1 : L2</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>1699930</value>
+                </objectattribute>
+                <layer>L3</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Metal Panels 50"x60" - White</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>651162</value>
+                </objectattribute>
+                <layer>L3 TOS</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>W18x86</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Structural Framing</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash100" guid="e724014c-dbb3-460e-a401-a1920fe6d123" href="Base Model_Arch vs Structural Clashes_files\cd000100.jpg" status="active" distance="-0.410">
+            <description>Hard</description>
+            <resultstatus>Active</resultstatus>
+            <clashpoint>
+              <pos3f x="417586.144" y="78710.513" z="232.588" />
+            </clashpoint>
+            <gridlocation>Block 35 Left-E : Parking</gridlocation>
+            <createddate>
+              <date year="2026" month="4" day="3" hour="9" minute="28" second="56" />
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>697444</value>
+                </objectattribute>
+                <layer>Parking</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Basic Wall</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Walls: Basic Wall: Foundation - 24" Concrete</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>Element ID</name>
+                  <value>794203</value>
+                </objectattribute>
+                <layer>Elevator Pit</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>Basic Wall</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Walls: Basic Wall: Concrete 24"</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          </clashresults>
+      </clashtest>
+    </clashtests>
+    <selectionsets />
+  </batchtest>
+</exchange>
