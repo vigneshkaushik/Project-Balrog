@@ -14,7 +14,13 @@ export function SeverityFilter() {
   const rangeId = useId()
   const panelId = useId()
   const [expanded, setExpanded] = useState(true)
-  const { severityThreshold, setSeverityThreshold, filteredClashes } = useApp()
+  const {
+    severityThreshold,
+    setSeverityThreshold,
+    filteredClashes,
+    highlightFilteredSeverity,
+    setHighlightFilteredSeverity,
+  } = useApp()
   const stepIndex = severityToIndex(severityThreshold)
 
   return (
@@ -28,7 +34,7 @@ export function SeverityFilter() {
       >
         <div className="flex items-center gap-2.5">
           <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10 text-primary">
-            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
             </svg>
           </div>
@@ -42,7 +48,7 @@ export function SeverityFilter() {
           }`}
           viewBox="0 0 20 20"
           fill="currentColor"
-          aria-hidden
+          aria-hidden="true"
         >
           <path
             fillRule="evenodd"
@@ -114,6 +120,20 @@ export function SeverityFilter() {
               <p className="text-xs font-medium text-neutral-600">
                 Clash{filteredClashes.length === 1 ? '' : 'es'} visible
               </p>
+              <button
+                type="button"
+                onClick={() =>
+                  setHighlightFilteredSeverity(!highlightFilteredSeverity)
+                }
+                className={`ml-auto cursor-pointer rounded-md border px-2 py-1 text-[11px] font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/60 ${
+                  highlightFilteredSeverity
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100'
+                }`}
+                aria-pressed={highlightFilteredSeverity}
+              >
+                {highlightFilteredSeverity ? 'Focused' : 'Highlight'}
+              </button>
             </div>
           </div>
         </div>

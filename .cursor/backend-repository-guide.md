@@ -146,6 +146,7 @@ Implementation walks **`handler.stream_events()`**, mapping **`AgentStream`**, *
 | Endpoint | Method | Description |
 | -------- | ------ | ----------- |
 | **`/clashes/upload`** | `POST` | Upload a Navisworks clash report XML (`multipart/form-data` field: **`file`**), parse all clashes, run LLM severity inference in batches, and stream results via SSE. Uses **`app.state.effective_settings`** for model/key/base-url. |
+| **`/clashes/analyze-context`** | `POST` | Run one-shot clash-context analysis from frontend JSON payload (`clash`, `clash_objects_original`, `context_region`, `nearby_speckle_objects`, `meta`) and return structured `{ watch_out_for, recommendations, notes }`. |
 
 **Flow**
 
@@ -153,6 +154,13 @@ Implementation walks **`handler.stream_events()`**, mapping **`AgentStream`**, *
 2. Save bytes to a temp file and parse with **`app/utils/clash_parser.py`** (`parse_clash_xml`).
 3. Collect clashes across all tests and infer severity via **`app/utils/clash_inference.py`** (`infer_single_batch`).
 4. Stream SSE events: **`parsed`** (full payload), **`batch_result`** (per batch with `results`, `completed`, `total`), **`done`** or **`error`**.
+
+**`POST /clashes/analyze-context` runtime notes**
+
+- Serializes and size-checks incoming context payload before model call (413 on oversized bodies).
+- Runs the dedicated **`clash_analysis_agent`** with a fresh short-lived conversation memory per request.
+- Uses `max_iterations=settings.max_agent_iterations` with `early_stopping_method="generate"` so max-iteration loops produce a final response instead of throwing runtime errors.
+- Parses model output through **`parse_clash_analysis_json`** and **`normalize_analysis_result`** to enforce resilient structured output.
 
 ---
 
@@ -162,6 +170,8 @@ Implementation walks **`handler.stream_events()`**, mapping **`AgentStream`**, *
 | ---- | -------------- |
 | **`app/utils/clash_parser.py`** | XML parser + normalization helpers (`parse_clash_xml`, `parse_clash_result`, `parse_clash_object`), and `optimize_clash_for_agent` for LLM-friendly minified clash payloads. |
 | **`app/utils/clash_inference.py`** | Parallel severity inference pipeline using LlamaIndex OpenAI wrapper. Includes adaptive batching (`batch_clashes`), code-fence stripping, minification handoff, default severity preprompt, and ordered result reassembly after concurrent execution. |
+| **`app/utils/clash_analysis_prompt.py`** | Prompt suffix for run-analysis mode. Forces JSON-only final output (`watch_out_for`, `recommendations`) and instructs use of clash + nearby Speckle context. |
+| **`app/utils/clash_analysis_parse.py`** | Extracts/parses fenced or inline JSON from model output and normalizes fallback notes when strict JSON is missing. |
 
 ---
 

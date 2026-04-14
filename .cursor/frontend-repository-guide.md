@@ -60,12 +60,12 @@ This document maps the **React + Vite** frontend: entry points, routing, layout,
 
 | Component | Responsibility |
 | --------- | -------------- |
-| **`ClashInspector`** | **Session gate** is controlled by a module flag **`viewerOnlyMode`** (currently `true`): if set, only **at least one non-empty Speckle URL** is required; otherwise the gate requires Navisworks file + Speckle URL + non-empty **`clashes`**. On failure, **`Navigate`** to `/`. **Layout:** full-height **`relative`** region — **`ModelViewer`** fills the area; **top-left overlay** (`absolute`, `w-80`, `max-w-[calc(100%-1.5rem)]`) stacks **`SeverityFilter`** then **`ClashSelector`**. **Bottom sheet:** resizable panel (`sheetHeight` state, pointer drag on the handle, min/max height vs viewport) with two **`AnalysisPanel`** columns. **Wide screens:** CSS grid **`sm:grid-cols-[1fr_1px_1fr]`** — equal **`1fr`** columns with a **1px** center track so the divider sits on the midpoint; **`sm:pr-6` / `sm:pl-6`** on the side columns for symmetric inset. **Narrow screens:** single column, **`h-px`** horizontal rule between sections, **`gap-y-2`**. Syncs **`selectedClashId`** when **`filteredClashes`** changes. |
-| **`ModelViewer`** | Speckle container: **`useSpeckleViewer`** with trimmed **`speckleUrls`**, optional **`VITE_SPECKLE_TOKEN`**, **`onModelsLoaded`** to hold a **`Viewer`** reference. Empty state when no URLs. Optional prop **`clashObjectApplicationIds`** — when provided, **`zoomViewerToSmallestClashObject`** (**`lib/zoomToSmallestClashObject.ts`**) frames the smallest bounding object among those application IDs after load. **`SelectionExtension`**: listens for **`ViewerEvent.ObjectClicked`** and shows **`SpeckleObjectOverlay`** for the selected object’s data (dismissible). |
+| **`ClashInspector`** | **Session gate** is controlled by a module flag **`viewerOnlyMode`** (currently `true`): if set, only **at least one non-empty Speckle URL** is required; otherwise the gate requires Navisworks file + Speckle URL + non-empty **`clashes`**. On failure, **`Navigate`** to `/`. **Layout:** full-height **`relative`** region — **`ModelViewer`** fills the area; **top-left overlay** (`absolute`, `w-80`, `max-w-[calc(100%-1.5rem)]`) stacks **`SeverityFilter`** then **`ClashSelector`**. **Bottom sheet:** resizable panel (`sheetHeight` state, pointer drag on the handle, min/max height vs viewport) with two **`AnalysisPanel`** columns. **Wide screens:** CSS grid **`sm:grid-cols-[1fr_1px_1fr]`** — equal **`1fr`** columns with a **1px** center track so the divider sits on the midpoint; **`sm:pr-6` / `sm:pl-6`** on the side columns for symmetric inset. **Narrow screens:** single column, **`h-px`** horizontal rule between sections, **`gap-y-2`**. Selection is now nullable by default (no clash preselected). **Run Analysis** now opens a payload overlay previewing `clash_objects_original` and `nearby_speckle_objects` before/while sending `/clashes/analyze-context`. |
+| **`ModelViewer`** | Speckle container: **`useSpeckleViewer`** with trimmed **`speckleUrls`**, optional **`VITE_SPECKLE_TOKEN`**, **`onModelsLoaded`** to hold a **`Viewer`** reference. Empty state when no URLs. Supports clash highlight modes (`single`, `severity`, `none`): single clash isolates+highlights selected clash objects (with zoom); severity mode isolates+highlights all filtered-severity clash objects; none restores original materials. **`SelectionExtension`**: listens for **`ViewerEvent.ObjectClicked`** and shows **`SpeckleObjectOverlay`** for the selected object’s data (dismissible). |
 | **`SpeckleObjectOverlay`** | Floating, resizable panel listing prioritized / filtered keys from Speckle object **`Record<string, unknown>`** (hides heavy geometry keys). |
-| **`ClashSelector`** | Select current clash from **`filteredClashes`**; empty state when the filter yields no rows. |
-| **`SeverityFilter`** | Collapsible card: **fixed `p-4`** on the shell so the header does not jump when toggling. Body animates via **CSS grid** `grid-rows-[0fr]` ↔ `grid-rows-[1fr]` (`transition-[grid-template-rows]`, respects **`motion-reduce`**). **`inert`** when collapsed so the range is not focusable. Drives **`severityThreshold`** and **`filteredClashes`**. |
-| **`AnalysisPanel`** | Titled section + body + **Run Analysis** footer button (placeholder action until wired). |
+| **`ClashSelector`** | Select current clash from **`filteredClashes`**; includes a **No clash selected** option so users can de-select and return viewer materials/filters to original state. |
+| **`SeverityFilter`** | Collapsible card: **fixed `p-4`** on the shell so the header does not jump when toggling. Body animates via **CSS grid** `grid-rows-[0fr]` ↔ `grid-rows-[1fr]` (`transition-[grid-template-rows]`, respects **`motion-reduce`**). **`inert`** when collapsed so the range is not focusable. Drives **`severityThreshold`** and **`filteredClashes`**. Includes a **Highlight / Focused** toggle button near the visible-count chip that highlights all clashes at the current severity and ghosts the rest. |
+| **`AnalysisPanel`** | Titled section + body + **Run Analysis** footer button. Context pipeline uses clash object ids + expanded AABB region to gather nearby Speckle objects for backend analysis. |
 
 ---
 
@@ -73,15 +73,15 @@ This document maps the **React + Vite** frontend: entry points, routing, layout,
 
 | Module | Role |
 | ------ | ---- |
-| **`appStateContext.ts`** | **`AppState`** type: clashes, Navisworks filename, Speckle rows/URLs, **`severityThreshold`** + **`setSeverityThreshold`**, selection, derived **`filteredClashes`** (uses **`clashMeetsMinimumSeverity`** from **`types`**), mutators, **`clearSession`**. |
-| **`AppProvider.tsx`** | Implements state: mock clash generation on file upload, Speckle row CRUD with stable **`id`**s, derived **`speckleUrls`** string array for viewers and guards. |
+| **`appStateContext.ts`** | **`AppState`** type: clashes, Navisworks filename, Speckle rows/URLs, **`severityThreshold`** + **`setSeverityThreshold`**, **`highlightFilteredSeverity`** toggle, selection, derived **`filteredClashes`**, mutators, **`clearSession`**. |
+| **`AppProvider.tsx`** | Implements state: clash upload/session hydration, Speckle row CRUD with stable **`id`**s, derived **`speckleUrls`** string array for viewers/guards. Selecting a clash turns off severity-highlight mode; enabling severity highlight clears selected clash. |
 | **`useApp.ts`** | Hook to consume context (throws if outside provider). |
 
 **Data flow (high level)**
 
 1. User uploads a report → **`setNavisworksReport`** → mock **`clashes`**, filename stored.
 2. User adds Speckle rows → **`speckleUrlRows`** / derived **`speckleUrls`**.
-3. Inspector reads **`filteredClashes`**, **`selectedClashId`**, Speckle URLs for the viewer; severity filter narrows the clash list.
+3. Inspector reads **`filteredClashes`**, **`selectedClashId`**, **`highlightFilteredSeverity`**, Speckle URLs for the viewer; severity filter narrows the clash list and can toggle severity-wide highlighting.
 
 ---
 
@@ -104,6 +104,7 @@ This document maps the **React + Vite** frontend: entry points, routing, layout,
 | **`answerStreamSplit.ts`** | **`splitAnswerStream(raw)`** — splits assistant output into **`preamble`** (everything before the **last** line-start marker among **`Answer:`**, **`Final answer:`**, **`### Answer`**) and **`answer`** (after that marker). If none match, all text stays in **`preamble`** and **`answer`** is empty (bubble stays empty; draft lives in metadata). |
 | **`assistantDisplayText.ts`** | **`assistantBubbleText(raw)`** — takes **`splitAnswerStream(raw).answer`**, then strips ReAct **`Thought:` / `Action:`** noise (including **`Action: None`**, fenced blocks, separators) for the **main assistant bubble** only. Raw **`ChatMessage.text`** is unchanged. |
 | **`zoomToSmallestClashObject.ts`** | **`zoomViewerToSmallestClashObject(viewer, applicationIds, options?)`** — walks Speckle **`TreeNode`** data, unions bounding boxes for matching **`applicationId`**s, fits camera via **`CameraController`**. |
+| **`clashContextRegion.ts`** | Builds run-analysis context payload: resolves clash object nodes, computes region AABB (+ configurable expand meters), and gathers nearby Speckle objects intersecting the expanded region. Nearby collection now walks world-tree nodes and unions per-node render-view AABBs (more reliable than only scanning currently renderable views). |
 
 ---
 

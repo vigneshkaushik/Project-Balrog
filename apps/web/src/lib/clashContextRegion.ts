@@ -38,6 +38,9 @@ const HIDDEN_KEYS = new Set([
 const PRIORITY_KEYS = [
 	"id",
 	"name",
+	"itemName",
+	"itemType",
+	"item_type",
 	"type",
 	"speckle_type",
 	"applicationId",
@@ -84,7 +87,7 @@ export function summarizeSpeckleRaw(
 				out[key] = v;
 				budget -= s.length;
 			}
-			break;
+			continue;
 		}
 		if (Array.isArray(v)) {
 			out[key] = `(${v.length} items)`;
@@ -159,7 +162,28 @@ function boxToPayload(
 export interface NearbySpeckleObjectPayload {
 	id: string;
 	speckle_type: string | null;
+	name?: string | null;
+	item_type?: string | null;
 	summary: Record<string, unknown>;
+}
+
+function pickTextFromSummary(
+	summary: Record<string, unknown>,
+	keys: readonly string[],
+): string | null {
+	for (const key of keys) {
+		const v = summary[key];
+		if (typeof v === "string" && v.trim().length > 0) return v.trim();
+	}
+	for (const nestedKey of ["properties", "parameters"]) {
+		const nested = summary[nestedKey];
+		if (!isRecord(nested)) continue;
+		for (const key of keys) {
+			const v = nested[key];
+			if (typeof v === "string" && v.trim().length > 0) return v.trim();
+		}
+	}
+	return null;
 }
 
 /**
@@ -213,10 +237,8 @@ export function buildClashContextAnalysisPayload(
 	let capped = false;
 
 	if (expanded && !expanded.isEmpty()) {
-		const views = viewer
-			.getWorldTree()
-			.getRenderTree()
-			.getRenderableRenderViews();
+		const worldTree = viewer.getWorldTree();
+		const renderTree = worldTree.getRenderTree();
 		type Scored = {
 			id: string;
 			dist: number;
@@ -228,37 +250,67 @@ export function buildClashContextAnalysisPayload(
 		const center = new Vector3();
 		expanded.getCenter(center);
 
-		for (const rv of views) {
-			const aabb = rv.aabb;
-			if (!aabb || aabb.isEmpty()) continue;
-			if (!expanded.intersectsBox(aabb)) continue;
-			const id = rv.renderData.id;
-			if (!id) continue;
+		worldTree.walk((node) => {
+			const renderViews = renderTree.getRenderViewsForNode(node);
+			if (!renderViews || renderViews.length === 0) return true;
 
-			const box = aabb.clone();
+			const nodeBox = new Box3();
+			let hasAabb = false;
+			let speckleType: string | null = null;
+			for (const rv of renderViews) {
+				const aabb = rv.aabb;
+				if (!aabb || aabb.isEmpty()) continue;
+				if (!hasAabb) {
+					nodeBox.copy(aabb);
+					hasAabb = true;
+				} else {
+					nodeBox.union(aabb);
+				}
+				if (speckleType == null && typeof rv.speckleType === "string") {
+					speckleType = rv.speckleType;
+				}
+			}
+			if (!hasAabb || nodeBox.isEmpty()) return true;
+			if (!expanded.intersectsBox(nodeBox)) return true;
+
+			const id = node.model?.id;
+			if (!id || typeof id !== "string") return true;
+
 			const c = new Vector3();
-			box.getCenter(c);
+			nodeBox.getCenter(c);
 			const dist = c.distanceToSquared(center);
-
-			const found = viewer.getWorldTree().findId(id);
-			const node = found?.[0];
-			const raw = node?.model?.raw;
-			const st = typeof rv.speckleType === "string" ? rv.speckleType : null;
+			const raw = node.model?.raw;
 			const summary = isRecord(raw) ? summarizeSpeckleRaw(raw) : { id };
 
 			const prev = bestById.get(id);
 			if (!prev || dist < prev.dist) {
-				bestById.set(id, { id, dist, summary, st });
+				bestById.set(id, { id, dist, summary, st: speckleType });
 			}
-		}
+			return true;
+		});
 
 		const scored = [...bestById.values()].sort((a, b) => a.dist - b.dist);
 		capped = scored.length > MAX_NEARBY_OBJECTS;
 		const take = scored.slice(0, MAX_NEARBY_OBJECTS);
 		for (const row of take) {
+			const name = pickTextFromSummary(row.summary, [
+				"itemName",
+				"name",
+				"Name",
+				"family",
+			]);
+			const itemType = pickTextFromSummary(row.summary, [
+				"itemType",
+				"item_type",
+				"type",
+				"Type",
+				"category",
+			]);
 			nearby.push({
 				id: row.id,
 				speckle_type: row.st,
+				name,
+				item_type: itemType,
 				summary: row.summary,
 			});
 		}

@@ -142,6 +142,7 @@ async def analyze_clash_context(
                 user_msg=user_msg,
                 memory=memory,
                 max_iterations=settings.max_agent_iterations,
+                early_stopping_method="generate",
             )
             async for _ in handler.stream_events():
                 pass

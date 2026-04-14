@@ -5,7 +5,10 @@ import { useToast } from "../../context/ToastContext";
 import { useApp } from "../../context/useApp";
 import { buildClashContextAnalysisPayload } from "../../lib/clashContextRegion";
 import { clashReportGateMessage } from "../../lib/clashReportGateMessage";
-import { postClashAnalyzeContext } from "../../lib/postClashAnalysis";
+import {
+	postClashAnalyzeContext,
+	type ClashAnalyzeContextRequestBody,
+} from "../../lib/postClashAnalysis";
 import { AnalysisPanel } from "./AnalysisPanel";
 import { ClashSelector } from "./ClashSelector";
 import { ModelViewer } from "./ModelViewer";
@@ -25,8 +28,8 @@ const SEVERITY_COLORS: Record<string, string> = {
 };
 
 function matchKeysForClashObject(obj: {
-	elementId?: string;
-	revitGlobalId?: string;
+	elementId?: string | null;
+	revitGlobalId?: string | null;
 }): string[] {
 	const keys: string[] = [];
 	const e = obj.elementId?.trim();
@@ -44,6 +47,7 @@ export function ClashInspector() {
 		speckleUrls,
 		filteredClashes,
 		selectedClashId,
+		highlightFilteredSeverity,
 		setSelectedClashId,
 		clashes,
 		isUploading,
@@ -93,6 +97,9 @@ export function ClashInspector() {
 	const [analysisNotes, setAnalysisNotes] = useState<string | null>(null);
 	const [analysisError, setAnalysisError] = useState<string | null>(null);
 	const [analysisCompleted, setAnalysisCompleted] = useState(false);
+	const [analysisContextPreview, setAnalysisContextPreview] =
+		useState<ClashAnalyzeContextRequestBody | null>(null);
+	const [isContextPreviewOpen, setIsContextPreviewOpen] = useState(false);
 
 	useEffect(() => {
 		// Clear prior Run Analysis output when the user picks another clash.
@@ -105,14 +112,9 @@ export function ClashInspector() {
 	}, [selectedClashId]);
 
 	useEffect(() => {
-		if (filteredClashes.length === 0) return;
-
-		const stillValid =
-			selectedClashId && filteredClashes.some((c) => c.id === selectedClashId);
-
-		if (!stillValid) {
-			setSelectedClashId(filteredClashes[0].id);
-		}
+		if (!selectedClashId) return;
+		const stillValid = filteredClashes.some((c) => c.id === selectedClashId);
+		if (!stillValid) setSelectedClashId(null);
 	}, [filteredClashes, selectedClashId, setSelectedClashId]);
 
 	useEffect(() => {
@@ -177,7 +179,7 @@ export function ClashInspector() {
 			const built = buildClashContextAnalysisPayload(speckleViewer, selected, {
 				speckleUrlCount: nonEmptySpeckleCount,
 			});
-			const res = await postClashAnalyzeContext({
+			const requestBody: ClashAnalyzeContextRequestBody = {
 				clash: selected,
 				clash_objects_original: selected.objects ?? [],
 				context_region: built.context_region,
@@ -186,7 +188,10 @@ export function ClashInspector() {
 					...built.meta,
 					unmatched_clash_keys: built.unmatched_clash_keys,
 				},
-			});
+			};
+			setAnalysisContextPreview(requestBody);
+			setIsContextPreviewOpen(true);
+			const res = await postClashAnalyzeContext(requestBody);
 			setAnalysisWatchOut(res.watch_out_for);
 			setAnalysisRecommendations(res.recommendations);
 			setAnalysisNotes(res.notes);
@@ -211,6 +216,31 @@ export function ClashInspector() {
 		}
 		return [...keys];
 	}, [selected]);
+
+	const severityHighlightMatchKeys = useMemo(() => {
+		if (!highlightFilteredSeverity) return [];
+		const keys = new Set<string>();
+		for (const clash of filteredClashes) {
+			for (const obj of clash.objects ?? []) {
+				const e = obj.elementId?.trim();
+				if (e) keys.add(e);
+				const g = obj.revitGlobalId?.trim();
+				if (g) keys.add(g);
+			}
+		}
+		return [...keys];
+	}, [filteredClashes, highlightFilteredSeverity]);
+
+	const viewerHighlightMode: "single" | "severity" | "none" =
+		selectedClashObjectMatchKeys.length > 0
+			? "single"
+			: severityHighlightMatchKeys.length > 0
+				? "severity"
+				: "none";
+	const viewerHighlightMatchKeys =
+		viewerHighlightMode === "single"
+			? selectedClashObjectMatchKeys
+			: severityHighlightMatchKeys;
 
 	if (!hasSession) {
 		return null;
@@ -252,9 +282,93 @@ export function ClashInspector() {
 				ref={containerRef}
 				className="relative flex min-h-0 min-w-0 flex-1 overflow-hidden"
 			>
+				{isContextPreviewOpen && analysisContextPreview ? (
+					<div className="absolute inset-0 z-40 flex items-start justify-center bg-neutral-900/45 p-4 backdrop-blur-[1px]">
+						<section className="mt-3 flex max-h-[80vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-2xl">
+							<header className="flex items-center justify-between border-b border-neutral-200 px-4 py-3">
+								<div>
+									<h3 className="text-sm font-bold text-neutral-900">
+										Analysis Context Payload
+									</h3>
+									<p className="text-xs text-neutral-500">
+										Preview of the context sent to /clashes/analyze-context
+									</p>
+								</div>
+								<button
+									type="button"
+									onClick={() => setIsContextPreviewOpen(false)}
+									className="cursor-pointer rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs font-medium text-neutral-700 transition hover:bg-neutral-100"
+								>
+									Close
+								</button>
+							</header>
+
+							<div className="grid min-h-0 flex-1 gap-3 overflow-auto p-4 sm:grid-cols-2">
+								<div className="min-h-0 rounded-lg border border-neutral-200">
+									<div className="border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-xs font-semibold text-neutral-700">
+										Original clash objects (
+										{analysisContextPreview.clash_objects_original?.length ?? 0})
+									</div>
+									<pre className="max-h-[55vh] overflow-auto px-3 py-2 text-[11px] leading-relaxed text-neutral-700">
+										{JSON.stringify(
+											analysisContextPreview.clash_objects_original ?? [],
+											null,
+											2,
+										)}
+									</pre>
+								</div>
+
+								<div className="min-h-0 rounded-lg border border-neutral-200">
+									<div className="border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-xs font-semibold text-neutral-700">
+										Nearby objects (
+										{analysisContextPreview.nearby_speckle_objects.length})
+									</div>
+									<div className="max-h-[55vh] space-y-2 overflow-auto px-3 py-2 text-[11px] leading-relaxed text-neutral-700">
+										{analysisContextPreview.nearby_speckle_objects.length ===
+										0 ? (
+											<p className="text-xs text-neutral-500">
+												No nearby objects found for this context region.
+											</p>
+										) : (
+											analysisContextPreview.nearby_speckle_objects.map(
+												(obj) => (
+													<div
+														key={obj.id}
+														className="rounded-md border border-neutral-200 bg-white p-2"
+													>
+														<p className="text-xs font-semibold text-neutral-800">
+															{obj.name ?? "Unnamed object"}
+														</p>
+														<div className="mt-1 flex flex-wrap gap-1 text-[10px]">
+															<span className="rounded bg-neutral-100 px-1.5 py-0.5 text-neutral-700">
+																ID: {obj.id}
+															</span>
+															{obj.item_type ? (
+																<span className="rounded bg-blue-50 px-1.5 py-0.5 text-blue-700">
+																	Item type: {obj.item_type}
+																</span>
+															) : null}
+															{obj.speckle_type ? (
+																<span className="rounded bg-violet-50 px-1.5 py-0.5 text-violet-700">
+																	Geometry: {obj.speckle_type}
+																</span>
+															) : null}
+														</div>
+													</div>
+												),
+											)
+										)}
+									</div>
+								</div>
+							</div>
+						</section>
+					</div>
+				) : null}
+
 				<ModelViewer
 					clashSelectionId={selectedClashId}
-					clashObjectMatchKeys={selectedClashObjectMatchKeys}
+					clashObjectMatchKeys={viewerHighlightMatchKeys}
+					clashHighlightMode={viewerHighlightMode}
 					onViewerReady={setSpeckleViewer}
 					onViewerDisposed={() => setSpeckleViewer(null)}
 				/>
@@ -287,7 +401,7 @@ export function ClashInspector() {
 						<span>New report & URLs</span>
 					</button>
 					<SeverityFilter />
-					<ClashSelector />
+					<ClashSelector disabled={!speckleViewer} />
 				</div>
 
 				<div className="pointer-events-none absolute inset-x-0 bottom-0 z-20">
