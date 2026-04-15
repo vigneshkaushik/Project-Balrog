@@ -19,6 +19,8 @@ export interface ClashObjectViewerFocusRequest {
 }
 
 export interface AppState {
+  /** True while restoring persisted clash session from backend on app boot. */
+  isSessionHydrating: boolean
   clashes: Clash[]
   navisworksFileName: string | null
   setNavisworksReport: (file: File | null) => void

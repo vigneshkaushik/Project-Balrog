@@ -52,6 +52,21 @@
     width: 100%;
   }
 
+  .floating-card {
+    border-radius: 0.75rem;
+    border: 1px solid rgb(229 229 229 / 1);
+    background: rgb(255 255 255 / 0.95);
+    box-shadow:
+      0 12px 28px -16px rgb(0 0 0 / 0.4),
+      0 6px 12px -8px rgb(0 0 0 / 0.25);
+    backdrop-filter: blur(8px);
+  }
+
+  .drag-handle {
+    touch-action: none;
+    user-select: none;
+  }
+
   /* Agent metadata: “Thinking…” dot wave while pre-answer streaming */
   .agent-thinking-dot {
     animation: agent-thinking-blink 1.1s ease-in-out infinite;

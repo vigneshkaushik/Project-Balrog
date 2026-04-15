@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import type { PointerEventHandler } from "react";
 import {
 	type AgentConfigPublic,
 	type AgentProvider,
@@ -126,7 +127,15 @@ function SendIcon() {
 	);
 }
 
-export function ChatSidebar() {
+interface ChatWindowProps {
+	className?: string;
+	onHeaderPointerDown?: PointerEventHandler<HTMLDivElement>;
+}
+
+export function ChatWindow({
+	className = "",
+	onHeaderPointerDown,
+}: ChatWindowProps) {
 	const labelId = useId();
 	const inputId = useId();
 	const settingsTitleId = useId();
@@ -196,7 +205,7 @@ export function ChatSidebar() {
 			.catch((e: unknown) => {
 				if (e instanceof DOMException && e.name === "AbortError") return;
 				if (e instanceof Error && e.name === "AbortError") return;
-				console.error("[ChatSidebar] Failed to load chat history", e);
+				console.error("[ChatWindow] Failed to load chat history", e);
 			});
 		return () => ac.abort();
 	}, []);
@@ -461,16 +470,24 @@ export function ChatSidebar() {
 
 	return (
 		<aside
-			className="flex h-full min-h-0 w-full flex-col border-l border-neutral-200 bg-white"
+			className={`flex h-full min-h-0 w-full flex-col bg-white ${className}`}
 			aria-labelledby={labelId}
 		>
-			<div className="flex shrink-0 items-center justify-between gap-2 border-b border-neutral-100 px-4 py-3">
+			<div
+				className={`drag-handle flex shrink-0 items-center justify-between gap-2 border-b border-neutral-100 px-4 py-3 ${
+					onHeaderPointerDown
+						? "cursor-grab active:cursor-grabbing"
+						: ""
+				}`}
+				onPointerDown={onHeaderPointerDown}
+			>
 				<h2 id={labelId} className="text-sm font-semibold text-neutral-900">
-					Coordination assistant
+					Floating chat
 				</h2>
 				<button
 					type="button"
 					disabled={configLoading}
+					onPointerDown={(e) => e.stopPropagation()}
 					onClick={() => setSettingsOpen(true)}
 					className="cursor-pointer rounded-md p-1.5 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
 					aria-label="Configure agent"

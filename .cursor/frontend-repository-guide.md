@@ -39,8 +39,9 @@ This document maps the **React + Vite** frontend: entry points, routing, layout,
 
 | Component | Responsibility |
 | --------- | -------------- |
-| **`AppLayout`** | Page chrome: main column (`<Outlet />`) for route content + fixed-width **`ChatSidebar`** on large screens. Responsive: column on small viewports, row on `md+`. |
-| **`ChatSidebar`** | Right rail: **`POST /chat`** (SSE) for messages; **`GET /agent-config`** on mount and **`PUT /agent-config`** from the settings modal. Agent routing (provider, model, base URL, API key) is **stored only on the API**—the browser never persists secrets. Settings gear opens a dialog (provider, model, custom base URL, API key with show/hide). Renders **`AgentActivityLog`** above the reply. May restore conversation history via **`fetchChatHistory`** (**`chatHistory.ts`**) using **`CHAT_CONVERSATION_STORAGE_KEY`** in `sessionStorage`. Splits assistant **`ChatMessage.text`** with **`splitAnswerStream`** (**`answerStreamSplit.ts`**): text **before** the last answer keyword goes to metadata as **`streamPreamble`**; the **main bubble** shows only **`assistantBubbleText`** (post-marker body + ReAct noise stripped). See **`postChatStream.ts`**, **`agentConfig.ts`**, **`answerStreamSplit.ts`**, **`assistantDisplayText.ts`**. |
+| **`AppLayout`** | Page chrome: route content via `<Outlet />`; inspector now uses floating overlays instead of a fixed right rail. |
+| **`FloatingChat`** | Floating launcher + draggable/resizable chat window, grid-snapped via `useFloatingPanel`, with persisted open state (`balrog-floating-chat-open`). |
+| **`ChatWindow`** | Floating chat panel body (renamed from `ChatSidebar`): SSE chat stream, agent config modal (`GET`/`PUT /agent-config`), history restore, activity log rendering. Header is drag-handle enabled (except interactive controls like settings button). |
 | **`AgentActivityLog`** | Collapsible **agent metadata** (closed by default): header shows **Thinking** + dots while streaming and no answer slice yet (**`preAnswerStreaming`**), else a summary line (counts + **Metadata** when preamble text exists). Expanded: **Reasoning** card for raw **`streamPreamble`** (model output before **`Answer:`** / **`Final answer:`** / **`### Answer`**), **Extended thinking** (**`thought_delta`**), per-step **Reasoning** (**`agent_thought`**), tool calls/results. Tool results use **`ToolResultView`** for readable display. |
 | **`ToolResultView`** | Renders **`tool_result`** activity content (and error styling when **`isError`**). Used from **`AgentActivityLog`**. |
 
@@ -60,12 +61,12 @@ This document maps the **React + Vite** frontend: entry points, routing, layout,
 
 | Component | Responsibility |
 | --------- | -------------- |
-| **`ClashInspector`** | **Session gate** is controlled by a module flag **`viewerOnlyMode`** (currently `true`): if set, only **at least one non-empty Speckle URL** is required; otherwise the gate requires Navisworks file + Speckle URL + non-empty **`clashes`**. On failure, **`Navigate`** to `/`. **Layout:** full-height **`relative`** region — **`ModelViewer`** fills the area; **top-left overlay** (`absolute`, `w-80`, `max-w-[calc(100%-1.5rem)]`) stacks **`SeverityFilter`** then **`ClashSelector`**. **Bottom sheet:** resizable panel (`sheetHeight` state, pointer drag on the handle, min/max height vs viewport) with two **`AnalysisPanel`** columns. **Wide screens:** CSS grid **`sm:grid-cols-[1fr_1px_1fr]`** — equal **`1fr`** columns with a **1px** center track so the divider sits on the midpoint; **`sm:pr-6` / `sm:pl-6`** on the side columns for symmetric inset. **Narrow screens:** single column, **`h-px`** horizontal rule between sections, **`gap-y-2`**. Selection is now nullable by default (no clash preselected). **Run Analysis** now opens a payload overlay previewing `clash_objects_original` and `nearby_speckle_objects` before/while sending `/clashes/analyze-context`. |
-| **`ModelViewer`** | Speckle container: **`useSpeckleViewer`** with trimmed **`speckleUrls`**, optional **`VITE_SPECKLE_TOKEN`**, **`onModelsLoaded`** to hold a **`Viewer`** reference. Empty state when no URLs. Supports clash highlight modes (`single`, `severity`, `none`): single clash isolates+highlights selected clash objects (with zoom); severity mode isolates+highlights all filtered-severity clash objects; none restores original materials. **`SelectionExtension`**: listens for **`ViewerEvent.ObjectClicked`** and shows **`SpeckleObjectOverlay`** for the selected object’s data (dismissible). |
-| **`SpeckleObjectOverlay`** | Floating, resizable panel listing prioritized / filtered keys from Speckle object **`Record<string, unknown>`** (hides heavy geometry keys). |
+| **`ClashInspector`** | Floating-panel workspace: draggable/resizable **`FloatingCard`** panels for Clash Controls, Context, Recommendations. Panels support collapse state, persistent layout, and grid snapping. Gate now waits for backend session hydration before redirect/toast. Context panel includes a `Show Context` toggle that computes nearby context objects (AABB-based) once per clash, persists them in local UI state, and renders a clickable context object list. |
+| **`ModelViewer`** | Speckle container: `useSpeckleViewer` with trimmed URLs and optional token. Highlight system now supports clash object ids (**red**) plus optional context object ids (**light blue**) while ghosting the rest. Context-object clicks and clash-object clicks both support viewer focus/selection workflows. |
+| **`SpeckleObjectOverlay`** | Floating, draggable, resizable card for selected Speckle object data. Uses the same floating-card styling language and `useFloatingPanel` grid behavior as other overlays; header can collapse details, and body scrolls for long payloads. |
 | **`ClashSelector`** | Select current clash from **`filteredClashes`**; includes a **No clash selected** option so users can de-select and return viewer materials/filters to original state. |
 | **`SeverityFilter`** | Collapsible card: **fixed `p-4`** on the shell so the header does not jump when toggling. Body animates via **CSS grid** `grid-rows-[0fr]` ↔ `grid-rows-[1fr]` (`transition-[grid-template-rows]`, respects **`motion-reduce`**). **`inert`** when collapsed so the range is not focusable. Drives **`severityThreshold`** and **`filteredClashes`**. Includes a **Highlight / Focused** toggle button near the visible-count chip that highlights all clashes at the current severity and ghosts the rest. |
-| **`AnalysisPanel`** | Titled section + body + **Run Analysis** footer button. Context pipeline uses clash object ids + expanded AABB region to gather nearby Speckle objects for backend analysis. |
+| **`AnalysisPanel`** | Reusable analysis section wrapper with optional inner title and optional Run Analysis footer button (Context now hides both inner title and run button). |
 
 ---
 
@@ -90,6 +91,7 @@ This document maps the **React + Vite** frontend: entry points, routing, layout,
 | Hook | Role |
 | ---- | ---- |
 | **`useSpeckleViewer`** | Creates / disposes **`@speckle/viewer`** on a container ref when **`enabled`** and URLs exist. Options: **`authToken`**, **`debug`**, **`enableSelection`**, **`enableCamera`**, **`onModelsLoaded`**. Uses a stable **`urlsKey`** string internally so callers are not forced to memoize URL arrays. |
+| **`useFloatingPanel`** | Shared drag/resize/persist hook for floating overlays. Uses a single 16px panel grid (`PANEL_GRID`) for position and size snapping, viewport-clamped placement, and persistent layout (`panelLayoutStorage`). |
 
 ---
 
@@ -126,7 +128,22 @@ This document maps the **React + Vite** frontend: entry points, routing, layout,
 
 - **Semantic primary color**: change **`--app-primary`** / **`--app-primary-hover`** in **`src/index.css`**; Tailwind **`primary`** utilities follow via **`@theme`**.
 - **Primary buttons**: prefer **`btn-primary`** (+ **`btn-primary--full`** for full width) instead of one-off teal classes.
-- **Layout**: `AppLayout` uses `h-svh`, `min-h-0`, and flex splitting so the main pane and sidebar scroll correctly. Inspector overlays use **`absolute`** positioning with **`max-w`** caps so panels do not overflow narrow viewports.
+- **Floating overlays**: inspector, chat, and selected-object overlays now standardize on the same floating-card language (rounded border, blur, shadow), pointer-event boundaries, and **16px grid** snap for position/size.
+- **Layout**: `AppLayout` uses `h-svh`, `min-h-0`, and flex foundations. Inspector overlays are absolute-positioned and grid-snapped; collapsed cards may switch to auto-size while preserving stored expanded size.
+
+---
+
+## Update log — 2026-04-15
+
+- Replaced fixed inspector side/bottom layout with draggable floating cards (`Clash Controls`, `Context`, `Recommendations`) and collapse states.
+- Added floating chat launcher/window (`FloatingChat` + `ChatWindow`) with drag-from-header behavior and consistent action color usage (`text-primary`).
+- Unified floating grid behavior through `useFloatingPanel` and `PANEL_GRID` (16px), including load-time snapping and edge-safe clamp.
+- Added context-object workflow:
+  - `Show Context` toggle in Context header
+  - context AABB object collection cached per clash (does not clear on toggle off)
+  - viewer dual highlighting (clash red + context light blue)
+  - clickable context object list in Context panel.
+- Updated selected object overlay to floating-card style, drag/resize support, collapse behavior improvements, and scrollable content region.
 
 ---
 
