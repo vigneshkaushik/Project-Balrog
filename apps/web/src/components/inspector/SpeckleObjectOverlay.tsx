@@ -1,19 +1,19 @@
 import {
-  useCallback,
-  useEffect,
   useId,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
 } from 'react'
+import { useFloatingPanel } from '../../hooks/useFloatingPanel'
 
 interface SpeckleObjectOverlayProps {
   objectData: Record<string, unknown>
 }
 
-const MIN_WIDTH = 280
-const MIN_HEIGHT = 200
-const DEFAULT_WIDTH = 360
+const MIN_WIDTH = 288
+const MIN_HEIGHT = 208
+const DEFAULT_WIDTH = 352
 
 const PRIORITY_KEYS = [
   'id',
@@ -216,98 +216,55 @@ export function SpeckleObjectOverlay({ objectData }: SpeckleObjectOverlayProps) 
   const panelId = useId()
   const entries = getRenderableEntries(objectData)
   const [expanded, setExpanded] = useState(true)
-  const [width, setWidth] = useState(DEFAULT_WIDTH)
-  const [height, setHeight] = useState(0)
-  const [isResizing, setIsResizing] = useState<'width' | 'height' | null>(null)
-
-  useEffect(() => {
-    // Set default height to 80% of container or window
-    const parentHeight = window.innerHeight
-    setHeight(Math.max(MIN_HEIGHT, Math.floor(parentHeight * 0.8)))
+  const overlayRef = useRef<HTMLElement>(null)
+  const initialSize = useMemo(() => {
+    if (typeof window === 'undefined') {
+      return { width: DEFAULT_WIDTH, height: 560 }
+    }
+    return {
+      width: DEFAULT_WIDTH,
+      height: Math.max(MIN_HEIGHT, Math.min(560, window.innerHeight - 32)),
+    }
   }, [])
-
-  const dragStartRef = useRef<{
-    startX: number
-    startY: number
-    startWidth: number
-    startHeight: number
-  } | null>(null)
-
-  const onStartResizeWidth = useCallback(
-    (e: React.PointerEvent) => {
-      e.preventDefault()
-      setIsResizing('width')
-      dragStartRef.current = {
-        startX: e.clientX,
-        startY: e.clientY,
-        startWidth: width,
-        startHeight: height,
-      }
-    },
-    [width, height],
-  )
-
-  const onStartResizeHeight = useCallback(
-    (e: React.PointerEvent) => {
-      e.preventDefault()
-      setIsResizing('height')
-      dragStartRef.current = {
-        startX: e.clientX,
-        startY: e.clientY,
-        startWidth: width,
-        startHeight: height,
-      }
-    },
-    [width, height],
-  )
-
-  useEffect(() => {
-    if (!isResizing) return
-
-    const onPointerMove = (e: PointerEvent) => {
-      if (!dragStartRef.current) return
-      const { startX, startY, startWidth, startHeight } = dragStartRef.current
-
-      if (isResizing === 'width') {
-        const deltaX = startX - e.clientX
-        setWidth(Math.max(MIN_WIDTH, startWidth + deltaX))
-      } else if (isResizing === 'height') {
-        const deltaY = e.clientY - startY
-        setHeight(Math.max(MIN_HEIGHT, startHeight + deltaY))
-      }
+  const initialPosition = useMemo(() => {
+    if (typeof window === 'undefined') return { x: 16, y: 64 }
+    return {
+      x: Math.max(16, window.innerWidth - initialSize.width - 16),
+      y: 64,
     }
-
-    const onPointerUp = () => {
-      setIsResizing(null)
-      dragStartRef.current = null
-    }
-
-    window.addEventListener('pointermove', onPointerMove)
-    window.addEventListener('pointerup', onPointerUp)
-    return () => {
-      window.removeEventListener('pointermove', onPointerMove)
-      window.removeEventListener('pointerup', onPointerUp)
-    }
-  }, [isResizing])
+  }, [initialSize.width])
+  const { position, size, handleProps, getResizeHandleProps } = useFloatingPanel({
+    panelId: 'speckle-object-overlay',
+    panelRef: overlayRef,
+    initialPosition,
+    initialSize,
+    minSize: { width: MIN_WIDTH, height: MIN_HEIGHT },
+  })
 
   return (
     <aside
-      style={{ width: `${width}px` }}
-      className="absolute right-3 top-3 z-10 flex max-h-[min(90vh,calc(100%-1.5rem))] flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white/95 shadow-lg backdrop-blur-sm transition-[width] duration-300 ease-out motion-reduce:transition-none"
+      ref={overlayRef}
+      style={{
+        transform: `translate(${position.x}px, ${position.y}px)`,
+        width: `${size.width}px`,
+        height: expanded ? `${size.height}px` : "auto",
+      }}
+      className="floating-card pointer-events-auto absolute left-0 top-0 z-10 flex max-h-[min(90vh,calc(100%-2rem))] flex-col overflow-hidden transition-[width] duration-300 ease-out motion-reduce:transition-none"
     >
       {/* Left resize handle */}
       <div
-        onPointerDown={onStartResizeWidth}
+        {...getResizeHandleProps('w')}
         className="absolute left-0 top-0 bottom-0 z-10 w-1.5 cursor-ew-resize transition-colors hover:bg-primary/10 active:bg-primary/20"
       />
 
       <button
         type="button"
-        className={`flex w-full shrink-0 cursor-pointer items-start gap-2 px-4 py-3 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/40 ${
+        className={`drag-handle flex w-full shrink-0 cursor-grab items-start gap-2 px-3 py-2 text-left active:cursor-grabbing focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/40 ${
           expanded ? 'border-b border-neutral-200' : ''
         }`}
         aria-expanded={expanded}
         aria-controls={panelId}
+        {...handleProps}
         onClick={() => setExpanded((open) => !open)}
       >
         <svg
@@ -327,7 +284,7 @@ export function SpeckleObjectOverlay({ objectData }: SpeckleObjectOverlayProps) 
           />
         </svg>
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
+          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-600">
             Selected object
           </p>
           <h3 className="truncate text-sm font-semibold text-neutral-900">
@@ -337,23 +294,15 @@ export function SpeckleObjectOverlay({ objectData }: SpeckleObjectOverlayProps) 
       </button>
 
       <div
-        className={`grid min-h-0 transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none ${
+        className={`grid min-h-0 flex-1 transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none ${
           expanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
         }`}
       >
-        <div className="min-h-0 overflow-hidden">
+        <div className="min-h-0 flex-1 overflow-hidden">
           <div
             id={panelId}
             inert={!expanded}
-            style={{
-              height:
-                height > 0
-                  ? `${height}px`
-                  : expanded
-                    ? 'min(80vh, calc(100vh - 8rem))'
-                    : undefined,
-            }}
-            className="flex min-h-0 flex-col overflow-hidden"
+            className="flex h-full min-h-0 flex-col overflow-hidden"
           >
             <div className="min-h-0 flex-1 overflow-auto px-4 py-2">
               {entries.length > 0 ? (
@@ -369,10 +318,12 @@ export function SpeckleObjectOverlay({ objectData }: SpeckleObjectOverlayProps) 
               )}
             </div>
 
-            <div
-              onPointerDown={onStartResizeHeight}
-              className="h-1.5 shrink-0 cursor-ns-resize transition-colors hover:bg-primary/10 active:bg-primary/20"
-            />
+            {expanded ? (
+              <div
+                {...getResizeHandleProps('s')}
+                className="h-1.5 shrink-0 cursor-ns-resize transition-colors hover:bg-primary/10 active:bg-primary/20"
+              />
+            ) : null}
           </div>
         </div>
       </div>

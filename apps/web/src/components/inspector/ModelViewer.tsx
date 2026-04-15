@@ -34,6 +34,8 @@ export interface ModelViewerProps {
 	 * Speckle scene for red highlight + zoom.
 	 */
 	clashObjectMatchKeys?: string[];
+	/** Nearby context object ids (AABB region) highlighted light blue when enabled. */
+	contextObjectIds?: string[];
 	clashHighlightMode?: "single" | "severity" | "none";
 	/** Fired when the viewer has finished loading models (same timing as internal highlight setup). */
 	onViewerReady?: (viewer: Viewer) => void;
@@ -55,6 +57,7 @@ const CLASH_ISOLATE_STATE_KEY = "balrog-clash-isolate";
 export function ModelViewer({
 	clashSelectionId,
 	clashObjectMatchKeys,
+	contextObjectIds = [],
 	clashHighlightMode = "none",
 	onViewerReady,
 	onViewerDisposed,
@@ -114,6 +117,9 @@ export function ModelViewer({
 		keys: (clashObjectMatchKeys ?? [])
 			.map((s) => s.trim())
 			.filter((s) => s.length > 0),
+		contextObjectIds: contextObjectIds
+			.map((s) => s.trim())
+			.filter((s) => s.length > 0),
 	});
 
 	useEffect(() => {
@@ -126,12 +132,13 @@ export function ModelViewer({
 			return;
 		}
 
-		const { keys: ids, selectionId, mode } = JSON.parse(
+		const { keys: ids, contextObjectIds: contextIds, selectionId, mode } = JSON.parse(
 			clashHighlightEffectKey,
 		) as {
 			selectionId: string;
 			mode: "single" | "severity" | "none";
 			keys: string[];
+			contextObjectIds: string[];
 		};
 
 		let filteringExt: FilteringExtension | null = null;
@@ -198,21 +205,33 @@ export function ModelViewer({
 			}
 
 			if (matchedObjectIds.length > 0) {
+				const uniqueContextIds = [...new Set(contextIds)];
+				const contextOnlyIds = uniqueContextIds.filter(
+					(id) => !matchedObjectIds.includes(id),
+				);
+				const visibleIds =
+					contextOnlyIds.length > 0
+						? [...new Set([...matchedObjectIds, ...contextOnlyIds])]
+						: matchedObjectIds;
 				if (filteringExt) {
 					filteringExt.isolateObjects(
-						matchedObjectIds,
+						visibleIds,
 						CLASH_ISOLATE_STATE_KEY,
 						true,
 						true,
 					);
-					filteringExt.setUserObjectColors([
+					const colors: { objectIds: string[]; color: string }[] = [
 						{ objectIds: matchedObjectIds, color: "#ff0000" },
-					]);
+					];
+					if (contextOnlyIds.length > 0) {
+						colors.push({ objectIds: contextOnlyIds, color: "#7dd3fc" });
+					}
+					filteringExt.setUserObjectColors(colors);
 					const renderer = loadedViewer.getRenderer();
 					prevPickFilter = renderer.objectPickConfiguration.pickedObjectsFilter;
 					const pickAllow = expandClashPickAllowIds(
 						loadedViewer,
-						matchedObjectIds,
+						visibleIds,
 					);
 					renderer.objectPickConfiguration = {
 						pickedObjectsFilter: (args) => {

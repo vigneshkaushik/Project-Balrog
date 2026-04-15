@@ -5,6 +5,7 @@ import { useToast } from "../../context/ToastContext";
 import { useApp } from "../../context/useApp";
 import type { SpeckleLoadState } from "../../hooks/useSpeckleViewer";
 import { buildClashContextAnalysisPayload } from "../../lib/clashContextRegion";
+import type { NearbySpeckleObjectPayload } from "../../lib/clashContextRegion";
 import { clashReportGateMessage } from "../../lib/clashReportGateMessage";
 import {
 	postClashAnalyzeContext,
@@ -114,6 +115,10 @@ export function ClashInspector() {
 	const [isContextCollapsed, setIsContextCollapsed] = useState(true);
 	const [isRecommendationsCollapsed, setIsRecommendationsCollapsed] =
 		useState(true);
+	const [showClashContext, setShowClashContext] = useState(false);
+	const [contextObjectsByClashId, setContextObjectsByClashId] = useState<
+		Record<string, NearbySpeckleObjectPayload[]>
+	>({});
 
 	useEffect(() => {
 		// Clear prior Run Analysis output when the user picks another clash.
@@ -132,6 +137,18 @@ export function ClashInspector() {
 	}, [filteredClashes, selectedClashId, setSelectedClashId]);
 
 	const selected = filteredClashes.find((c) => c.id === selectedClashId);
+	const selectedClashContextObjects = useMemo(() => {
+		if (!selected) return [];
+		return contextObjectsByClashId[selected.id] ?? [];
+	}, [contextObjectsByClashId, selected]);
+	const hasComputedSelectedClashContext = useMemo(() => {
+		if (!selected) return false;
+		return Object.hasOwn(contextObjectsByClashId, selected.id);
+	}, [contextObjectsByClashId, selected]);
+	const selectedClashContextIds = useMemo(
+		() => selectedClashContextObjects.map((obj) => obj.id),
+		[selectedClashContextObjects],
+	);
 	const selectedClashName =
 		clashes.find((c) => c.id === selectedClashId)?.label ?? "No clash selected";
 	const collapseToggleClassName =
@@ -142,6 +159,35 @@ export function ClashInspector() {
 		() => speckleUrls.filter((u) => u.trim().length > 0).length,
 		[speckleUrls],
 	);
+
+	useEffect(() => {
+		if (!showClashContext || !selected || !speckleViewer) {
+			return;
+		}
+		if (Object.hasOwn(contextObjectsByClashId, selected.id)) {
+			return;
+		}
+		try {
+			const built = buildClashContextAnalysisPayload(speckleViewer, selected, {
+				speckleUrlCount: nonEmptySpeckleCount,
+			});
+			setContextObjectsByClashId((prev) => ({
+				...prev,
+				[selected.id]: built.nearby_speckle_objects,
+			}));
+		} catch {
+			setContextObjectsByClashId((prev) => ({
+				...prev,
+				[selected.id]: [],
+			}));
+		}
+	}, [
+		showClashContext,
+		selected,
+		speckleViewer,
+		nonEmptySpeckleCount,
+		contextObjectsByClashId,
+	]);
 
 	const handleRunAnalysis = useCallback(async () => {
 		if (!selected) {
@@ -244,6 +290,11 @@ export function ClashInspector() {
 				<ModelViewer
 					clashSelectionId={selectedClashId}
 					clashObjectMatchKeys={viewerHighlightMatchKeys}
+					contextObjectIds={
+						showClashContext && viewerHighlightMode === "single"
+							? selectedClashContextIds
+							: []
+					}
 					clashHighlightMode={viewerHighlightMode}
 					onViewerReady={setSpeckleViewer}
 					onViewerDisposed={() => setSpeckleViewer(null)}
@@ -361,25 +412,44 @@ export function ClashInspector() {
 					showBody={!isContextCollapsed}
 					resizable={!isContextCollapsed}
 					headerActions={
-						<button
-							type="button"
-							className={compactToggleClassName}
-							title={isContextCollapsed ? "Expand context panel" : "Collapse context panel"}
-							onPointerDown={(event) => event.stopPropagation()}
-							onClick={() => setIsContextCollapsed((prev) => !prev)}
-						>
-							<span className="text-neutral-400" aria-hidden="true">
-								{isContextCollapsed ? "▼" : "▲"}
-							</span>
-						</button>
+						<div className="flex items-center gap-1.5">
+							<button
+								type="button"
+								className="cursor-pointer rounded-md border px-2 py-1 text-[11px] font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/60 border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100 aria-pressed:border-primary/40 aria-pressed:bg-primary/10 aria-pressed:text-primary"
+								aria-pressed={showClashContext}
+								disabled={!selected || !speckleViewer}
+								title={
+									showClashContext
+										? "Hide clash context objects"
+										: "Show clash context objects"
+								}
+								onPointerDown={(event) => event.stopPropagation()}
+								onClick={() => setShowClashContext((prev) => !prev)}
+							>
+								{showClashContext ? "Hide Context" : "Show Context"}
+							</button>
+							<button
+								type="button"
+								className={compactToggleClassName}
+								title={
+									isContextCollapsed
+										? "Expand context panel"
+										: "Collapse context panel"
+								}
+								onPointerDown={(event) => event.stopPropagation()}
+								onClick={() => setIsContextCollapsed((prev) => !prev)}
+							>
+								<span className="text-neutral-400" aria-hidden="true">
+									{isContextCollapsed ? "▼" : "▲"}
+								</span>
+							</button>
+						</div>
 					}
 				>
 					<div className="h-full min-h-0">
 						<AnalysisPanel
 							title="Context"
-							onRunAnalysis={handleRunAnalysis}
-							runAnalysisPending={analysisLoading}
-							runAnalysisDisabled={!selected || !speckleViewer}
+							showTitle={false}
 						>
 							{selected ? (
 								<div className="space-y-3 text-sm text-neutral-700">
@@ -490,6 +560,43 @@ export function ClashInspector() {
 											</ul>
 										</div>
 									) : null}
+									<div>
+										<p className="font-semibold text-neutral-900">
+											Context Objects ({selectedClashContextObjects.length})
+										</p>
+										{!hasComputedSelectedClashContext ? (
+											<p className="mt-1 text-xs text-neutral-500">
+												Context objects have not been generated yet. Click
+												“Show Context” at least once.
+											</p>
+										) : selectedClashContextObjects.length === 0 ? (
+											<p className="mt-1 text-xs text-neutral-500">
+												No nearby context objects found.
+											</p>
+										) : (
+											<ul className="mt-1 list-disc space-y-0.5 pl-5 text-xs">
+												{selectedClashContextObjects.map((obj) => (
+													<li key={obj.id}>
+														<button
+															type="button"
+															className="-ml-0.5 w-[calc(100%+0.125rem)] rounded px-0.5 text-left hover:bg-neutral-100 hover:underline"
+															onClick={() =>
+																requestClashObjectViewerFocus([obj.id])
+															}
+														>
+															{obj.name ?? "Unnamed object"}
+															{obj.item_type ? (
+																<span className="text-neutral-400">
+																	{" "}
+																	— {obj.item_type}
+																</span>
+															) : null}
+														</button>
+													</li>
+												))}
+											</ul>
+										)}
+									</div>
 									{analysisWatchOut.length > 0 ? (
 										<div>
 											<p className="font-semibold text-neutral-900">
@@ -520,6 +627,16 @@ export function ClashInspector() {
 				<FloatingCard
 					panelId="clash-recommendations"
 					title="Recommendations"
+					titleIcon={
+						<svg
+							className="h-3.5 w-3.5"
+							viewBox="0 0 24 24"
+							fill="currentColor"
+							aria-hidden="true"
+						>
+							<path d="M9.813 2.25a.75.75 0 0 1 .707.5l1.116 3.163a3.75 3.75 0 0 0 2.229 2.228l3.163 1.117a.75.75 0 0 1 0 1.414l-3.163 1.117a3.75 3.75 0 0 0-2.229 2.228l-1.116 3.163a.75.75 0 0 1-1.414 0L7.283 14.02a3.75 3.75 0 0 0-2.228-2.228L1.892 10.67a.75.75 0 0 1 0-1.414l3.163-1.117a3.75 3.75 0 0 0 2.228-2.228l1.116-3.163a.75.75 0 0 1 .707-.5h.707ZM18.259 8.715a.75.75 0 0 1 .707.5l.463 1.313a1.5 1.5 0 0 0 .891.891l1.313.463a.75.75 0 0 1 0 1.414l-1.313.463a1.5 1.5 0 0 0-.891.891l-.463 1.313a.75.75 0 0 1-1.414 0l-.463-1.313a1.5 1.5 0 0 0-.891-.891l-1.313-.463a.75.75 0 0 1 0-1.414l1.313-.463a1.5 1.5 0 0 0 .891-.891l.463-1.313a.75.75 0 0 1 .707-.5ZM16.894 17.088a.75.75 0 0 1 .707.5l.29.822a1.5 1.5 0 0 0 .892.891l.822.29a.75.75 0 0 1 0 1.414l-.822.29a1.5 1.5 0 0 0-.892.892l-.29.822a.75.75 0 0 1-1.414 0l-.29-.822a1.5 1.5 0 0 0-.892-.892l-.822-.29a.75.75 0 0 1 0-1.414l.822-.29a1.5 1.5 0 0 0 .892-.891l.29-.822a.75.75 0 0 1 .707-.5Z" />
+						</svg>
+					}
 					widthClassName="w-fit"
 					initialPosition={{ x: 16, y: 344 }}
 					initialSize={{ width: 464, height: 304 }}

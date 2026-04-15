@@ -5,6 +5,7 @@ import { useFloatingPanel } from '../../hooks/useFloatingPanel'
 interface FloatingCardProps {
   panelId: string
   title: string
+  titleIcon?: ReactNode
   titleSubtitle?: string
   initialPosition: PanelPosition
   initialSize: PanelSize
@@ -31,6 +32,7 @@ function coercePanelRef(
 export function FloatingCard({
   panelId,
   title,
+  titleIcon,
   titleSubtitle,
   initialPosition,
   initialSize,
@@ -80,8 +82,13 @@ export function FloatingCard({
         {...(draggable ? handleProps : {})}
       >
         <div className="min-w-0">
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-600">
-            {title}
+          <h3 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-neutral-600">
+            {titleIcon ? (
+              <span className="inline-flex h-3.5 w-3.5 items-center justify-center text-primary">
+                {titleIcon}
+              </span>
+            ) : null}
+            <span>{title}</span>
           </h3>
           {titleSubtitle ? (
             <p className="mt-0.5 truncate text-[11px] font-medium normal-case tracking-normal text-neutral-500">
