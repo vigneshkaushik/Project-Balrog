@@ -39,6 +39,10 @@ export interface ModelViewerProps {
 	onViewerReady?: (viewer: Viewer) => void;
 	/** Fired when the viewer is disposed (URL change, unmount). */
 	onViewerDisposed?: () => void;
+	/** Optional external observer for Speckle loading progress state. */
+	onLoadStateChange?: (state: SpeckleLoadState) => void;
+	/** Whether the internal top-center progress pill is shown. */
+	showLoadProgress?: boolean;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -54,6 +58,8 @@ export function ModelViewer({
 	clashHighlightMode = "none",
 	onViewerReady,
 	onViewerDisposed,
+	onLoadStateChange,
+	showLoadProgress = true,
 }: ModelViewerProps) {
 	const { speckleUrls, clashObjectViewerFocus } = useApp();
 	const containerRef = useRef<HTMLElement>(null);
@@ -89,7 +95,8 @@ export function ModelViewer({
 
 	const onLoadState = useCallback((state: SpeckleLoadState) => {
 		setSpeckleLoadState(state);
-	}, []);
+		onLoadStateChange?.(state);
+	}, [onLoadStateChange]);
 
 	useSpeckleViewer(containerRef, activeUrls, {
 		enabled: activeUrls.length > 0,
@@ -390,7 +397,7 @@ export function ModelViewer({
 	}, [activeUrls.length]);
 
 	return (
-		<div className="relative min-h-0 flex-1 overflow-hidden bg-neutral-200/50">
+		<div className="relative h-full w-full min-h-0 flex-1 overflow-hidden bg-neutral-200/50">
 			{activeUrls.length === 0 ? (
 				<div className="absolute inset-0 flex min-h-[320px] items-center justify-center p-6 text-center text-sm text-neutral-500">
 					Add at least one Speckle model URL on the landing page to load the 3D
@@ -403,7 +410,7 @@ export function ModelViewer({
 						aria-label="Speckle 3D model viewer"
 						className="absolute inset-0 min-h-[320px]"
 					/>
-					{speckleLoadState.loading ? (
+					{showLoadProgress && speckleLoadState.loading ? (
 						<SpeckleLoadProgressBar percent={speckleLoadState.percent} />
 					) : null}
 					{selectedObjectData ? (

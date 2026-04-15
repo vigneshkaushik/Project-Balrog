@@ -52,6 +52,7 @@ function mapBackendClash(raw: ParsedClashResult, testName?: string): Clash {
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
+  const [isSessionHydrating, setIsSessionHydrating] = useState(true)
   const [clashes, setClashes] = useState<Clash[]>([])
   const [navisworksFileName, setNavisworksFileName] = useState<string | null>(
     null,
@@ -152,6 +153,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
       } catch {
         /* offline or API down — keep empty local state */
+      } finally {
+        if (!cancelled) {
+          setIsSessionHydrating(false)
+        }
       }
     })()
     return () => {
@@ -304,6 +309,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(
     () => ({
+      isSessionHydrating,
       clashes,
       navisworksFileName,
       setNavisworksReport,
@@ -329,6 +335,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       clearClashObjectViewerFocus,
     }),
     [
+      isSessionHydrating,
       clashes,
       navisworksFileName,
       setNavisworksReport,
