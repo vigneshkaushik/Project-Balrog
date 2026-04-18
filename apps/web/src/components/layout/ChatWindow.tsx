@@ -1,5 +1,14 @@
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import {
+	useCallback,
+	useEffect,
+	useId,
+	useLayoutEffect,
+	useRef,
+	useState,
+	type RefObject,
+} from "react";
 import type { PointerEventHandler } from "react";
+import { createPortal } from "react-dom";
 import {
 	type AgentConfigPublic,
 	type AgentProvider,
@@ -127,13 +136,83 @@ function SendIcon() {
 	);
 }
 
+const SETTINGS_VIEWPORT_MARGIN = 8;
+const SETTINGS_GAP = 8;
+const SETTINGS_MAX_WIDTH = 448;
+const SETTINGS_MIN_WIDTH = 280;
+
+function clampNumber(n: number, lo: number, hi: number): number {
+	return Math.min(hi, Math.max(lo, n));
+}
+
+/** Viewport-space placement for portaled `position: fixed` UI (must not use coords from inside backdrop-filter / transformed ancestors). */
+function computeAdjacentSettingsPlacement(rect: DOMRect): {
+	top: number;
+	left: number;
+	width: number;
+	maxHeight: number;
+} {
+	const vw = window.innerWidth;
+	const vh = window.innerHeight;
+	const m = SETTINGS_VIEWPORT_MARGIN;
+	const g = SETTINGS_GAP;
+
+	const maxFitW = vw - 2 * m;
+	const width = clampNumber(
+		Math.min(SETTINGS_MAX_WIDTH, maxFitW),
+		Math.min(SETTINGS_MIN_WIDTH, maxFitW),
+		Math.min(SETTINGS_MAX_WIDTH, maxFitW),
+	);
+
+	const spaceRight = vw - rect.right - g - m;
+	const spaceLeft = rect.left - g - m;
+
+	const leftIfRight = rect.right + g;
+	const leftIfLeft = rect.left - g - width;
+
+	const fits = (left: number) =>
+		left >= m - 0.5 && left + width <= vw - m + 0.5;
+
+	const okRight = fits(leftIfRight);
+	const okLeft = fits(leftIfLeft);
+
+	let left: number;
+	if (okRight && okLeft) {
+		left = spaceRight >= spaceLeft ? leftIfRight : leftIfLeft;
+	} else if (okRight) {
+		left = leftIfRight;
+	} else if (okLeft) {
+		left = leftIfLeft;
+	} else {
+		left = clampNumber(
+			spaceRight >= spaceLeft ? leftIfRight : leftIfLeft,
+			m,
+			vw - m - width,
+		);
+	}
+
+	left = clampNumber(left, m, vw - m - width);
+
+	const top = clampNumber(rect.top, m, Math.max(m, vh - m - 80));
+	// Tall enough for the form without a fractional overflow scrollbar; still capped by viewport.
+	const maxHeight = Math.min(
+		vh - 2 * m,
+		Math.max(rect.height + 96, 680),
+	);
+
+	return { top, left, width, maxHeight };
+}
+
 interface ChatWindowProps {
 	className?: string;
+	/** When set, agent settings open as a floating panel beside this element (e.g. the floating chat card). */
+	panelBoundsRef?: RefObject<HTMLElement | null>;
 	onHeaderPointerDown?: PointerEventHandler<HTMLDivElement>;
 }
 
 export function ChatWindow({
 	className = "",
+	panelBoundsRef,
 	onHeaderPointerDown,
 }: ChatWindowProps) {
 	const labelId = useId();
@@ -160,6 +239,13 @@ export function ChatWindow({
 	);
 	const [sending, setSending] = useState(false);
 	const abortRef = useRef<AbortController | null>(null);
+	const [settingsPlacement, setSettingsPlacement] = useState<{
+		top: number;
+		left: number;
+		width: number;
+		maxHeight: number;
+	} | null>(null);
+	const settingsPlacementRaf = useRef<number>(0);
 
 	useEffect(() => {
 		return () => {
@@ -256,6 +342,45 @@ export function ChatWindow({
 		window.addEventListener("keydown", onKey);
 		return () => window.removeEventListener("keydown", onKey);
 	}, [settingsOpen]);
+
+	const updateSettingsPlacement = useCallback(() => {
+		const el = panelBoundsRef?.current;
+		if (el) {
+			setSettingsPlacement(
+				computeAdjacentSettingsPlacement(el.getBoundingClientRect()),
+			);
+		} else {
+			setSettingsPlacement(null);
+		}
+	}, [panelBoundsRef]);
+
+	useLayoutEffect(() => {
+		if (!settingsOpen) {
+			setSettingsPlacement(null);
+			return;
+		}
+		updateSettingsPlacement();
+	}, [settingsOpen, updateSettingsPlacement]);
+
+	useEffect(() => {
+		if (!settingsOpen) return;
+		const onResize = () => {
+			updateSettingsPlacement();
+		};
+		const onPointerMove = () => {
+			cancelAnimationFrame(settingsPlacementRaf.current);
+			settingsPlacementRaf.current = requestAnimationFrame(() => {
+				updateSettingsPlacement();
+			});
+		};
+		window.addEventListener("resize", onResize);
+		window.addEventListener("pointermove", onPointerMove);
+		return () => {
+			window.removeEventListener("resize", onResize);
+			window.removeEventListener("pointermove", onPointerMove);
+			cancelAnimationFrame(settingsPlacementRaf.current);
+		};
+	}, [settingsOpen, updateSettingsPlacement]);
 
 	const send = useCallback(async () => {
 		const text = draft.trim();
@@ -482,7 +607,7 @@ export function ChatWindow({
 				onPointerDown={onHeaderPointerDown}
 			>
 				<h2 id={labelId} className="text-sm font-semibold text-neutral-900">
-					Floating chat
+					Coordination assistant
 				</h2>
 				<button
 					type="button"
@@ -501,21 +626,44 @@ export function ChatWindow({
 				</div>
 			) : null}
 
-			{settingsOpen ? (
-				<>
-					<button
-						type="button"
-						className="fixed inset-0 z-50 cursor-default border-0 bg-black/40 p-0"
-						aria-label="Close dialog"
-						onClick={() => setSettingsOpen(false)}
-					/>
-					<div className="pointer-events-none fixed inset-0 z-[51] flex items-center justify-center p-4">
-						<div
-							role="dialog"
-							aria-modal="true"
-							aria-labelledby={settingsTitleId}
-							className="pointer-events-auto max-h-[min(90vh,560px)] w-full max-w-md overflow-y-auto rounded-xl border border-neutral-200 bg-white p-4 shadow-lg"
-						>
+			{settingsOpen && typeof document !== "undefined"
+				? createPortal(
+						<>
+							<button
+								type="button"
+								className="fixed inset-0 z-[100] cursor-default border-0 bg-black/40 p-0"
+								aria-label="Close dialog"
+								onClick={() => setSettingsOpen(false)}
+							/>
+							<div
+								className={
+									settingsPlacement
+										? "pointer-events-none fixed inset-0 z-[101] p-0"
+										: "pointer-events-none fixed inset-0 z-[101] flex items-center justify-center p-4"
+								}
+							>
+								<div
+									role="dialog"
+									aria-modal="true"
+									aria-labelledby={settingsTitleId}
+									className={
+										settingsPlacement
+											? "pointer-events-auto flex min-h-0 flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-lg"
+											: "pointer-events-auto flex max-h-[min(90vh,680px)] w-full max-w-md min-h-0 flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-lg"
+									}
+									style={
+										settingsPlacement
+											? {
+													position: "fixed",
+													top: settingsPlacement.top,
+													left: settingsPlacement.left,
+													width: settingsPlacement.width,
+													maxHeight: settingsPlacement.maxHeight,
+												}
+											: undefined
+									}
+								>
+									<div className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-4 pl-4 pr-3 [scrollbar-gutter:stable]">
 							<h3
 								id={settingsTitleId}
 								className="text-sm font-semibold text-neutral-900"
@@ -701,11 +849,14 @@ export function ChatWindow({
 										Save
 									</button>
 								</div>
+								</div>
+									</div>
 							</div>
 						</div>
-					</div>
-				</>
-			) : null}
+						</>,
+						document.body,
+					)
+				: null}
 
 			<div className="flex min-h-0 flex-1 flex-col px-3 py-2">
 				{messages.length === 0 ? (

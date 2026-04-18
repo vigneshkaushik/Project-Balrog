@@ -61,7 +61,8 @@ This document maps the **React + Vite** frontend: entry points, routing, layout,
 
 | Component | Responsibility |
 | --------- | -------------- |
-| **`ClashInspector`** | Floating-panel workspace: draggable/resizable **`FloatingCard`** panels for Clash Controls, Context, Recommendations. Panels support collapse state, persistent layout, and grid snapping. Gate now waits for backend session hydration before redirect/toast. Context panel includes a `Show Context` toggle that computes nearby context objects (AABB-based) once per clash, persists them in local UI state, and renders a clickable context object list. |
+| **`ClashInspector`** | Floating-panel workspace: draggable/resizable **`FloatingCard`** panels for Clash Controls, Context, Recommendations. Panels are opened/closed from **`InspectorToolbar`** (a floating vertical icon bar on the left). Each panel's header shows an **`X`** close button (via the local `ClosePanelButton`) in place of the legacy collapse chevron. Open/closed state is persisted under **`balrog-inspector-open-panels`** (array of panel ids); panel position/size continues to persist via `useFloatingPanel`/`panelLayoutStorage`. Gate waits for backend session hydration before redirect/toast. Context panel includes a `Show Context` toggle that computes nearby context objects (AABB-based) once per clash, persists them in local UI state, and renders a clickable context object list. |
+| **`InspectorToolbar`** | Floating vertical toolbar with icon-only buttons (sliders / info / sparkle) for the three inspector panels. Cursor-pointer, `aria-pressed` reflects open state, and clicking toggles panel visibility in `ClashInspector`. |
 | **`ModelViewer`** | Speckle container: `useSpeckleViewer` with trimmed URLs and optional token. Highlight system now supports clash object ids (**red**) plus optional context object ids (**light blue**) while ghosting the rest. Context-object clicks and clash-object clicks both support viewer focus/selection workflows. |
 | **`SpeckleObjectOverlay`** | Floating, draggable, resizable card for selected Speckle object data. Uses the same floating-card styling language and `useFloatingPanel` grid behavior as other overlays; header can collapse details, and body scrolls for long payloads. |
 | **`ClashSelector`** | Select current clash from **`filteredClashes`**; includes a **No clash selected** option so users can de-select and return viewer materials/filters to original state. |
@@ -132,6 +133,10 @@ This document maps the **React + Vite** frontend: entry points, routing, layout,
 - **Layout**: `AppLayout` uses `h-svh`, `min-h-0`, and flex foundations. Inspector overlays are absolute-positioned and grid-snapped; collapsed cards may switch to auto-size while preserving stored expanded size.
 
 ---
+
+## Update log — 2026-04-18
+
+- Replaced per-panel collapse chevrons with a floating vertical **`InspectorToolbar`** of icon buttons (Clash Controls, Context, Recommendations). Clicking a toolbar button shows/hides the corresponding `FloatingCard`; panel header now uses an **`X`** close button instead of a chevron. Panel open state is persisted under `balrog-inspector-open-panels`.
 
 ## Update log — 2026-04-15
 

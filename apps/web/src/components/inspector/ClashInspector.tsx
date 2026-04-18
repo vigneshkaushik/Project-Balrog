@@ -14,9 +14,76 @@ import {
 import { AnalysisPanel } from "./AnalysisPanel";
 import { ClashSelector } from "./ClashSelector";
 import { FloatingCard } from "../ui/FloatingCard";
+import { AiFillIcon } from "./AiFillIcon";
+import {
+	InspectorToolbar,
+	type InspectorPanelId,
+} from "./InspectorToolbar";
 import { ModelViewer } from "./ModelViewer";
 import { SpeckleLoadProgressBar } from "./SpeckleLoadProgressBar";
 import { SeverityFilter } from "./SeverityFilter";
+
+const INSPECTOR_OPEN_PANELS_KEY = "balrog-inspector-open-panels";
+const INSPECTOR_PANEL_IDS: readonly InspectorPanelId[] = [
+	"clash-controls",
+	"clash-context",
+	"clash-recommendations",
+];
+
+function readInitialOpenPanels(): Set<InspectorPanelId> {
+	if (typeof window === "undefined") {
+		return new Set<InspectorPanelId>(["clash-controls"]);
+	}
+	try {
+		const raw = window.localStorage.getItem(INSPECTOR_OPEN_PANELS_KEY);
+		if (raw == null) {
+			return new Set<InspectorPanelId>(["clash-controls"]);
+		}
+		const parsed = JSON.parse(raw);
+		if (!Array.isArray(parsed)) {
+			return new Set<InspectorPanelId>(["clash-controls"]);
+		}
+		const valid = parsed.filter((id): id is InspectorPanelId =>
+			INSPECTOR_PANEL_IDS.includes(id as InspectorPanelId),
+		);
+		return new Set(valid);
+	} catch {
+		return new Set<InspectorPanelId>(["clash-controls"]);
+	}
+}
+
+function ClosePanelButton({
+	label,
+	onClose,
+}: {
+	label: string;
+	onClose: () => void;
+}) {
+	return (
+		<button
+			type="button"
+			className="flex h-6 w-6 cursor-pointer items-center justify-center rounded text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/60"
+			title={label}
+			aria-label={label}
+			onPointerDown={(event) => event.stopPropagation()}
+			onClick={onClose}
+		>
+			<svg
+				className="h-3.5 w-3.5"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth={2}
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				aria-hidden="true"
+			>
+				<path d="M6 6l12 12" />
+				<path d="M18 6L6 18" />
+			</svg>
+		</button>
+	);
+}
 
 /** Dedupes gate toast when React Strict Mode runs effects twice on mount. */
 let lastInspectorGateToast: { at: number; message: string } | null = null;
@@ -111,11 +178,46 @@ export function ClashInspector() {
 	const [analysisContextPreview, setAnalysisContextPreview] =
 		useState<ClashAnalyzeContextRequestBody | null>(null);
 	const [isContextPreviewOpen, setIsContextPreviewOpen] = useState(false);
-	const [isControlsCollapsed, setIsControlsCollapsed] = useState(false);
-	const [isContextCollapsed, setIsContextCollapsed] = useState(true);
-	const [isRecommendationsCollapsed, setIsRecommendationsCollapsed] =
-		useState(true);
+	const [openPanels, setOpenPanels] = useState<Set<InspectorPanelId>>(
+		readInitialOpenPanels,
+	);
 	const [showClashContext, setShowClashContext] = useState(false);
+
+	useEffect(() => {
+		try {
+			window.localStorage.setItem(
+				INSPECTOR_OPEN_PANELS_KEY,
+				JSON.stringify([...openPanels]),
+			);
+		} catch {
+			// Ignore storage failures; in-memory state is source of truth.
+		}
+	}, [openPanels]);
+
+	const togglePanel = useCallback((panelId: InspectorPanelId) => {
+		setOpenPanels((prev) => {
+			const next = new Set(prev);
+			if (next.has(panelId)) {
+				next.delete(panelId);
+			} else {
+				next.add(panelId);
+			}
+			return next;
+		});
+	}, []);
+
+	const closePanel = useCallback((panelId: InspectorPanelId) => {
+		setOpenPanels((prev) => {
+			if (!prev.has(panelId)) return prev;
+			const next = new Set(prev);
+			next.delete(panelId);
+			return next;
+		});
+	}, []);
+
+	const isControlsOpen = openPanels.has("clash-controls");
+	const isContextOpen = openPanels.has("clash-context");
+	const isRecommendationsOpen = openPanels.has("clash-recommendations");
 	const [contextObjectsByClashId, setContextObjectsByClashId] = useState<
 		Record<string, NearbySpeckleObjectPayload[]>
 	>({});
@@ -149,12 +251,6 @@ export function ClashInspector() {
 		() => selectedClashContextObjects.map((obj) => obj.id),
 		[selectedClashContextObjects],
 	);
-	const selectedClashName =
-		clashes.find((c) => c.id === selectedClashId)?.label ?? "No clash selected";
-	const collapseToggleClassName =
-		"max-w-[16rem] cursor-pointer truncate rounded px-1.5 py-0.5 text-xs font-medium normal-case tracking-normal text-neutral-700 hover:bg-neutral-100";
-	const compactToggleClassName =
-		"cursor-pointer rounded px-1.5 py-0.5 text-xs font-medium text-neutral-700 hover:bg-neutral-100";
 	const nonEmptySpeckleCount = useMemo(
 		() => speckleUrls.filter((u) => u.trim().length > 0).length,
 		[speckleUrls],
@@ -338,34 +434,27 @@ export function ClashInspector() {
 					</div>
 				) : null}
 
+				<InspectorToolbar
+					openPanels={openPanels}
+					onTogglePanel={togglePanel}
+				/>
+
+				{isControlsOpen ? (
 				<FloatingCard
 					panelId="clash-controls"
 					title="Clash Controls"
-					initialPosition={{ x: 16, y: 64 }}
+					initialPosition={{ x: 80, y: 80 }}
 					initialSize={{ width: 320, height: 208 }}
 					minSize={{ width: 304, height: 192 }}
 					resizable={false}
 					autoHeight
 					overflowMode="visible"
 					bodyScroll={false}
-					showBody={!isControlsCollapsed}
-					titleSubtitle={isControlsCollapsed ? selectedClashName : undefined}
 					headerActions={
-						<button
-							type="button"
-							className={collapseToggleClassName}
-							title={
-								isControlsCollapsed
-									? `Expand controls (${selectedClashName})`
-									: "Collapse clash controls"
-							}
-							onPointerDown={(event) => event.stopPropagation()}
-							onClick={() => setIsControlsCollapsed((prev) => !prev)}
-						>
-							<span className="text-neutral-400" aria-hidden="true">
-								{isControlsCollapsed ? "▼" : "▲"}
-							</span>
-						</button>
+						<ClosePanelButton
+							label="Close clash controls"
+							onClose={() => closePanel("clash-controls")}
+						/>
 					}
 				>
 					<div className="space-y-3">
@@ -399,18 +488,16 @@ export function ClashInspector() {
 						<ClashSelector disabled={!speckleViewer} />
 					</div>
 				</FloatingCard>
+				) : null}
 
+				{isContextOpen ? (
 				<FloatingCard
 					panelId="clash-context"
 					title="Context"
 					widthClassName="w-fit"
-					initialPosition={{ x: 16, y: 288 }}
+					initialPosition={{ x: 80, y: 304 }}
 					initialSize={{ width: 464, height: 368 }}
 					minSize={{ width: 352, height: 224 }}
-					autoHeight={isContextCollapsed}
-					autoWidth={isContextCollapsed}
-					showBody={!isContextCollapsed}
-					resizable={!isContextCollapsed}
 					headerActions={
 						<div className="flex items-center gap-1.5">
 							<button
@@ -428,21 +515,10 @@ export function ClashInspector() {
 							>
 								{showClashContext ? "Hide Context" : "Show Context"}
 							</button>
-							<button
-								type="button"
-								className={compactToggleClassName}
-								title={
-									isContextCollapsed
-										? "Expand context panel"
-										: "Collapse context panel"
-								}
-								onPointerDown={(event) => event.stopPropagation()}
-								onClick={() => setIsContextCollapsed((prev) => !prev)}
-							>
-								<span className="text-neutral-400" aria-hidden="true">
-									{isContextCollapsed ? "▼" : "▲"}
-								</span>
-							</button>
+							<ClosePanelButton
+								label="Close context panel"
+								onClose={() => closePanel("clash-context")}
+							/>
 						</div>
 					}
 				>
@@ -623,44 +699,22 @@ export function ClashInspector() {
 						</AnalysisPanel>
 					</div>
 				</FloatingCard>
+				) : null}
 
+				{isRecommendationsOpen ? (
 				<FloatingCard
 					panelId="clash-recommendations"
 					title="Recommendations"
-					titleIcon={
-						<svg
-							className="h-3.5 w-3.5"
-							viewBox="0 0 24 24"
-							fill="currentColor"
-							aria-hidden="true"
-						>
-							<path d="M9.813 2.25a.75.75 0 0 1 .707.5l1.116 3.163a3.75 3.75 0 0 0 2.229 2.228l3.163 1.117a.75.75 0 0 1 0 1.414l-3.163 1.117a3.75 3.75 0 0 0-2.229 2.228l-1.116 3.163a.75.75 0 0 1-1.414 0L7.283 14.02a3.75 3.75 0 0 0-2.228-2.228L1.892 10.67a.75.75 0 0 1 0-1.414l3.163-1.117a3.75 3.75 0 0 0 2.228-2.228l1.116-3.163a.75.75 0 0 1 .707-.5h.707ZM18.259 8.715a.75.75 0 0 1 .707.5l.463 1.313a1.5 1.5 0 0 0 .891.891l1.313.463a.75.75 0 0 1 0 1.414l-1.313.463a1.5 1.5 0 0 0-.891.891l-.463 1.313a.75.75 0 0 1-1.414 0l-.463-1.313a1.5 1.5 0 0 0-.891-.891l-1.313-.463a.75.75 0 0 1 0-1.414l1.313-.463a1.5 1.5 0 0 0 .891-.891l.463-1.313a.75.75 0 0 1 .707-.5ZM16.894 17.088a.75.75 0 0 1 .707.5l.29.822a1.5 1.5 0 0 0 .892.891l.822.29a.75.75 0 0 1 0 1.414l-.822.29a1.5 1.5 0 0 0-.892.892l-.29.822a.75.75 0 0 1-1.414 0l-.29-.822a1.5 1.5 0 0 0-.892-.892l-.822-.29a.75.75 0 0 1 0-1.414l.822-.29a1.5 1.5 0 0 0 .892-.891l.29-.822a.75.75 0 0 1 .707-.5Z" />
-						</svg>
-					}
+					titleIcon={<AiFillIcon className="h-3.5 w-3.5" />}
 					widthClassName="w-fit"
-					initialPosition={{ x: 16, y: 344 }}
+					initialPosition={{ x: 80, y: 384 }}
 					initialSize={{ width: 464, height: 304 }}
 					minSize={{ width: 352, height: 208 }}
-					autoHeight={isRecommendationsCollapsed}
-					autoWidth={isRecommendationsCollapsed}
-					showBody={!isRecommendationsCollapsed}
-					resizable={!isRecommendationsCollapsed}
 					headerActions={
-						<button
-							type="button"
-							className={compactToggleClassName}
-							title={
-								isRecommendationsCollapsed
-									? "Expand recommendations panel"
-									: "Collapse recommendations panel"
-							}
-							onPointerDown={(event) => event.stopPropagation()}
-							onClick={() => setIsRecommendationsCollapsed((prev) => !prev)}
-						>
-							<span className="text-neutral-400" aria-hidden="true">
-								{isRecommendationsCollapsed ? "▼" : "▲"}
-							</span>
-						</button>
+						<ClosePanelButton
+							label="Close recommendations panel"
+							onClose={() => closePanel("clash-recommendations")}
+						/>
 					}
 				>
 					<div className="h-full min-h-0">
@@ -702,6 +756,7 @@ export function ClashInspector() {
 						</AnalysisPanel>
 					</div>
 				</FloatingCard>
+				) : null}
 			</div>
 			{isContextPreviewOpen && analysisContextPreview ? (
 					<div className="absolute inset-0 z-40 flex items-start justify-center bg-neutral-900/45 p-4 backdrop-blur-[1px]">
