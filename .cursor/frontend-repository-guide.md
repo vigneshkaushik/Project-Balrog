@@ -12,7 +12,7 @@ This document maps the **React + Vite** frontend: entry points, routing, layout,
 | Build       | Vite 8, TypeScript |
 | UI          | React 19, Tailwind CSS v4 (`@import 'tailwindcss'` in `src/index.css`) |
 | Routing     | React Router 7 (`BrowserRouter`, nested routes) |
-| 3D          | `@speckle/viewer` (wired via `useSpeckleViewer`), optional **`three`** for camera/box math in **`zoomToSmallestClashObject.ts`** |
+| 3D          | `@speckle/viewer` (wired via `useSpeckleViewer`), **`three`** for camera/box math in **`zoomToSmallestClashObject.ts`**, **`ModelViewer`**, and **`clashContextRegion.ts`**; **`@types/three`** as a devDependency for **`tsc -b`**. |
 | Speckle auth | Optional **`VITE_SPECKLE_TOKEN`** in `.env` — passed into the viewer hook when loading private streams |
 
 ---
@@ -63,11 +63,12 @@ This document maps the **React + Vite** frontend: entry points, routing, layout,
 
 | Component | Responsibility |
 | --------- | -------------- |
-| **`ClashInspector`** | Floating-panel workspace: draggable/resizable **`FloatingCard`** panels for Clash Controls, Context, Recommendations. Panels are opened/closed from **`InspectorToolbar`** (a floating vertical icon bar on the left). Each panel's header shows an **`X`** close button (via the local **`ClosePanelButton`**) instead of collapse chevrons. Open/closed state is persisted under **`balrog-inspector-open-panels`** (array of panel ids); panel position/size continues to persist via **`useFloatingPanel`** / **`panelLayoutStorage`**. Gate waits for backend session hydration before redirect/toast. Context panel includes a **`Show Context`** toggle that computes nearby context objects (AABB-based) once per clash, persists them in local UI state, and renders a clickable context object list. |
+| **`ClashInspector`** | Floating-panel workspace: draggable/resizable **`FloatingCard`** panels for Clash Controls, Context, Recommendations. Panels are opened/closed from **`InspectorToolbar`** (a floating vertical icon bar on the left). Each panel's header shows an **`X`** close button (via the local **`ClosePanelButton`**) instead of collapse chevrons. Open/closed state is persisted under **`balrog-inspector-open-panels`** (array of panel ids); panel position/size continues to persist via **`useFloatingPanel`** / **`panelLayoutStorage`**. Gate waits for backend session hydration before redirect/toast. Context panel includes a **`Show Context`** toggle that computes nearby context objects (AABB-based) once per clash, persists them in local UI state, and renders a clickable context object list. **Run analysis** passes **`objectMetadata`** into **`buildClashContextAnalysisPayload`** and attaches **`user_metadata`** onto each **`clash_objects_original`** entry when any resolved Speckle id has a stored note. |
 | **`InspectorToolbar`** | Floating vertical toolbar: icon-only buttons for **Clash Controls** (sliders), **Context** (info), **Recommendations** (**`AiFillIcon`** — same artwork as **`public/ai-fill.svg`**), then **Chat** (**`AiChatIcon`** — **`public/ai-chat.svg`**). Same button styling for all; `aria-pressed` reflects open state for panels and chat. Chat calls **`useFloatingChat`**. |
 | **`AiFillIcon`** | Inline SVG matching **`public/ai-fill.svg`** with **`fill="currentColor"`** — used for Recommendations in the toolbar and the Recommendations **`FloatingCard`** title. |
-| **`ModelViewer`** | Speckle container: `useSpeckleViewer` with trimmed URLs and optional token. Highlight system now supports clash object ids (**red**) plus optional context object ids (**light blue**) while ghosting the rest. Context-object clicks and clash-object clicks both support viewer focus/selection workflows. |
-| **`SpeckleObjectOverlay`** | Floating, draggable, resizable card for selected Speckle object data. Uses the same floating-card styling language and `useFloatingPanel` grid behavior as other overlays; header can collapse details, and body scrolls for long payloads. |
+| **`ModelViewer`** | Speckle container: `useSpeckleViewer` with trimmed URLs and optional token. Highlight system supports clash object ids (**red**) plus optional context object ids (**light blue**) while ghosting the rest. Context-object clicks and clash-object clicks both support viewer focus/selection workflows. **`SelectionExtension`** syncs **`selectedObjectData`** on **`ViewerEvent.ObjectClicked`**. Hover is tracked on a **wrapper** around the canvas + overlays so moving from the canvas to UI does not drop “viewport hovered.” Projects the selected object’s AABB center (**`unionBoxesForSpeckleObjectIds`**) to screen space (rAF + **`ResizeObserver`**) for **`SelectedObjectMetadataBadge`**. |
+| **`SelectedObjectMetadataBadge`** | Viewport “Add note / Edit note” pill + expandable textarea; reads/writes **`objectMetadata`** via **`useApp()`**. Mount/opacity transitions avoid abrupt show/hide when **`visible`** toggles with the Speckle hover affordance. |
+| **`SpeckleObjectOverlay`** | Floating, draggable, resizable card for selected Speckle object data. Uses the same floating-card styling language and **`useFloatingPanel`** as other overlays; header can collapse details; body scrolls for long payloads. **User metadata**: add/edit/delete free-form notes per Speckle **`objectData.id`**, synced with the viewport badge. **Help**: Heroicons-style info control beside the section title opens a **`createPortal`** dialog (fixed, **`z-[200]`**) with coordinator-facing copy; enter/leave uses **`metadataHelpVisible`** + delayed unmount; **`pointerleave`** ignores moves between trigger and panel (**`relatedTarget`** checks + **`metadataHelpPanelRef`**) to avoid flicker; scroll/resize updates the anchor box only when coordinates actually change (**`helpBoxNearlyEqual`**). |
 | **`ClashSelector`** | Select current clash from **`filteredClashes`**; includes a **No clash selected** option so users can de-select and return viewer materials/filters to original state. |
 | **`SeverityFilter`** | Collapsible card: **fixed `p-4`** on the shell so the header does not jump when toggling. Body animates via **CSS grid** `grid-rows-[0fr]` ↔ `grid-rows-[1fr]` (`transition-[grid-template-rows]`, respects **`motion-reduce`**). **`inert`** when collapsed so the range is not focusable. Drives **`severityThreshold`** and **`filteredClashes`**. Includes a **Highlight / Focused** toggle button near the visible-count chip that highlights all clashes at the current severity and ghosts the rest. |
 | **`AnalysisPanel`** | Reusable analysis section wrapper with optional inner title and optional Run Analysis footer button (Context now hides both inner title and run button). |
@@ -80,8 +81,8 @@ This document maps the **React + Vite** frontend: entry points, routing, layout,
 
 | Module | Role |
 | ------ | ---- |
-| **`appStateContext.ts`** | **`AppState`** type: clashes, Navisworks filename, Speckle rows/URLs, **`severityThreshold`** + **`setSeverityThreshold`**, **`highlightFilteredSeverity`** toggle, selection, derived **`filteredClashes`**, mutators, **`clearSession`**. |
-| **`AppProvider.tsx`** | Implements state: clash upload/session hydration, Speckle row CRUD with stable **`id`**s, derived **`speckleUrls`** string array for viewers/guards. Selecting a clash turns off severity-highlight mode; enabling severity highlight clears selected clash. |
+| **`appStateContext.ts`** | **`AppState`** type: clashes, Navisworks filename, Speckle rows/URLs, **`severityThreshold`** + **`setSeverityThreshold`**, **`highlightFilteredSeverity`** toggle, selection, derived **`filteredClashes`**, mutators, **`clearSession`**, plus **`objectMetadata`** (**`Record<speckleId, string>`**), **`setObjectMetadata`**, **`clearObjectMetadata`**. |
+| **`AppProvider.tsx`** | Implements state: clash upload/session hydration, Speckle row CRUD with stable **`id`**s, derived **`speckleUrls`** string array for viewers/guards. Selecting a clash turns off severity-highlight mode; enabling severity highlight clears selected clash. **Object notes** persist under **`balrog-object-metadata`** in **`localStorage`**; **`clearSession`** wipes them and removes that key. |
 | **`useApp.ts`** | Hook to consume context (throws if outside provider). |
 | **`FloatingChatContext.tsx`** | **`FloatingChatProvider`** + **`useFloatingChat()`**: **`isChatOpen`**, **`setChatOpen`**, **`toggleChat`**. Persists **`balrog-floating-chat-open`** in **`localStorage`**. **`AppLayout`** wraps its contents with this provider so **`FloatingChat`**, **`FloatingNavbar`**, and **`InspectorToolbar`** share one chat visibility state. |
 
@@ -90,6 +91,7 @@ This document maps the **React + Vite** frontend: entry points, routing, layout,
 1. User uploads a report → **`setNavisworksReport`** → mock **`clashes`**, filename stored.
 2. User adds Speckle rows → **`speckleUrlRows`** / derived **`speckleUrls`**.
 3. Inspector reads **`filteredClashes`**, **`selectedClashId`**, **`highlightFilteredSeverity`**, Speckle URLs for the viewer; severity filter narrows the clash list and can toggle severity-wide highlighting.
+4. Per-object coordinator notes live in **`objectMetadata`** (Speckle object id → string); they feed the viewer badge + overlay editors and are embedded into **`POST /clashes/analyze-context`** payloads (**`nearby_speckle_objects`** / **`clash_objects_original`**) when the user runs analysis.
 
 ---
 
@@ -113,7 +115,8 @@ This document maps the **React + Vite** frontend: entry points, routing, layout,
 | **`answerStreamSplit.ts`** | **`splitAnswerStream(raw)`** — splits assistant output into **`preamble`** (everything before the **last** line-start marker among **`Answer:`**, **`Final answer:`**, **`### Answer`**) and **`answer`** (after that marker). If none match, all text stays in **`preamble`** and **`answer`** is empty (bubble stays empty; draft lives in metadata). |
 | **`assistantDisplayText.ts`** | **`assistantBubbleText(raw)`** — takes **`splitAnswerStream(raw).answer`**, then strips ReAct **`Thought:` / `Action:`** noise (including **`Action: None`**, fenced blocks, separators) for the **main assistant bubble** only. Raw **`ChatMessage.text`** is unchanged. |
 | **`zoomToSmallestClashObject.ts`** | **`zoomViewerToSmallestClashObject(viewer, applicationIds, options?)`** — walks Speckle **`TreeNode`** data, unions bounding boxes for matching **`applicationId`**s, fits camera via **`CameraController`**. |
-| **`clashContextRegion.ts`** | Builds run-analysis context payload: resolves clash object nodes, computes region AABB (+ configurable expand meters), and gathers nearby Speckle objects intersecting the expanded region. Nearby collection now walks world-tree nodes and unions per-node render-view AABBs (more reliable than only scanning currently renderable views). |
+| **`clashContextRegion.ts`** | Builds run-analysis context payload: resolves clash object nodes, computes region AABB (+ configurable expand meters), and gathers nearby Speckle objects intersecting the expanded region. Nearby collection walks world-tree nodes and unions per-node render-view AABBs. **`buildClashContextAnalysisPayload(viewer, clash, options?)`** accepts optional **`objectMetadata`**: merges **`user_metadata`** onto each **`nearby_speckle_objects`** row when present, and appends up to **25** annotated objects outside the region (**`outside_context_region: true`**) via **`worldTree.findId`**. |
+| **`postClashAnalysis.ts`** | **`postClashAnalyzeContext`** — **`ClashAnalyzeContextRequestBody`** includes **`ClashObjectWithUserMetadata`** for **`clash_objects_original`** (optional **`user_metadata`** per row). Payload size guard (**`MAX_BODY_BYTES`**) unchanged. |
 
 ---
 
@@ -122,7 +125,7 @@ This document maps the **React + Vite** frontend: entry points, routing, layout,
 | Export | Use |
 | ------ | --- |
 | **`ClashSeverity`** | **`LOW` \| `MEDIUM` \| `CRITICAL`** — aligns with backend inference. |
-| **`normalizeClashSeverity`**, **`clashMeetsMinimumSeverity`** | Parsing unknown severities; filter logic (unknown passes only when minimum is **`LOW`**). |
+| **`normalizeClashSeverity`**, **`clashMatchesSeverityExactly`** | Parsing unknown severities; severity filter uses exact match against **`severityThreshold`**. |
 | **`Clash`** | `id`, `label`, **`severity`** (nullable until inferred). |
 | **`AgentActivityItem`** | Union: **`thought`**, **`tool_call`**, **`tool_result`** — shapes for **`ChatMessage.activity`**. |
 | **`ChatMessage`** | Sidebar message: **`role`**, **`text`**, **`at`**, **`id`**; assistant may set **`streaming`**, **`activity`**, **`thinkingBuffer`** while SSE is processed. |
@@ -143,5 +146,5 @@ This document maps the **React + Vite** frontend: entry points, routing, layout,
 ## Related docs
 
 - Root **[README.md](../README.md)** — run `pnpm dev` in `apps/web`, API CORS defaults.
-- **[backend-repository-guide.md](./backend-repository-guide.md)** — backend modules, agent, SSE chat, configuration.
+- **[backend-repository-guide.md](./backend-repository-guide.md)** — backend modules, agent, SSE chat, configuration (clash **`analyze-context`** prompt documents **`user_metadata`** / **`outside_context_region`** in **`apps/api/app/utils/clash_analysis_prompt.py`**).
 - **[apps/api/README.md](../apps/api/README.md)** — quick setup and endpoint cheatsheet.

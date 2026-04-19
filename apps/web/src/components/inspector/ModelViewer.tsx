@@ -39,9 +39,11 @@ import {
 import {
 	expandMatchedClashSubtreeSpeckleIds,
 	resolveClashObjectNodes,
+	unionBoxesForSpeckleObjectIds,
 	zoomViewerToSmallestClashObject,
 } from "../../lib/zoomToSmallestClashObject";
 import { SpeckleLoadProgressBar } from "./SpeckleLoadProgressBar";
+import { SelectedObjectMetadataBadge } from "./SelectedObjectMetadataBadge";
 import { SpeckleObjectOverlay } from "./SpeckleObjectOverlay";
 
 export interface ModelViewerProps {
@@ -106,11 +108,98 @@ export function ModelViewer({
 		loading: false,
 		percent: 0,
 	});
+	const [isViewportHovered, setIsViewportHovered] = useState(false);
+	const [badgeScreen, setBadgeScreen] = useState<{
+		x: number;
+		y: number;
+	} | null>(null);
+	const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+	const lastBadgeScreenRef = useRef({ x: -1, y: -1 });
 
 	const activeUrls = useMemo(
 		() => speckleUrls.map((u) => u.trim()).filter((u) => u.length > 0),
 		[speckleUrls],
 	);
+
+	const selectedSpeckleId = useMemo(() => {
+		if (!selectedObjectData) return null;
+		const id = selectedObjectData.id;
+		return typeof id === "string" && id.trim().length > 0 ? id.trim() : null;
+	}, [selectedObjectData]);
+
+	const computeBadgeScreenPosition = useCallback((): {
+		x: number;
+		y: number;
+	} | null => {
+		if (!loadedViewer || !containerRef.current || !selectedSpeckleId) {
+			return null;
+		}
+		const box = unionBoxesForSpeckleObjectIds(loadedViewer, [
+			selectedSpeckleId,
+		]);
+		if (!box || box.isEmpty()) return null;
+		const center = new Vector3();
+		box.getCenter(center);
+		const renderer = loadedViewer.getRenderer();
+		const camera = renderer?.renderingCamera;
+		if (!camera) return null;
+		center.project(camera);
+		const el = containerRef.current;
+		const w = el.clientWidth;
+		const h = el.clientHeight;
+		if (w <= 0 || h <= 0) return null;
+		const x = (center.x * 0.5 + 0.5) * w;
+		const y = (-center.y * 0.5 + 0.5) * h;
+		return { x, y };
+	}, [loadedViewer, selectedSpeckleId]);
+
+	useLayoutEffect(() => {
+		const el = containerRef.current;
+		if (!el || typeof ResizeObserver === "undefined") {
+			return;
+		}
+		const ro = new ResizeObserver(() => {
+			setContainerSize({
+				width: el.clientWidth,
+				height: el.clientHeight,
+			});
+		});
+		ro.observe(el);
+		setContainerSize({
+			width: el.clientWidth,
+			height: el.clientHeight,
+		});
+		return () => ro.disconnect();
+	}, []);
+
+	useEffect(() => {
+		if (!loadedViewer || !selectedSpeckleId) {
+			setBadgeScreen(null);
+			lastBadgeScreenRef.current = { x: -1, y: -1 };
+			return;
+		}
+
+		let raf = 0;
+		const tick = () => {
+			const next = computeBadgeScreenPosition();
+			if (next) {
+				const last = lastBadgeScreenRef.current;
+				if (
+					Math.abs(next.x - last.x) > 0.5 ||
+					Math.abs(next.y - last.y) > 0.5
+				) {
+					lastBadgeScreenRef.current = next;
+					setBadgeScreen(next);
+				}
+			} else {
+				lastBadgeScreenRef.current = { x: -1, y: -1 };
+				setBadgeScreen(null);
+			}
+			raf = requestAnimationFrame(tick);
+		};
+		raf = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(raf);
+	}, [loadedViewer, selectedSpeckleId, computeBadgeScreenPosition]);
 
 	const authToken = import.meta.env.VITE_SPECKLE_TOKEN ?? "";
 
@@ -616,7 +705,11 @@ export function ModelViewer({
 					view.
 				</div>
 			) : (
-				<>
+				<div
+					className="absolute inset-0 min-h-[320px]"
+					onPointerEnter={() => setIsViewportHovered(true)}
+					onPointerLeave={() => setIsViewportHovered(false)}
+				>
 					<section
 						ref={containerRef}
 						aria-label="Speckle 3D model viewer"
@@ -625,10 +718,23 @@ export function ModelViewer({
 					{showLoadProgress && speckleLoadState.loading ? (
 						<SpeckleLoadProgressBar percent={speckleLoadState.percent} />
 					) : null}
+					{selectedSpeckleId &&
+					badgeScreen &&
+					containerSize.width > 0 &&
+					containerSize.height > 0 ? (
+						<SelectedObjectMetadataBadge
+							speckleId={selectedSpeckleId}
+							screenX={badgeScreen.x}
+							screenY={badgeScreen.y}
+							visible={isViewportHovered}
+							containerWidth={containerSize.width}
+							containerHeight={containerSize.height}
+						/>
+					) : null}
 					{selectedObjectData ? (
 						<SpeckleObjectOverlay objectData={selectedObjectData} />
 					) : null}
-				</>
+				</div>
 			)}
 		</div>
 	);

@@ -9,6 +9,7 @@ import {
 
 const DEFAULT_EXPAND_METERS = 2;
 const MAX_NEARBY_OBJECTS = 120;
+const MAX_OUTSIDE_REGION_ANNOTATED = 25;
 const MAX_SUMMARY_CHARS_PER_OBJECT = 4000;
 
 function readExpandMeters(): number {
@@ -53,7 +54,9 @@ const PRIORITY_KEYS = [
 ] as const;
 
 function sortKeys(keys: string[]): string[] {
-	const priority = new Map(PRIORITY_KEYS.map((k, i) => [k, i] as const));
+	const priority = new Map<string, number>(
+		PRIORITY_KEYS.map((k, i) => [k, i] as const),
+	);
 	return [...keys].sort((a, b) => {
 		const pa = priority.get(a) ?? 999;
 		const pb = priority.get(b) ?? 999;
@@ -166,6 +169,10 @@ export interface NearbySpeckleObjectPayload {
 	name?: string | null;
 	item_type?: string | null;
 	summary: Record<string, unknown>;
+	/** Free-form user note attached in the UI (embedded for the agent). */
+	user_metadata?: string;
+	/** True when the object was added only because the user annotated it outside the context AABB. */
+	outside_context_region?: boolean;
 }
 
 function pickTextFromSummary(
@@ -187,6 +194,85 @@ function pickTextFromSummary(
 	return null;
 }
 
+function nearbyPayloadForSpeckleId(
+	viewer: Viewer,
+	speckleId: string,
+): Omit<NearbySpeckleObjectPayload, "user_metadata" | "outside_context_region"> | null {
+	const tree = viewer.getWorldTree();
+	const nodes = tree.findId(speckleId) ?? [];
+	const node = nodes[0];
+	if (!node) return null;
+	const renderTree = tree.getRenderTree();
+	const renderViews = renderTree.getRenderViewsForNode(node);
+	let speckleType: string | null = null;
+	if (renderViews) {
+		for (const rv of renderViews) {
+			if (speckleType == null && typeof rv.speckleType === "string") {
+				speckleType = rv.speckleType;
+			}
+		}
+	}
+	const raw = node.model?.raw;
+	const summary = isRecord(raw) ? summarizeSpeckleRaw(raw) : { id: speckleId };
+	const name = pickTextFromSummary(summary, [
+		"itemName",
+		"name",
+		"Name",
+		"family",
+	]);
+	const itemType = pickTextFromSummary(summary, [
+		"itemType",
+		"item_type",
+		"type",
+		"Type",
+		"category",
+	]);
+	return {
+		id: speckleId,
+		speckle_type: speckleType,
+		name,
+		item_type: itemType,
+		summary,
+	};
+}
+
+function mergeUserMetadataIntoNearby(
+	viewer: Viewer,
+	nearby: NearbySpeckleObjectPayload[],
+	clashParticipantObjectIds: Set<string>,
+	objectMetadata: Record<string, string>,
+): void {
+	const trimmedMeta: Record<string, string> = {};
+	for (const [k, v] of Object.entries(objectMetadata)) {
+		const t = typeof v === "string" ? v.trim() : "";
+		if (t) trimmedMeta[k] = t;
+	}
+
+	const nearbyIds = new Set(nearby.map((n) => n.id));
+	for (const row of nearby) {
+		const note = trimmedMeta[row.id]?.trim();
+		if (note) row.user_metadata = note;
+	}
+
+	let addedOutside = 0;
+	for (const speckleId of Object.keys(trimmedMeta).sort()) {
+		if (addedOutside >= MAX_OUTSIDE_REGION_ANNOTATED) break;
+		const note = trimmedMeta[speckleId]?.trim();
+		if (!note) continue;
+		if (nearbyIds.has(speckleId)) continue;
+		if (clashParticipantObjectIds.has(speckleId)) continue;
+		const base = nearbyPayloadForSpeckleId(viewer, speckleId);
+		if (!base) continue;
+		nearby.push({
+			...base,
+			user_metadata: note,
+			outside_context_region: true,
+		});
+		nearbyIds.add(speckleId);
+		addedOutside += 1;
+	}
+}
+
 /**
  * Build expanded world AABB around clash participants; collect Speckle objects
  * whose render views intersect that box.
@@ -194,7 +280,11 @@ function pickTextFromSummary(
 export function buildClashContextAnalysisPayload(
 	viewer: Viewer,
 	clash: Clash,
-	options?: { expandMeters?: number; speckleUrlCount?: number },
+	options?: {
+		expandMeters?: number;
+		speckleUrlCount?: number;
+		objectMetadata?: Record<string, string>;
+	},
 ): {
 	context_region: ContextRegionPayload | null;
 	nearby_speckle_objects: NearbySpeckleObjectPayload[];
@@ -203,6 +293,7 @@ export function buildClashContextAnalysisPayload(
 } {
 	const expandMeters = options?.expandMeters ?? readExpandMeters();
 	const speckleUrlCount = options?.speckleUrlCount ?? 0;
+	const objectMetadata = options?.objectMetadata ?? {};
 	const keys = clashMatchKeys(clash);
 	const { matchedObjectIds, unmatchedElementIds, matchedNodes } =
 		resolveClashObjectNodes(viewer, keys);
@@ -317,6 +408,13 @@ export function buildClashContextAnalysisPayload(
 			});
 		}
 	}
+
+	mergeUserMetadataIntoNearby(
+		viewer,
+		nearby,
+		clashParticipantObjectIds,
+		objectMetadata,
+	);
 
 	return {
 		context_region: regionPayload,

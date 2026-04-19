@@ -25,6 +25,27 @@ import {
   type UploadProgress,
 } from './appStateContext'
 
+const OBJECT_METADATA_STORAGE_KEY = 'balrog-object-metadata'
+
+function readInitialObjectMetadata(): Record<string, string> {
+  if (typeof window === 'undefined') return {}
+  try {
+    const raw = window.localStorage.getItem(OBJECT_METADATA_STORAGE_KEY)
+    if (raw == null) return {}
+    const parsed = JSON.parse(raw) as unknown
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return {}
+    }
+    const out: Record<string, string> = {}
+    for (const [k, v] of Object.entries(parsed as Record<string, unknown>)) {
+      if (typeof v === 'string' && k.trim()) out[k] = v
+    }
+    return out
+  } catch {
+    return {}
+  }
+}
+
 function mapBackendClash(raw: ParsedClashResult, testName?: string): Clash {
   const meta = raw.clashMetadata
   const guidRaw = raw.clashGuid ?? undefined
@@ -71,6 +92,47 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
   const [clashObjectViewerFocus, setClashObjectViewerFocus] =
     useState<ClashObjectViewerFocusRequest | null>(null)
+  const [objectMetadata, setObjectMetadataState] = useState<
+    Record<string, string>
+  >(readInitialObjectMetadata)
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        OBJECT_METADATA_STORAGE_KEY,
+        JSON.stringify(objectMetadata),
+      )
+    } catch {
+      /* quota / private mode */
+    }
+  }, [objectMetadata])
+
+  const setObjectMetadata = useCallback((speckleId: string, text: string) => {
+    const id = speckleId.trim()
+    if (!id) return
+    const trimmed = text.trim()
+    setObjectMetadataState((prev) => {
+      if (!trimmed) {
+        if (!(id in prev)) return prev
+        const next = { ...prev }
+        delete next[id]
+        return next
+      }
+      if (prev[id] === trimmed) return prev
+      return { ...prev, [id]: trimmed }
+    })
+  }, [])
+
+  const clearObjectMetadata = useCallback((speckleId: string) => {
+    const id = speckleId.trim()
+    if (!id) return
+    setObjectMetadataState((prev) => {
+      if (!(id in prev)) return prev
+      const next = { ...prev }
+      delete next[id]
+      return next
+    })
+  }, [])
 
   const setSelectedClashId = useCallback((id: string | null) => {
     setClashObjectViewerFocus(null)
@@ -302,6 +364,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setIsUploading(false)
     setUploadProgress(null)
     setUploadError(null)
+    setObjectMetadataState({})
+    try {
+      window.localStorage.removeItem(OBJECT_METADATA_STORAGE_KEY)
+    } catch {
+      /* ignore */
+    }
     void deleteClashSession().catch(() => {
       /* best-effort */
     })
@@ -333,6 +401,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       clashObjectViewerFocus,
       requestClashObjectViewerFocus,
       clearClashObjectViewerFocus,
+      objectMetadata,
+      setObjectMetadata,
+      clearObjectMetadata,
     }),
     [
       isSessionHydrating,
@@ -358,6 +429,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       clashObjectViewerFocus,
       requestClashObjectViewerFocus,
       clearClashObjectViewerFocus,
+      objectMetadata,
+      setObjectMetadata,
+      clearObjectMetadata,
     ],
   )
 

@@ -7,9 +7,13 @@ import type {
 
 const MAX_BODY_BYTES = 550_000;
 
+export type ClashObjectWithUserMetadata = NonNullable<Clash["objects"]>[number] & {
+	user_metadata?: string;
+};
+
 export interface ClashAnalyzeContextRequestBody {
 	clash: Clash;
-	clash_objects_original: Clash["objects"] | undefined;
+	clash_objects_original: ClashObjectWithUserMetadata[] | undefined;
 	context_region: ContextRegionPayload | null;
 	nearby_speckle_objects: NearbySpeckleObjectPayload[];
 	meta: {

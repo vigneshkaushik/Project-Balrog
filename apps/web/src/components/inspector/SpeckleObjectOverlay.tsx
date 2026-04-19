@@ -1,10 +1,16 @@
 import {
+  useCallback,
+  useEffect,
   useId,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from 'react'
+import { createPortal } from 'react-dom'
+import { useApp } from '../../context/useApp'
 import { useFloatingPanel } from '../../hooks/useFloatingPanel'
 
 interface SpeckleObjectOverlayProps {
@@ -14,6 +20,29 @@ interface SpeckleObjectOverlayProps {
 const MIN_WIDTH = 288
 const MIN_HEIGHT = 208
 const DEFAULT_WIDTH = 352
+
+const METADATA_HELP_LEAVE_DELAY_MS = 320
+const METADATA_HELP_PANEL_WIDTH = 300
+const METADATA_HELP_GAP_PX = 10
+
+function helpBoxNearlyEqual(
+  a: { top: number; left: number; width: number },
+  b: { top: number; left: number; width: number },
+): boolean {
+  return (
+    Math.abs(a.top - b.top) < 0.75 &&
+    Math.abs(a.left - b.left) < 0.75 &&
+    a.width === b.width
+  )
+}
+
+const METADATA_HELP_TITLE = 'What this note is for'
+
+const METADATA_HELP_BODY = [
+  'Use this box to capture anything your coordination team should know about this object—who is supposed to move it, a hold or waiver, a substitution you agreed on, a job or RFI number, or a reminder to verify something in the field.',
+  'When you run analysis for a clash, Balrog sends your note together with the clash and model context so the guidance matches how you are actually working the issue.',
+  'Notes stay on this device in your browser only; they are not saved to Speckle or back into the clash report file.',
+] as const
 
 const PRIORITY_KEYS = [
   'id',
@@ -70,7 +99,9 @@ function formatPrimitive(value: string | number | boolean | null): string {
 }
 
 function sortEntries(entries: Array<[string, unknown]>): Array<[string, unknown]> {
-  const priorityIndex = new Map(PRIORITY_KEYS.map((key, index) => [key, index]))
+  const priorityIndex = new Map<string, number>(
+    PRIORITY_KEYS.map((key, index) => [key, index]),
+  )
   return [...entries].sort(([a], [b]) => {
     const aPriority = priorityIndex.get(a) ?? Number.POSITIVE_INFINITY
     const bPriority = priorityIndex.get(b) ?? Number.POSITIVE_INFINITY
@@ -212,8 +243,140 @@ function getObjectTitle(objectData: Record<string, unknown>): ReactNode {
   return 'Selected object'
 }
 
+function readSpeckleId(objectData: Record<string, unknown>): string | null {
+  const id = objectData.id
+  return typeof id === 'string' && id.trim().length > 0 ? id.trim() : null
+}
+
 export function SpeckleObjectOverlay({ objectData }: SpeckleObjectOverlayProps) {
   const panelId = useId()
+  const metadataHelpId = useId()
+  const { objectMetadata, setObjectMetadata, clearObjectMetadata } = useApp()
+  const speckleId = readSpeckleId(objectData)
+  const storedNote = speckleId ? (objectMetadata[speckleId] ?? '') : ''
+  const hasNote = storedNote.trim().length > 0
+  const [editingMeta, setEditingMeta] = useState(false)
+  const [draftMeta, setDraftMeta] = useState(storedNote)
+  const [metadataHelpOpen, setMetadataHelpOpen] = useState(false)
+  const [metadataHelpBox, setMetadataHelpBox] = useState<{
+    top: number
+    left: number
+    width: number
+  } | null>(null)
+  const metadataHelpTriggerRef = useRef<HTMLButtonElement>(null)
+  const metadataHelpPanelRef = useRef<HTMLDivElement>(null)
+  const metadataHelpLeaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  )
+
+  const clearMetadataHelpLeaveTimer = useCallback(() => {
+    if (metadataHelpLeaveTimerRef.current != null) {
+      clearTimeout(metadataHelpLeaveTimerRef.current)
+      metadataHelpLeaveTimerRef.current = null
+    }
+  }, [])
+
+  const scheduleMetadataHelpClose = useCallback(() => {
+    clearMetadataHelpLeaveTimer()
+    metadataHelpLeaveTimerRef.current = setTimeout(() => {
+      metadataHelpLeaveTimerRef.current = null
+      setMetadataHelpOpen(false)
+      setMetadataHelpBox(null)
+    }, METADATA_HELP_LEAVE_DELAY_MS)
+  }, [clearMetadataHelpLeaveTimer])
+
+  const openMetadataHelp = useCallback(() => {
+    clearMetadataHelpLeaveTimer()
+    const btn = metadataHelpTriggerRef.current
+    const nextBox =
+      btn && typeof window !== 'undefined'
+        ? (() => {
+            const r = btn.getBoundingClientRect()
+            const width = Math.min(METADATA_HELP_PANEL_WIDTH, window.innerWidth - 24)
+            let left = r.right - width
+            left = Math.max(12, Math.min(left, window.innerWidth - width - 12))
+            const top = r.bottom + METADATA_HELP_GAP_PX
+            return { top, left, width }
+          })()
+        : {
+            top: 80,
+            left: 16,
+            width: METADATA_HELP_PANEL_WIDTH,
+          }
+    setMetadataHelpBox((prev) =>
+      prev && helpBoxNearlyEqual(prev, nextBox) ? prev : nextBox,
+    )
+    setMetadataHelpOpen(true)
+  }, [clearMetadataHelpLeaveTimer])
+
+  const scheduleMetadataHelpCloseFromTrigger = useCallback(
+    (e: ReactPointerEvent<HTMLButtonElement>) => {
+      const next = e.relatedTarget as Node | null
+      if (next && metadataHelpPanelRef.current?.contains(next)) return
+      scheduleMetadataHelpClose()
+    },
+    [scheduleMetadataHelpClose],
+  )
+
+  const scheduleMetadataHelpCloseFromPanel = useCallback(
+    (e: ReactPointerEvent<HTMLDivElement>) => {
+      const next = e.relatedTarget as Node | null
+      if (next && metadataHelpTriggerRef.current?.contains(next)) return
+      scheduleMetadataHelpClose()
+    },
+    [scheduleMetadataHelpClose],
+  )
+
+  useLayoutEffect(() => {
+    if (!metadataHelpOpen) return
+    const update = () => {
+      const btn = metadataHelpTriggerRef.current
+      if (!btn || typeof window === 'undefined') return
+      const r = btn.getBoundingClientRect()
+      const width = Math.min(METADATA_HELP_PANEL_WIDTH, window.innerWidth - 24)
+      let left = r.right - width
+      left = Math.max(12, Math.min(left, window.innerWidth - width - 12))
+      const top = r.bottom + METADATA_HELP_GAP_PX
+      const next = { top, left, width }
+      setMetadataHelpBox((prev) =>
+        prev && helpBoxNearlyEqual(prev, next) ? prev : next,
+      )
+    }
+    update()
+    window.addEventListener('resize', update)
+    window.addEventListener('scroll', update, true)
+    return () => {
+      window.removeEventListener('resize', update)
+      window.removeEventListener('scroll', update, true)
+    }
+  }, [metadataHelpOpen])
+
+  useEffect(() => {
+    if (!metadataHelpOpen) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        clearMetadataHelpLeaveTimer()
+        setMetadataHelpOpen(false)
+        setMetadataHelpBox(null)
+        metadataHelpTriggerRef.current?.focus()
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+      clearMetadataHelpLeaveTimer()
+    }
+  }, [metadataHelpOpen, clearMetadataHelpLeaveTimer])
+
+  useEffect(() => {
+    return () => clearMetadataHelpLeaveTimer()
+  }, [clearMetadataHelpLeaveTimer])
+
+  useEffect(() => {
+    if (editingMeta) return
+    setDraftMeta(storedNote)
+  }, [storedNote, editingMeta])
+
   const entries = getRenderableEntries(objectData)
   const [expanded, setExpanded] = useState(true)
   const overlayRef = useRef<HTMLElement>(null)
@@ -241,7 +404,44 @@ export function SpeckleObjectOverlay({ objectData }: SpeckleObjectOverlayProps) 
     minSize: { width: MIN_WIDTH, height: MIN_HEIGHT },
   })
 
+  const metadataHelpPortal =
+    metadataHelpOpen &&
+    metadataHelpBox &&
+    typeof document !== 'undefined'
+      ? createPortal(
+          <div
+            ref={metadataHelpPanelRef}
+            id={metadataHelpId}
+            role="dialog"
+            aria-modal="false"
+            aria-labelledby={`${metadataHelpId}-heading`}
+            className="fixed z-[200] rounded-lg border border-neutral-200 bg-white p-3 shadow-xl ring-1 ring-black/5 opacity-100 transition-opacity duration-200 ease-out motion-reduce:transition-none"
+            style={{
+              top: metadataHelpBox.top,
+              left: metadataHelpBox.left,
+              width: metadataHelpBox.width,
+            }}
+            onPointerEnter={clearMetadataHelpLeaveTimer}
+            onPointerLeave={scheduleMetadataHelpCloseFromPanel}
+          >
+            <h2
+              id={`${metadataHelpId}-heading`}
+              className="text-xs font-semibold text-neutral-900"
+            >
+              {METADATA_HELP_TITLE}
+            </h2>
+            <div className="mt-2 space-y-2 text-xs leading-relaxed text-neutral-600">
+              {METADATA_HELP_BODY.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </div>
+          </div>,
+          document.body,
+        )
+      : null
+
   return (
+    <>
     <aside
       ref={overlayRef}
       style={{
@@ -305,6 +505,124 @@ export function SpeckleObjectOverlay({ objectData }: SpeckleObjectOverlayProps) 
             className="flex h-full min-h-0 flex-col overflow-hidden"
           >
             <div className="min-h-0 flex-1 overflow-auto px-4 py-2">
+              {speckleId ? (
+                <div className="mb-3 rounded-lg border border-neutral-200 bg-neutral-50/80 px-3 py-2">
+                  <div className="flex items-center gap-1.5">
+                    <p className="min-w-0 flex-1 text-[11px] font-semibold uppercase tracking-wide text-neutral-600">
+                      User metadata
+                    </p>
+                    <button
+                      ref={metadataHelpTriggerRef}
+                      type="button"
+                      className="inline-flex shrink-0 cursor-help border-0 bg-transparent p-0 text-neutral-500 hover:text-neutral-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/40"
+                      aria-label="What is user metadata?"
+                      aria-expanded={metadataHelpOpen}
+                      aria-controls={metadataHelpId}
+                      aria-haspopup="dialog"
+                      onPointerEnter={() => {
+                        openMetadataHelp()
+                      }}
+                      onPointerLeave={scheduleMetadataHelpCloseFromTrigger}
+                      onFocus={() => {
+                        openMetadataHelp()
+                      }}
+                    >
+                      <svg
+                        className="pointer-events-none h-4 w-4"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.748 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.251 9H9z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                  {editingMeta ? (
+                    <div className="mt-2 space-y-2">
+                      <label htmlFor={`${panelId}-meta`} className="sr-only">
+                        User metadata note
+                      </label>
+                      <textarea
+                        id={`${panelId}-meta`}
+                        rows={4}
+                        value={draftMeta}
+                        onChange={(e) => setDraftMeta(e.target.value)}
+                        className="w-full resize-y rounded border border-neutral-200 bg-white px-2 py-1.5 text-xs text-neutral-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary/50"
+                        placeholder="Add coordinator notes…"
+                      />
+                      <div className="flex flex-wrap justify-end gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDraftMeta(storedNote)
+                            setEditingMeta(false)
+                          }}
+                          className="cursor-pointer rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
+                        >
+                          Cancel
+                        </button>
+                        {hasNote ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              clearObjectMetadata(speckleId)
+                              setDraftMeta('')
+                              setEditingMeta(false)
+                            }}
+                            className="cursor-pointer rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-medium text-red-800 hover:bg-red-100"
+                          >
+                            Delete
+                          </button>
+                        ) : null}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setObjectMetadata(speckleId, draftMeta)
+                            setEditingMeta(false)
+                          }}
+                          className="cursor-pointer rounded-md bg-slate-600 px-2 py-1 text-xs font-medium text-white hover:bg-slate-700"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  ) : hasNote ? (
+                    <div className="mt-2 space-y-2">
+                      <p className="whitespace-pre-wrap text-sm text-neutral-800">
+                        {storedNote}
+                      </p>
+                      <div className="flex gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setEditingMeta(true)}
+                          className="cursor-pointer rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs font-medium text-neutral-700 hover:bg-neutral-100"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => clearObjectMetadata(speckleId)}
+                          className="cursor-pointer rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-medium text-red-800 hover:bg-red-100"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setEditingMeta(true)}
+                      className="mt-2 cursor-pointer rounded-md border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-100"
+                    >
+                      Add metadata
+                    </button>
+                  )}
+                </div>
+              ) : null}
               {entries.length > 0 ? (
                 <dl>
                   {entries.map(([key, value]) => (
@@ -328,5 +646,7 @@ export function SpeckleObjectOverlay({ objectData }: SpeckleObjectOverlayProps) 
         </div>
       </div>
     </aside>
+    {metadataHelpPortal}
+    </>
   )
 }

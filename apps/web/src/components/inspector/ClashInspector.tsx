@@ -10,10 +10,14 @@ import type {
 	NearbySpeckleObjectPayload,
 } from "../../lib/clashContextRegion";
 import { clashReportGateMessage } from "../../lib/clashReportGateMessage";
-import { clashParticipantSpeckleIdsForContextExclusion } from "../../lib/zoomToSmallestClashObject";
+import {
+	clashParticipantSpeckleIdsForContextExclusion,
+	resolveClashObjectNodes,
+} from "../../lib/zoomToSmallestClashObject";
 import {
 	postClashAnalyzeContext,
 	type ClashAnalyzeContextRequestBody,
+	type ClashObjectWithUserMetadata,
 } from "../../lib/postClashAnalysis";
 import { AnalysisPanel } from "./AnalysisPanel";
 import { ClashSelector } from "./ClashSelector";
@@ -128,6 +132,7 @@ export function ClashInspector() {
 		uploadError,
 		clearSession,
 		requestClashObjectViewerFocus,
+		objectMetadata,
 	} = useApp();
 
 	const hasSpeckleUrl = speckleUrls.some((u) => u.trim().length > 0);
@@ -179,9 +184,6 @@ export function ClashInspector() {
 	const [analysisNotes, setAnalysisNotes] = useState<string | null>(null);
 	const [analysisError, setAnalysisError] = useState<string | null>(null);
 	const [analysisCompleted, setAnalysisCompleted] = useState(false);
-	const [analysisContextPreview, setAnalysisContextPreview] =
-		useState<ClashAnalyzeContextRequestBody | null>(null);
-	const [isContextPreviewOpen, setIsContextPreviewOpen] = useState(false);
 	const [openPanels, setOpenPanels] = useState<Set<InspectorPanelId>>(
 		readInitialOpenPanels,
 	);
@@ -310,6 +312,7 @@ export function ClashInspector() {
 		try {
 			const built = buildClashContextAnalysisPayload(speckleViewer, selected, {
 				speckleUrlCount: nonEmptySpeckleCount,
+				objectMetadata,
 			});
 			setContextObjectsByClashId((prev) => ({
 				...prev,
@@ -337,6 +340,7 @@ export function ClashInspector() {
 		nonEmptySpeckleCount,
 		contextObjectsByClashId,
 		contextRegionByClashId,
+		objectMetadata,
 	]);
 
 	const contextBoundingBoxForViewer = useMemo(() => {
@@ -366,10 +370,31 @@ export function ClashInspector() {
 		try {
 			const built = buildClashContextAnalysisPayload(speckleViewer, selected, {
 				speckleUrlCount: nonEmptySpeckleCount,
+				objectMetadata,
+			});
+			const clashObjectsOriginal: ClashObjectWithUserMetadata[] = (
+				selected.objects ?? []
+			).map((obj) => {
+				const keys = matchKeysForClashObject(obj);
+				const { matchedObjectIds } = resolveClashObjectNodes(
+					speckleViewer,
+					keys,
+				);
+				let user_metadata: string | undefined;
+				for (const sid of matchedObjectIds) {
+					const note = objectMetadata[sid]?.trim();
+					if (note) {
+						user_metadata = note;
+						break;
+					}
+				}
+				return user_metadata !== undefined
+					? { ...obj, user_metadata }
+					: { ...obj };
 			});
 			const requestBody: ClashAnalyzeContextRequestBody = {
 				clash: selected,
-				clash_objects_original: selected.objects ?? [],
+				clash_objects_original: clashObjectsOriginal,
 				context_region: built.context_region,
 				nearby_speckle_objects: built.nearby_speckle_objects,
 				meta: {
@@ -377,8 +402,6 @@ export function ClashInspector() {
 					unmatched_clash_keys: built.unmatched_clash_keys,
 				},
 			};
-			setAnalysisContextPreview(requestBody);
-			setIsContextPreviewOpen(true);
 			const res = await postClashAnalyzeContext(requestBody);
 			setAnalysisWatchOut(res.watch_out_for);
 			setAnalysisRecommendations(res.recommendations);
@@ -392,7 +415,13 @@ export function ClashInspector() {
 		} finally {
 			setAnalysisLoading(false);
 		}
-	}, [selected, speckleViewer, nonEmptySpeckleCount, showToast]);
+	}, [
+		selected,
+		speckleViewer,
+		nonEmptySpeckleCount,
+		objectMetadata,
+		showToast,
+	]);
 
 	const severityHighlightMatchKeys = useMemo(() => {
 		if (!highlightFilteredSeverity) return [];
@@ -826,88 +855,6 @@ export function ClashInspector() {
 				</FloatingCard>
 				) : null}
 			</div>
-			{isContextPreviewOpen && analysisContextPreview ? (
-					<div className="absolute inset-0 z-40 flex items-start justify-center bg-neutral-900/45 p-4 backdrop-blur-[1px]">
-						<section className="mt-3 flex max-h-[80vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-2xl">
-							<header className="flex items-center justify-between border-b border-neutral-200 px-4 py-3">
-								<div>
-									<h3 className="text-sm font-bold text-neutral-900">
-										Analysis Context Payload
-									</h3>
-									<p className="text-xs text-neutral-500">
-										Preview of the context sent to /clashes/analyze-context
-									</p>
-								</div>
-								<button
-									type="button"
-									onClick={() => setIsContextPreviewOpen(false)}
-									className="cursor-pointer rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs font-medium text-neutral-700 transition hover:bg-neutral-100"
-								>
-									Close
-								</button>
-							</header>
-
-							<div className="grid min-h-0 flex-1 gap-3 overflow-auto p-4 sm:grid-cols-2">
-								<div className="min-h-0 rounded-lg border border-neutral-200">
-									<div className="border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-xs font-semibold text-neutral-700">
-										Original clash objects (
-										{analysisContextPreview.clash_objects_original?.length ?? 0})
-									</div>
-									<pre className="max-h-[55vh] overflow-auto px-3 py-2 text-[11px] leading-relaxed text-neutral-700">
-										{JSON.stringify(
-											analysisContextPreview.clash_objects_original ?? [],
-											null,
-											2,
-										)}
-									</pre>
-								</div>
-
-								<div className="min-h-0 rounded-lg border border-neutral-200">
-									<div className="border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-xs font-semibold text-neutral-700">
-										Nearby objects (
-										{analysisContextPreview.nearby_speckle_objects.length})
-									</div>
-									<div className="max-h-[55vh] space-y-2 overflow-auto px-3 py-2 text-[11px] leading-relaxed text-neutral-700">
-										{analysisContextPreview.nearby_speckle_objects.length ===
-										0 ? (
-											<p className="text-xs text-neutral-500">
-												No nearby objects found for this context region.
-											</p>
-										) : (
-											analysisContextPreview.nearby_speckle_objects.map(
-												(obj) => (
-													<div
-														key={obj.id}
-														className="rounded-md border border-neutral-200 bg-white p-2"
-													>
-														<p className="text-xs font-semibold text-neutral-800">
-															{obj.name ?? "Unnamed object"}
-														</p>
-														<div className="mt-1 flex flex-wrap gap-1 text-[10px]">
-															<span className="rounded bg-neutral-100 px-1.5 py-0.5 text-neutral-700">
-																ID: {obj.id}
-															</span>
-															{obj.item_type ? (
-																<span className="rounded bg-blue-50 px-1.5 py-0.5 text-blue-700">
-																	Item type: {obj.item_type}
-																</span>
-															) : null}
-															{obj.speckle_type ? (
-																<span className="rounded bg-violet-50 px-1.5 py-0.5 text-violet-700">
-																	Geometry: {obj.speckle_type}
-																</span>
-															) : null}
-														</div>
-													</div>
-												),
-											)
-										)}
-									</div>
-								</div>
-							</div>
-						</section>
-					</div>
-				) : null}
 		</div>
 	);
 }
