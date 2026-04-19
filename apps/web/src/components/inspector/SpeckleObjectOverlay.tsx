@@ -1,4 +1,5 @@
 import {
+  memo,
   useCallback,
   useEffect,
   useId,
@@ -146,7 +147,7 @@ function ValueView({
   if (isPrimitive(value)) {
     return (
       <div className="grid grid-cols-[minmax(0,112px)_1fr] gap-x-3 gap-y-1 py-1.5">
-        <dt className="text-[11px] font-medium uppercase tracking-wide text-neutral-500">
+        <dt className="text-xs font-medium uppercase tracking-wide text-neutral-500">
           {formatLabel(label)}
         </dt>
         <dd className="min-w-0 break-words text-sm text-neutral-800">
@@ -167,7 +168,7 @@ function ValueView({
     return (
       <details className="py-1.5" open={depth === 0}>
         <summary className="cursor-pointer list-none text-sm font-medium text-neutral-700">
-          <span className="text-[11px] uppercase tracking-wide text-neutral-500">
+          <span className="text-xs uppercase tracking-wide text-neutral-500">
             {formatLabel(label)}
           </span>
           <span className="ml-2 font-normal text-neutral-600">{preview}</span>
@@ -199,7 +200,7 @@ function ValueView({
     return (
       <details className="py-1.5" open={depth === 0}>
         <summary className="cursor-pointer list-none text-sm font-medium text-neutral-700">
-          <span className="text-[11px] uppercase tracking-wide text-neutral-500">
+          <span className="text-xs uppercase tracking-wide text-neutral-500">
             {formatLabel(label)}
           </span>
           <span className="ml-2 font-normal text-neutral-600">
@@ -222,7 +223,7 @@ function ValueView({
 
   return (
     <div className="grid grid-cols-[minmax(0,112px)_1fr] gap-x-3 gap-y-1 py-1.5">
-      <dt className="text-[11px] font-medium uppercase tracking-wide text-neutral-500">
+      <dt className="text-xs font-medium uppercase tracking-wide text-neutral-500">
         {formatLabel(label)}
       </dt>
       <dd className="min-w-0 break-words text-sm text-neutral-800">
@@ -248,7 +249,7 @@ function readSpeckleId(objectData: Record<string, unknown>): string | null {
   return typeof id === 'string' && id.trim().length > 0 ? id.trim() : null
 }
 
-export function SpeckleObjectOverlay({ objectData }: SpeckleObjectOverlayProps) {
+function SpeckleObjectOverlayComponent({ objectData }: SpeckleObjectOverlayProps) {
   const panelId = useId()
   const metadataHelpId = useId()
   const { objectMetadata, setObjectMetadata, clearObjectMetadata } = useApp()
@@ -508,7 +509,7 @@ export function SpeckleObjectOverlay({ objectData }: SpeckleObjectOverlayProps) 
               {speckleId ? (
                 <div className="mb-3 rounded-lg border border-neutral-200 bg-neutral-50/80 px-3 py-2">
                   <div className="flex items-center gap-1.5">
-                    <p className="min-w-0 flex-1 text-[11px] font-semibold uppercase tracking-wide text-neutral-600">
+                    <p className="min-w-0 flex-1 text-xs font-semibold uppercase tracking-wide text-neutral-600">
                       User metadata
                     </p>
                     <button
@@ -650,3 +651,9 @@ export function SpeckleObjectOverlay({ objectData }: SpeckleObjectOverlayProps) 
     </>
   )
 }
+
+/**
+ * Memoized so per-frame parent re-renders (e.g. badge tracking, hover state)
+ * do not recompute the property tree for the same `objectData` reference.
+ */
+export const SpeckleObjectOverlay = memo(SpeckleObjectOverlayComponent)

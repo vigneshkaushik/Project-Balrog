@@ -26,10 +26,10 @@ function linkHostLabel(url: string): string {
 function ToolResultError({ content }: { content: string }) {
   return (
     <details className="mt-1" open>
-      <summary className="cursor-pointer text-[0.7rem] font-medium text-red-800 hover:underline">
+      <summary className="cursor-pointer text-xs font-medium text-red-800 hover:underline">
         Error details
       </summary>
-      <pre className="mt-1 max-h-40 overflow-y-auto whitespace-pre-wrap break-words font-mono text-[0.7rem] leading-relaxed text-red-900">
+      <pre className="mt-1 max-h-40 overflow-y-auto whitespace-pre-wrap break-words font-mono text-xs leading-relaxed text-red-900">
         {content}
       </pre>
     </details>
@@ -61,7 +61,7 @@ export function ToolResultView({
     return (
       <div className="mt-1 space-y-2">
         <details open className="rounded-md border border-emerald-200/70 bg-white/60">
-          <summary className="cursor-pointer select-none px-2 py-1.5 text-[0.7rem] font-semibold text-emerald-900 hover:bg-emerald-50/80">
+          <summary className="cursor-pointer select-none px-2 py-1.5 text-xs font-semibold text-emerald-900 hover:bg-emerald-50/80">
             Search hits ({hits.length})
             <span className="ml-1 font-normal text-emerald-700/80">
               — collapse or expand
@@ -83,19 +83,19 @@ export function ToolResultView({
                       href={url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[0.7rem] font-semibold text-primary hover:underline"
+                      className="text-xs font-semibold text-primary hover:underline"
                     >
                       {linkHostLabel(url)}
                     </a>
                   ) : null}
                   {text ? (
                     <p
-                      className={`whitespace-pre-wrap text-[0.75rem] leading-relaxed text-neutral-800 ${url ? 'mt-1' : ''}`}
+                      className={`whitespace-pre-wrap text-xs leading-relaxed text-neutral-800 ${url ? 'mt-1' : ''}`}
                     >
                       {text}
                     </p>
                   ) : !url ? (
-                    <span className="text-[0.7rem] text-neutral-500">
+                    <span className="text-xs text-neutral-500">
                       (no text)
                     </span>
                   ) : null}
@@ -105,10 +105,10 @@ export function ToolResultView({
           </ul>
         </details>
         <details className="rounded-md border border-neutral-200/80 bg-neutral-50/80">
-          <summary className="cursor-pointer px-2 py-1.5 text-[0.65rem] font-medium text-neutral-600 hover:bg-neutral-100/80">
+          <summary className="cursor-pointer px-2 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-100/80">
             Raw JSON
           </summary>
-          <pre className="max-h-36 overflow-auto border-t border-neutral-200/60 p-2 font-mono text-[0.65rem] leading-snug text-neutral-800">
+          <pre className="max-h-36 overflow-auto border-t border-neutral-200/60 p-2 font-mono text-xs leading-snug text-neutral-800">
             {content}
           </pre>
         </details>
@@ -118,13 +118,13 @@ export function ToolResultView({
 
   return (
     <details className="mt-1 rounded-md border border-emerald-200/60 bg-white/50" open>
-      <summary className="cursor-pointer px-2 py-1.5 text-[0.7rem] font-semibold text-emerald-900 hover:bg-emerald-50/60">
+      <summary className="cursor-pointer px-2 py-1.5 text-xs font-semibold text-emerald-900 hover:bg-emerald-50/60">
         Tool output
         <span className="ml-1 font-normal text-emerald-800/80">
           ({content.length} chars)
         </span>
       </summary>
-      <pre className="max-h-44 overflow-y-auto whitespace-pre-wrap break-words border-t border-emerald-200/50 p-2 font-mono text-[0.7rem] leading-relaxed text-emerald-950">
+      <pre className="max-h-44 overflow-y-auto whitespace-pre-wrap break-words border-t border-emerald-200/50 p-2 font-mono text-xs leading-relaxed text-emerald-950">
         {content}
       </pre>
     </details>

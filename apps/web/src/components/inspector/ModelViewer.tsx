@@ -10,6 +10,7 @@ import {
 	ViewerEvent,
 } from "@speckle/viewer";
 import {
+	type RefObject,
 	useCallback,
 	useEffect,
 	useLayoutEffect,
@@ -109,12 +110,6 @@ export function ModelViewer({
 		percent: 0,
 	});
 	const [isViewportHovered, setIsViewportHovered] = useState(false);
-	const [badgeScreen, setBadgeScreen] = useState<{
-		x: number;
-		y: number;
-	} | null>(null);
-	const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
-	const lastBadgeScreenRef = useRef({ x: -1, y: -1 });
 
 	const activeUrls = useMemo(
 		() => speckleUrls.map((u) => u.trim()).filter((u) => u.length > 0),
@@ -126,80 +121,6 @@ export function ModelViewer({
 		const id = selectedObjectData.id;
 		return typeof id === "string" && id.trim().length > 0 ? id.trim() : null;
 	}, [selectedObjectData]);
-
-	const computeBadgeScreenPosition = useCallback((): {
-		x: number;
-		y: number;
-	} | null => {
-		if (!loadedViewer || !containerRef.current || !selectedSpeckleId) {
-			return null;
-		}
-		const box = unionBoxesForSpeckleObjectIds(loadedViewer, [
-			selectedSpeckleId,
-		]);
-		if (!box || box.isEmpty()) return null;
-		const center = new Vector3();
-		box.getCenter(center);
-		const renderer = loadedViewer.getRenderer();
-		const camera = renderer?.renderingCamera;
-		if (!camera) return null;
-		center.project(camera);
-		const el = containerRef.current;
-		const w = el.clientWidth;
-		const h = el.clientHeight;
-		if (w <= 0 || h <= 0) return null;
-		const x = (center.x * 0.5 + 0.5) * w;
-		const y = (-center.y * 0.5 + 0.5) * h;
-		return { x, y };
-	}, [loadedViewer, selectedSpeckleId]);
-
-	useLayoutEffect(() => {
-		const el = containerRef.current;
-		if (!el || typeof ResizeObserver === "undefined") {
-			return;
-		}
-		const ro = new ResizeObserver(() => {
-			setContainerSize({
-				width: el.clientWidth,
-				height: el.clientHeight,
-			});
-		});
-		ro.observe(el);
-		setContainerSize({
-			width: el.clientWidth,
-			height: el.clientHeight,
-		});
-		return () => ro.disconnect();
-	}, []);
-
-	useEffect(() => {
-		if (!loadedViewer || !selectedSpeckleId) {
-			setBadgeScreen(null);
-			lastBadgeScreenRef.current = { x: -1, y: -1 };
-			return;
-		}
-
-		let raf = 0;
-		const tick = () => {
-			const next = computeBadgeScreenPosition();
-			if (next) {
-				const last = lastBadgeScreenRef.current;
-				if (
-					Math.abs(next.x - last.x) > 0.5 ||
-					Math.abs(next.y - last.y) > 0.5
-				) {
-					lastBadgeScreenRef.current = next;
-					setBadgeScreen(next);
-				}
-			} else {
-				lastBadgeScreenRef.current = { x: -1, y: -1 };
-				setBadgeScreen(null);
-			}
-			raf = requestAnimationFrame(tick);
-		};
-		raf = requestAnimationFrame(tick);
-		return () => cancelAnimationFrame(raf);
-	}, [loadedViewer, selectedSpeckleId, computeBadgeScreenPosition]);
 
 	const authToken = import.meta.env.VITE_SPECKLE_TOKEN ?? "";
 
@@ -718,17 +639,12 @@ export function ModelViewer({
 					{showLoadProgress && speckleLoadState.loading ? (
 						<SpeckleLoadProgressBar percent={speckleLoadState.percent} />
 					) : null}
-					{selectedSpeckleId &&
-					badgeScreen &&
-					containerSize.width > 0 &&
-					containerSize.height > 0 ? (
-						<SelectedObjectMetadataBadge
+					{loadedViewer && selectedSpeckleId ? (
+						<SelectedObjectBadgeOverlay
+							viewer={loadedViewer}
+							containerRef={containerRef}
 							speckleId={selectedSpeckleId}
-							screenX={badgeScreen.x}
-							screenY={badgeScreen.y}
-							visible={isViewportHovered}
-							containerWidth={containerSize.width}
-							containerHeight={containerSize.height}
+							isViewportHovered={isViewportHovered}
 						/>
 					) : null}
 					{selectedObjectData ? (
@@ -737,5 +653,120 @@ export function ModelViewer({
 				</div>
 			)}
 		</div>
+	);
+}
+
+interface SelectedObjectBadgeOverlayProps {
+	viewer: Viewer;
+	containerRef: RefObject<HTMLElement | null>;
+	speckleId: string;
+	isViewportHovered: boolean;
+}
+
+/**
+ * Renders the viewport "Add note / Edit note" badge anchored to a selected
+ * Speckle object. Owns its own rAF + screen-position state so per-frame
+ * camera updates do **not** re-render the parent `ModelViewer` (and any
+ * sibling overlays such as `SpeckleObjectOverlay`).
+ *
+ * The selected object's world-space AABB center is computed once per
+ * `(viewer, speckleId)` and projected each frame; only the cheap projection
+ * runs in the rAF loop.
+ */
+function SelectedObjectBadgeOverlay({
+	viewer,
+	containerRef,
+	speckleId,
+	isViewportHovered,
+}: SelectedObjectBadgeOverlayProps) {
+	const [badgeScreen, setBadgeScreen] = useState<{
+		x: number;
+		y: number;
+	} | null>(null);
+	const [containerSize, setContainerSize] = useState(() => {
+		const el = containerRef.current;
+		return {
+			width: el?.clientWidth ?? 0,
+			height: el?.clientHeight ?? 0,
+		};
+	});
+
+	useLayoutEffect(() => {
+		const el = containerRef.current;
+		if (!el || typeof ResizeObserver === "undefined") return;
+		const ro = new ResizeObserver(() => {
+			setContainerSize({
+				width: el.clientWidth,
+				height: el.clientHeight,
+			});
+		});
+		ro.observe(el);
+		setContainerSize({
+			width: el.clientWidth,
+			height: el.clientHeight,
+		});
+		return () => ro.disconnect();
+	}, [containerRef]);
+
+	useEffect(() => {
+		setBadgeScreen(null);
+
+		const worldCenter = new Vector3();
+		const projection = new Vector3();
+		let hasCenter = false;
+		let lastX = Number.NaN;
+		let lastY = Number.NaN;
+		let raf = 0;
+
+		const ensureWorldCenter = (): boolean => {
+			if (hasCenter) return true;
+			const box = unionBoxesForSpeckleObjectIds(viewer, [speckleId]);
+			if (!box || box.isEmpty()) return false;
+			box.getCenter(worldCenter);
+			hasCenter = true;
+			return true;
+		};
+
+		const tick = () => {
+			raf = requestAnimationFrame(tick);
+			if (!ensureWorldCenter()) return;
+			const el = containerRef.current;
+			if (!el) return;
+			const renderer = viewer.getRenderer();
+			const camera = renderer?.renderingCamera;
+			if (!camera) return;
+			projection.copy(worldCenter).project(camera);
+			const w = el.clientWidth;
+			const h = el.clientHeight;
+			if (w <= 0 || h <= 0) return;
+			const x = (projection.x * 0.5 + 0.5) * w;
+			const y = (-projection.y * 0.5 + 0.5) * h;
+			if (Math.abs(x - lastX) > 0.5 || Math.abs(y - lastY) > 0.5) {
+				lastX = x;
+				lastY = y;
+				setBadgeScreen({ x, y });
+			}
+		};
+		raf = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(raf);
+	}, [viewer, speckleId, containerRef]);
+
+	if (
+		!badgeScreen ||
+		containerSize.width <= 0 ||
+		containerSize.height <= 0
+	) {
+		return null;
+	}
+
+	return (
+		<SelectedObjectMetadataBadge
+			speckleId={speckleId}
+			screenX={badgeScreen.x}
+			screenY={badgeScreen.y}
+			visible={isViewportHovered}
+			containerWidth={containerSize.width}
+			containerHeight={containerSize.height}
+		/>
 	);
 }

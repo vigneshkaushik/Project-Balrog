@@ -141,7 +141,7 @@ export function SelectedObjectMetadataBadge({
 				>
 					<p
 						id={`${formId}-title`}
-						className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-neutral-600"
+						className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-neutral-600"
 					>
 						Object note
 					</p>

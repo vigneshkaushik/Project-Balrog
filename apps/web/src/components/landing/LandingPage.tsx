@@ -46,11 +46,11 @@ export function LandingPage() {
 	return (
 		<div className="flex min-h-full flex-1 items-center justify-center p-6 md:p-10">
 			<div className="w-full max-w-lg rounded-2xl border border-neutral-200/80 bg-white p-8 shadow-md shadow-neutral-900/5">
-				<h1 className="text-center text-xl font-bold text-neutral-900 md:text-2xl">
+				<h1 className="text-center text-xl font-semibold text-neutral-900 md:text-2xl">
 					Get started in 3 simple steps
 				</h1>
 
-				<ol className="mt-6 list-decimal space-y-3 pl-5 text-left text-sm text-neutral-700 md:text-base">
+				<ol className="mt-6 list-decimal space-y-3 pl-5 text-left text-sm text-neutral-700">
 					<li>Upload your clash report from Navisworks</li>
 					<li>Add the relevant speckle model URLs</li>
 					<li>Inspect your clashes, generate analyses and recommendations!</li>

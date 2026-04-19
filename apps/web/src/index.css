@@ -107,6 +107,18 @@ body {
     'Segoe UI',
     Roboto,
     sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 400;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/*
+ * Typography scale (use consistently in components):
+ * - Sizes: `text-xs` (meta, captions, compact controls), `text-sm` (default UI body,
+ *   forms, chat), `text-xl` / `md:text-2xl` (page title only).
+ * - Weights: `font-normal` (body), `font-medium` (labels, buttons, chips),
+ *   `font-semibold` (panel titles, overlines, section headings). Avoid `font-bold`
+ *   and arbitrary `text-[…px]` except rare monospace density inside code blocks.
+ */

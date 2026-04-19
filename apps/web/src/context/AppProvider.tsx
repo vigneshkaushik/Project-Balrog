@@ -338,10 +338,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }))
   }, [])
 
-  const clearClashObjectViewerFocus = useCallback(() => {
-    setClashObjectViewerFocus(null)
-  }, [])
-
   const filteredClashes = useMemo(
     () =>
       clashes.filter((c) =>
@@ -400,7 +396,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       startClashUpload,
       clashObjectViewerFocus,
       requestClashObjectViewerFocus,
-      clearClashObjectViewerFocus,
       objectMetadata,
       setObjectMetadata,
       clearObjectMetadata,
@@ -428,7 +423,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       startClashUpload,
       clashObjectViewerFocus,
       requestClashObjectViewerFocus,
-      clearClashObjectViewerFocus,
       objectMetadata,
       setObjectMetadata,
       clearObjectMetadata,

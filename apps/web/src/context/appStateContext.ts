@@ -47,7 +47,6 @@ export interface AppState {
 
   clashObjectViewerFocus: ClashObjectViewerFocusRequest | null
   requestClashObjectViewerFocus: (matchKeys: string[]) => void
-  clearClashObjectViewerFocus: () => void
 
   /** Speckle object id → free-form user note (persisted in localStorage). */
   objectMetadata: Record<string, string>

@@ -22,7 +22,7 @@ import {
 import { AnalysisPanel } from "./AnalysisPanel";
 import { ClashSelector } from "./ClashSelector";
 import { FloatingCard } from "../ui/FloatingCard";
-import { AiFillIcon } from "./AiFillIcon";
+import { AiIdeaIcon } from "./AiIdeaIcon";
 import {
 	InspectorToolbar,
 	type InspectorPanelId,
@@ -582,7 +582,7 @@ export function ClashInspector() {
 						<div className="flex items-center gap-1.5">
 							<button
 								type="button"
-								className="cursor-pointer rounded-md border px-2 py-1 text-[11px] font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/60 border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100 aria-pressed:border-primary/40 aria-pressed:bg-primary/10 aria-pressed:text-primary"
+								className="cursor-pointer rounded-md border px-2 py-1 text-xs font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/60 border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100 aria-pressed:border-primary/40 aria-pressed:bg-primary/10 aria-pressed:text-primary"
 								aria-pressed={showClashContext}
 								disabled={!selected || !speckleViewer}
 								title={
@@ -597,7 +597,7 @@ export function ClashInspector() {
 							</button>
 							<button
 								type="button"
-								className="cursor-pointer rounded-md border px-2 py-1 text-[11px] font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/60 border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100 aria-pressed:border-primary/40 aria-pressed:bg-primary/10 aria-pressed:text-primary"
+								className="cursor-pointer rounded-md border px-2 py-1 text-xs font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/60 border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100 aria-pressed:border-primary/40 aria-pressed:bg-primary/10 aria-pressed:text-primary"
 								aria-pressed={showContextBoundingBox}
 								disabled={!selected || !speckleViewer}
 								title={
@@ -635,7 +635,7 @@ export function ClashInspector() {
 										<p className="text-xs text-red-600">{analysisError}</p>
 									) : null}
 									<p>
-										<span className="font-semibold text-neutral-900">Clash:</span>{" "}
+										<span className="font-medium text-neutral-900">Clash:</span>{" "}
 										{selected.label}
 										{selected.testName && (
 											<span className="ml-1 text-neutral-400">
@@ -644,7 +644,7 @@ export function ClashInspector() {
 										)}
 									</p>
 									<p className="flex items-center gap-2">
-										<span className="font-semibold text-neutral-900">
+										<span className="font-medium text-neutral-900">
 											Severity:
 										</span>
 										{selected.severity ? (
@@ -663,7 +663,7 @@ export function ClashInspector() {
 									</p>
 									{selected.disciplines && selected.disciplines.length > 0 ? (
 										<p>
-											<span className="font-semibold text-neutral-900">
+											<span className="font-medium text-neutral-900">
 												Disciplines:
 											</span>{" "}
 											{selected.disciplines.join(", ")}
@@ -671,7 +671,7 @@ export function ClashInspector() {
 									) : null}
 									{selected.lead && selected.lead.length > 0 ? (
 										<p>
-											<span className="font-semibold text-neutral-900">
+											<span className="font-medium text-neutral-900">
 												Lead (stays in place):
 											</span>{" "}
 											{selected.lead.join(", ")}
@@ -679,19 +679,19 @@ export function ClashInspector() {
 									) : null}
 									{selected.description ? (
 										<p>
-											<span className="font-semibold text-neutral-900">Type:</span>{" "}
+											<span className="font-medium text-neutral-900">Type:</span>{" "}
 											{selected.description}
 										</p>
 									) : null}
 									{selected.status ? (
 										<p>
-											<span className="font-semibold text-neutral-900">Status:</span>{" "}
+											<span className="font-medium text-neutral-900">Status:</span>{" "}
 											{selected.status}
 										</p>
 									) : null}
 									{selected.distance != null ? (
 										<p>
-											<span className="font-semibold text-neutral-900">
+											<span className="font-medium text-neutral-900">
 												Distance:
 											</span>{" "}
 											{selected.distance.toFixed(4)}
@@ -699,7 +699,7 @@ export function ClashInspector() {
 									) : null}
 									{selected.objects && selected.objects.length > 0 ? (
 										<div>
-											<span className="font-semibold text-neutral-900">Objects:</span>
+											<span className="font-medium text-neutral-900">Objects:</span>
 											<ul className="mt-1 list-disc space-y-0.5 pl-5 text-xs">
 												{selected.objects.map((obj) => {
 													const keys = matchKeysForClashObject(obj);
@@ -734,7 +734,7 @@ export function ClashInspector() {
 										</div>
 									) : null}
 									<div>
-										<p className="font-semibold text-neutral-900">
+										<p className="text-sm font-semibold text-neutral-900">
 											Context Objects ({selectedClashContextObjects.length})
 										</p>
 										{!hasComputedSelectedClashContext ? (
@@ -772,7 +772,7 @@ export function ClashInspector() {
 									</div>
 									{analysisWatchOut.length > 0 ? (
 										<div>
-											<p className="font-semibold text-neutral-900">
+											<p className="text-sm font-semibold text-neutral-900">
 												Things to watch out for
 											</p>
 											<ul className="mt-1 list-disc space-y-1 pl-5 text-xs">
@@ -802,7 +802,7 @@ export function ClashInspector() {
 				<FloatingCard
 					panelId="clash-recommendations"
 					title="Recommendations"
-					titleIcon={<AiFillIcon className="h-3.5 w-3.5" />}
+					titleIcon={<AiIdeaIcon className="h-3.5 w-3.5" />}
 					widthClassName="w-fit"
 					initialPosition={{ x: 80, y: 384 }}
 					initialSize={{ width: 464, height: 304 }}
