@@ -82,7 +82,7 @@ export function AgentActivityLog({
 			<button
 				type="button"
 				onClick={() => setOpen((v) => !v)}
-				className="flex w-full cursor-pointer items-center gap-1.5 rounded-md bg-neutral-100/80 px-2.5 py-1.5 text-left text-[0.75rem] leading-snug text-neutral-600 transition-colors hover:bg-neutral-200/70"
+				className="flex w-full cursor-pointer items-center gap-1.5 rounded-md bg-neutral-100/80 px-2.5 py-1.5 text-left text-xs leading-snug text-neutral-600 transition-colors hover:bg-neutral-200/70"
 			>
 				<ChevronIcon open={open} className="size-3 shrink-0 text-neutral-400" />
 				{preAnswerStreaming ? (
@@ -117,7 +117,7 @@ export function AgentActivityLog({
 							accent="neutral"
 							streaming={streaming && preAnswerStreaming}
 						>
-							<pre className="max-h-48 overflow-y-auto whitespace-pre-wrap break-words font-mono text-[0.7rem] leading-relaxed text-neutral-900">
+							<pre className="max-h-48 overflow-y-auto whitespace-pre-wrap break-words font-mono text-xs leading-relaxed text-neutral-900">
 								{streamPreamble}
 							</pre>
 						</ActivityCard>
@@ -128,7 +128,7 @@ export function AgentActivityLog({
 							accent="violet"
 							streaming={streaming}
 						>
-							<pre className="max-h-32 overflow-y-auto whitespace-pre-wrap break-words font-mono text-[0.7rem] leading-relaxed text-violet-950">
+							<pre className="max-h-32 overflow-y-auto whitespace-pre-wrap break-words font-mono text-xs leading-relaxed text-violet-950">
 								{thinkingBuffer}
 							</pre>
 						</ActivityCard>
@@ -139,7 +139,7 @@ export function AgentActivityLog({
 						if (item.type === "thought") {
 							return (
 								<ActivityCard key={key} label="Reasoning" accent="sky">
-									<p className="whitespace-pre-wrap text-[0.8rem] leading-relaxed text-sky-950">
+									<p className="whitespace-pre-wrap text-sm leading-relaxed text-sky-950">
 										{item.text}
 									</p>
 								</ActivityCard>
@@ -152,7 +152,7 @@ export function AgentActivityLog({
 									label={
 										<>
 											Tool call{" "}
-											<code className="ml-1 rounded bg-amber-100/90 px-1 py-px font-mono text-[0.7rem] font-medium text-amber-950">
+											<code className="ml-1 rounded bg-amber-100/90 px-1 py-px font-mono text-xs font-medium text-amber-950">
 												{item.toolName}
 											</code>
 										</>
@@ -160,10 +160,10 @@ export function AgentActivityLog({
 									accent="amber"
 								>
 									<details className="group">
-										<summary className="cursor-pointer text-[0.7rem] font-medium text-amber-800 hover:text-amber-950">
+										<summary className="cursor-pointer text-xs font-medium text-amber-800 hover:text-amber-950">
 											Arguments
 										</summary>
-										<pre className="mt-1 max-h-36 overflow-auto rounded border border-amber-200/60 bg-white/80 p-2 font-mono text-[0.65rem] leading-snug text-neutral-800">
+										<pre className="mt-1 max-h-36 overflow-auto rounded border border-amber-200/60 bg-white/80 p-2 font-mono text-xs leading-snug text-neutral-800">
 											{formatArgs(item.args)}
 										</pre>
 									</details>
@@ -177,7 +177,7 @@ export function AgentActivityLog({
 									<>
 										{item.isError ? "Tool error" : "Tool result"}{" "}
 										<code
-											className={`ml-1 rounded px-1 py-px font-mono text-[0.7rem] font-medium ${item.isError ? "bg-red-100 text-red-950" : "bg-emerald-100 text-emerald-950"}`}
+											className={`ml-1 rounded px-1 py-px font-mono text-xs font-medium ${item.isError ? "bg-red-100 text-red-950" : "bg-emerald-100 text-emerald-950"}`}
 										>
 											{item.toolName}
 										</code>
@@ -243,7 +243,7 @@ function ActivityCard({
 	return (
 		<div className={`rounded-md border ${c.border} ${c.bg} px-2.5 py-2`}>
 			<div
-				className={`mb-1 flex items-center gap-1.5 text-[0.65rem] font-semibold uppercase tracking-wide ${c.label}`}
+				className={`mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide ${c.label}`}
 			>
 				{label}
 				{streaming ? (

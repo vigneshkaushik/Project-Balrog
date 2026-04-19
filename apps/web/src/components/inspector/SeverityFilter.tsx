@@ -38,7 +38,7 @@ export function SeverityFilter() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
             </svg>
           </div>
-          <h3 id={labelId} className="text-sm font-bold tracking-tight text-neutral-900">
+          <h3 id={labelId} className="text-sm font-semibold tracking-tight text-neutral-900">
             Severity Filter
           </h3>
         </div>
@@ -72,7 +72,7 @@ export function SeverityFilter() {
             <div className="space-y-2">
               <label
                 htmlFor={rangeId}
-                className="block text-[11px] font-bold uppercase tracking-wider text-neutral-500"
+                className="block text-xs font-semibold uppercase tracking-wide text-neutral-500"
               >
                 Severity (exact match)
               </label>
@@ -98,7 +98,7 @@ export function SeverityFilter() {
                   className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-neutral-100 accent-primary focus:outline-none"
                 />
                 <div
-                  className="mt-2 flex justify-between text-[10px] font-bold text-neutral-400"
+                  className="mt-2 flex justify-between text-xs font-medium text-neutral-400"
                   aria-hidden
                 >
                   {SEVERITY_OPTIONS.map((s, i) => (
@@ -114,7 +114,7 @@ export function SeverityFilter() {
             </div>
 
             <div className="flex items-center gap-2 rounded-lg bg-neutral-50 px-3 py-2 border border-neutral-100">
-              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-[10px] font-bold text-primary shadow-sm ring-1 ring-neutral-200">
+              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-semibold text-primary shadow-sm ring-1 ring-neutral-200">
                 {filteredClashes.length}
               </div>
               <p className="text-xs font-medium text-neutral-600">
@@ -125,7 +125,7 @@ export function SeverityFilter() {
                 onClick={() =>
                   setHighlightFilteredSeverity(!highlightFilteredSeverity)
                 }
-                className={`ml-auto cursor-pointer rounded-md border px-2 py-1 text-[11px] font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/60 ${
+                className={`ml-auto cursor-pointer rounded-md border px-2 py-1 text-xs font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/60 ${
                   highlightFilteredSeverity
                     ? 'border-primary bg-primary/10 text-primary'
                     : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100'

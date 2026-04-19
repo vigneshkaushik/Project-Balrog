@@ -1,6 +1,4 @@
-/**
- * Inline copy of `public/ai-chat.svg`. Uses `fill="currentColor"` for toolbar/nav styling.
- */
+/** Chat bubble icon; uses `fill="currentColor"` for toolbar/nav styling. */
 export function AiChatIcon({ className }: { className?: string }) {
 	return (
 		<svg

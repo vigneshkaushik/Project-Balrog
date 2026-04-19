@@ -91,7 +91,7 @@ export function FloatingCard({
             <span>{title}</span>
           </h3>
           {titleSubtitle ? (
-            <p className="mt-0.5 truncate text-[11px] font-medium normal-case tracking-normal text-neutral-500">
+            <p className="mt-0.5 truncate text-xs font-medium normal-case tracking-normal text-neutral-500">
               {titleSubtitle}
             </p>
           ) : null}

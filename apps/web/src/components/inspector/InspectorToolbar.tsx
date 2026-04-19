@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 import { useFloatingChat } from '../../context/FloatingChatContext'
 import { AiChatIcon } from '../layout/AiChatIcon'
-import { AiFillIcon } from './AiFillIcon'
+import { AiIdeaIcon } from './AiIdeaIcon'
 
 export type InspectorPanelId =
 	| 'clash-controls'
@@ -68,7 +68,7 @@ const TOOLBAR_BUTTONS: ToolbarButtonDef[] = [
 	{
 		id: 'clash-recommendations',
 		label: 'Recommendations',
-		icon: <AiFillIcon />,
+		icon: <AiIdeaIcon />,
 	},
 ]
 

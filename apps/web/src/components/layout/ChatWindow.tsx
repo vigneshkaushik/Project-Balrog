@@ -708,7 +708,7 @@ export function ChatWindow({
 									</label>
 									{(settingsDraft.provider === "custom" ||
 										settingsDraft.provider === "ollama") && (
-										<p className="mb-1 text-[11px] text-neutral-500">
+										<p className="mb-1 text-xs text-neutral-500">
 											{settingsDraft.provider === "ollama"
 												? "Optional. Leave empty for native Ollama (server env). Set to an OpenAI-compatible URL (e.g. …/v1) to use the HTTP API."
 												: "Required for custom OpenAI-compatible endpoints."}
