@@ -43,6 +43,16 @@ After any tool use and reasoning, your **final** answer must be **only** a singl
 - **watch_out_for**: **3–8** items. Each item is a **detailed** bullet (risks, dependencies, verification steps, coordination handoffs). Avoid one-word or single-phrase entries unless the context truly allows it.
 - **recommendations**: **Exactly three** distinct, **detailed** resolution strategies, **ordered** from most promising first. Each should read like guidance to a coordination lead: what to do, why it fits this clash, major risks or prerequisites, and how it interacts with the other trades—**not** a one-line slogan.
 
+### User-supplied object notes
+
+Some clash objects and nearby Speckle objects may contain a `user_metadata` field
+(free-form coordinator notes). Treat these as authoritative human input about that
+specific object—they often clarify intent, status, or constraints not visible in
+geometry. Reference them by object name in `watch_out_for` / `recommendations` when
+they materially affect the resolution. Objects with `outside_context_region: true`
+were annotated by the user and added explicitly even though they sit outside the
+bounding box; consider their notes but do not assume geometric proximity.
+
 If the payload lacks Speckle context or nearby objects, still respond with JSON and explain limitations inside **watch_out_for** in the same detailed style.
 """.strip()
 

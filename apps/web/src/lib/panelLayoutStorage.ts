@@ -67,7 +67,12 @@ export function readPanelSize(panelId: string): PanelSize | null {
   if (!entry || !Number.isFinite(entry.width) || !Number.isFinite(entry.height)) {
     return null
   }
-  return { width: entry.width, height: entry.height }
+  const width = entry.width
+  const height = entry.height
+  if (typeof width !== 'number' || typeof height !== 'number') {
+    return null
+  }
+  return { width, height }
 }
 
 export function savePanelSize(panelId: string, size: PanelSize): void {
