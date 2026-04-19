@@ -22,7 +22,7 @@ This document maps the **React + Vite** frontend: entry points, routing, layout,
 | File | Role |
 | ---- | ---- |
 | `index.html` | Vite HTML entry; mounts `#root`. |
-| `src/main.tsx` | `createRoot`, `StrictMode`, `BrowserRouter`, wraps tree in **`AppProvider`**, imports **`index.css`**. |
+| `src/main.tsx` | `createRoot`, `StrictMode`, `BrowserRouter`, wraps tree in **`AppProvider`** (+ **`ToastProvider`**), imports **`index.css`**. |
 | `src/App.tsx` | Declares **`Routes`**: all pages render inside **`AppLayout`**. |
 | `src/index.css` | Tailwind import, **`:root` / `@theme`** primary palette (`--app-primary`, `--app-primary-hover`), **`.btn-primary`** component layer for standardized CTAs. |
 
@@ -39,9 +39,11 @@ This document maps the **React + Vite** frontend: entry points, routing, layout,
 
 | Component | Responsibility |
 | --------- | -------------- |
-| **`AppLayout`** | Page chrome: route content via `<Outlet />`; inspector now uses floating overlays instead of a fixed right rail. |
-| **`FloatingChat`** | Floating launcher + draggable/resizable chat window, grid-snapped via `useFloatingPanel`, with persisted open state (`balrog-floating-chat-open`). |
-| **`ChatWindow`** | Floating chat panel body (renamed from `ChatSidebar`): SSE chat stream, agent config modal (`GET`/`PUT /agent-config`), history restore, activity log rendering. Header is drag-handle enabled (except interactive controls like settings button). |
+| **`AppLayout`** | Wraps the app in **`FloatingChatProvider`**, then route content via `<Outlet />` and an absolute full-viewport overlay for **`FloatingNavbar`** and **`FloatingChat`** (pointer-events shell; inspector **`InspectorToolbar`** / cards sit in the page’s own overlay layer). |
+| **`FloatingNavbar`** | Top bar with **Balrog** title. On routes **other than** `/inspector`, shows a chat toggle ( **`AiChatIcon`** ) that uses **`useFloatingChat`** — same open state as the inspector toolbar chat button. On `/inspector`, chat is only opened from **`InspectorToolbar`** (no duplicate navbar control). |
+| **`FloatingChat`** | Renders **only** the draggable/resizable chat window (grid-snapped via **`useFloatingPanel`**, persisted layout). Open/closed visibility comes from **`FloatingChatContext`**; there is **no** bottom-right FAB. Persisted flag: **`balrog-floating-chat-open`**. |
+| **`AiChatIcon`** | Inline SVG matching **`public/ai-chat.svg`** with **`fill="currentColor"`** for navbar and inspector toolbar. |
+| **`ChatWindow`** | Chat panel body: SSE stream, **`GET`/`PUT /agent-config`**, history restore, **`AgentActivityLog`**. Header is drag-handle enabled (except interactive controls). **Agent settings** UI is rendered via **`createPortal`** with viewport-aware **`position: fixed`** placement so coordinates stay correct above backdrop-blur / transformed ancestors. |
 | **`AgentActivityLog`** | Collapsible **agent metadata** (closed by default): header shows **Thinking** + dots while streaming and no answer slice yet (**`preAnswerStreaming`**), else a summary line (counts + **Metadata** when preamble text exists). Expanded: **Reasoning** card for raw **`streamPreamble`** (model output before **`Answer:`** / **`Final answer:`** / **`### Answer`**), **Extended thinking** (**`thought_delta`**), per-step **Reasoning** (**`agent_thought`**), tool calls/results. Tool results use **`ToolResultView`** for readable display. |
 | **`ToolResultView`** | Renders **`tool_result`** activity content (and error styling when **`isError`**). Used from **`AgentActivityLog`**. |
 
@@ -61,13 +63,16 @@ This document maps the **React + Vite** frontend: entry points, routing, layout,
 
 | Component | Responsibility |
 | --------- | -------------- |
-| **`ClashInspector`** | Floating-panel workspace: draggable/resizable **`FloatingCard`** panels for Clash Controls, Context, Recommendations. Panels are opened/closed from **`InspectorToolbar`** (a floating vertical icon bar on the left). Each panel's header shows an **`X`** close button (via the local `ClosePanelButton`) in place of the legacy collapse chevron. Open/closed state is persisted under **`balrog-inspector-open-panels`** (array of panel ids); panel position/size continues to persist via `useFloatingPanel`/`panelLayoutStorage`. Gate waits for backend session hydration before redirect/toast. Context panel includes a `Show Context` toggle that computes nearby context objects (AABB-based) once per clash, persists them in local UI state, and renders a clickable context object list. |
-| **`InspectorToolbar`** | Floating vertical toolbar with icon-only buttons (sliders / info / sparkle) for the three inspector panels. Cursor-pointer, `aria-pressed` reflects open state, and clicking toggles panel visibility in `ClashInspector`. |
+| **`ClashInspector`** | Floating-panel workspace: draggable/resizable **`FloatingCard`** panels for Clash Controls, Context, Recommendations. Panels are opened/closed from **`InspectorToolbar`** (a floating vertical icon bar on the left). Each panel's header shows an **`X`** close button (via the local **`ClosePanelButton`**) instead of collapse chevrons. Open/closed state is persisted under **`balrog-inspector-open-panels`** (array of panel ids); panel position/size continues to persist via **`useFloatingPanel`** / **`panelLayoutStorage`**. Gate waits for backend session hydration before redirect/toast. Context panel includes a **`Show Context`** toggle that computes nearby context objects (AABB-based) once per clash, persists them in local UI state, and renders a clickable context object list. |
+| **`InspectorToolbar`** | Floating vertical toolbar: icon-only buttons for **Clash Controls** (sliders), **Context** (info), **Recommendations** (**`AiFillIcon`** — same artwork as **`public/ai-fill.svg`**), then **Chat** (**`AiChatIcon`** — **`public/ai-chat.svg`**). Same button styling for all; `aria-pressed` reflects open state for panels and chat. Chat calls **`useFloatingChat`**. |
+| **`AiFillIcon`** | Inline SVG matching **`public/ai-fill.svg`** with **`fill="currentColor"`** — used for Recommendations in the toolbar and the Recommendations **`FloatingCard`** title. |
 | **`ModelViewer`** | Speckle container: `useSpeckleViewer` with trimmed URLs and optional token. Highlight system now supports clash object ids (**red**) plus optional context object ids (**light blue**) while ghosting the rest. Context-object clicks and clash-object clicks both support viewer focus/selection workflows. |
 | **`SpeckleObjectOverlay`** | Floating, draggable, resizable card for selected Speckle object data. Uses the same floating-card styling language and `useFloatingPanel` grid behavior as other overlays; header can collapse details, and body scrolls for long payloads. |
 | **`ClashSelector`** | Select current clash from **`filteredClashes`**; includes a **No clash selected** option so users can de-select and return viewer materials/filters to original state. |
 | **`SeverityFilter`** | Collapsible card: **fixed `p-4`** on the shell so the header does not jump when toggling. Body animates via **CSS grid** `grid-rows-[0fr]` ↔ `grid-rows-[1fr]` (`transition-[grid-template-rows]`, respects **`motion-reduce`**). **`inert`** when collapsed so the range is not focusable. Drives **`severityThreshold`** and **`filteredClashes`**. Includes a **Highlight / Focused** toggle button near the visible-count chip that highlights all clashes at the current severity and ghosts the rest. |
 | **`AnalysisPanel`** | Reusable analysis section wrapper with optional inner title and optional Run Analysis footer button (Context now hides both inner title and run button). |
+
+**Public SVGs** (`public/`): **`ai-fill.svg`**, **`ai-chat.svg`** — source artwork for **`AiFillIcon`** and **`AiChatIcon`** (components inline the paths with **`currentColor`** for theming).
 
 ---
 
@@ -78,6 +83,7 @@ This document maps the **React + Vite** frontend: entry points, routing, layout,
 | **`appStateContext.ts`** | **`AppState`** type: clashes, Navisworks filename, Speckle rows/URLs, **`severityThreshold`** + **`setSeverityThreshold`**, **`highlightFilteredSeverity`** toggle, selection, derived **`filteredClashes`**, mutators, **`clearSession`**. |
 | **`AppProvider.tsx`** | Implements state: clash upload/session hydration, Speckle row CRUD with stable **`id`**s, derived **`speckleUrls`** string array for viewers/guards. Selecting a clash turns off severity-highlight mode; enabling severity highlight clears selected clash. |
 | **`useApp.ts`** | Hook to consume context (throws if outside provider). |
+| **`FloatingChatContext.tsx`** | **`FloatingChatProvider`** + **`useFloatingChat()`**: **`isChatOpen`**, **`setChatOpen`**, **`toggleChat`**. Persists **`balrog-floating-chat-open`** in **`localStorage`**. **`AppLayout`** wraps its contents with this provider so **`FloatingChat`**, **`FloatingNavbar`**, and **`InspectorToolbar`** share one chat visibility state. |
 
 **Data flow (high level)**
 
@@ -130,25 +136,7 @@ This document maps the **React + Vite** frontend: entry points, routing, layout,
 - **Semantic primary color**: change **`--app-primary`** / **`--app-primary-hover`** in **`src/index.css`**; Tailwind **`primary`** utilities follow via **`@theme`**.
 - **Primary buttons**: prefer **`btn-primary`** (+ **`btn-primary--full`** for full width) instead of one-off teal classes.
 - **Floating overlays**: inspector, chat, and selected-object overlays now standardize on the same floating-card language (rounded border, blur, shadow), pointer-event boundaries, and **16px grid** snap for position/size.
-- **Layout**: `AppLayout` uses `h-svh`, `min-h-0`, and flex foundations. Inspector overlays are absolute-positioned and grid-snapped; collapsed cards may switch to auto-size while preserving stored expanded size.
-
----
-
-## Update log — 2026-04-18
-
-- Replaced per-panel collapse chevrons with a floating vertical **`InspectorToolbar`** of icon buttons (Clash Controls, Context, Recommendations). Clicking a toolbar button shows/hides the corresponding `FloatingCard`; panel header now uses an **`X`** close button instead of a chevron. Panel open state is persisted under `balrog-inspector-open-panels`.
-
-## Update log — 2026-04-15
-
-- Replaced fixed inspector side/bottom layout with draggable floating cards (`Clash Controls`, `Context`, `Recommendations`) and collapse states.
-- Added floating chat launcher/window (`FloatingChat` + `ChatWindow`) with drag-from-header behavior and consistent action color usage (`text-primary`).
-- Unified floating grid behavior through `useFloatingPanel` and `PANEL_GRID` (16px), including load-time snapping and edge-safe clamp.
-- Added context-object workflow:
-  - `Show Context` toggle in Context header
-  - context AABB object collection cached per clash (does not clear on toggle off)
-  - viewer dual highlighting (clash red + context light blue)
-  - clickable context object list in Context panel.
-- Updated selected object overlay to floating-card style, drag/resize support, collapse behavior improvements, and scrollable content region.
+- **Layout**: `AppLayout` uses `h-svh`, `min-h-0`, and flex foundations. Inspector **`FloatingCard`** overlays are absolute-positioned and grid-snapped; closing a panel unmounts it while **`panelLayoutStorage`** keeps last position/size for the next open.
 
 ---
 

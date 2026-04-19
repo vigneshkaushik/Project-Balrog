@@ -1,12 +1,32 @@
 import {
+	CameraController,
 	DefaultObjectPickConfiguration,
 	FilteringExtension,
+	ObjectLayers,
 	SelectionExtension,
 	type SelectionExtensionOptions,
+	SpeckleLineMaterial,
 	type Viewer,
 	ViewerEvent,
 } from "@speckle/viewer";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
+import {
+	Box3,
+	BoxGeometry,
+	Color,
+	EdgesGeometry,
+	Vector2,
+	Vector3,
+} from "three";
+import { LineSegments2 } from "three/examples/jsm/lines/LineSegments2.js";
+import { LineSegmentsGeometry } from "three/examples/jsm/lines/LineSegmentsGeometry.js";
 import { useApp } from "../../context/useApp";
 import {
 	type SpeckleLoadState,
@@ -17,6 +37,7 @@ import {
 	renderViewAllowedForClashPick,
 } from "../../lib/speckleExpandPickAllow";
 import {
+	expandMatchedClashSubtreeSpeckleIds,
 	resolveClashObjectNodes,
 	zoomViewerToSmallestClashObject,
 } from "../../lib/zoomToSmallestClashObject";
@@ -36,6 +57,15 @@ export interface ModelViewerProps {
 	clashObjectMatchKeys?: string[];
 	/** Nearby context object ids (AABB region) highlighted light blue when enabled. */
 	contextObjectIds?: string[];
+	/**
+	 * When provided, a semi-transparent AABB overlay is added to the scene so
+	 * the user can visualize the region used to collect context objects. When
+	 * `null`/omitted, any previously added overlay is removed.
+	 */
+	contextBoundingBox?: {
+		min: [number, number, number];
+		max: [number, number, number];
+	} | null;
 	clashHighlightMode?: "single" | "severity" | "none";
 	/** Fired when the viewer has finished loading models (same timing as internal highlight setup). */
 	onViewerReady?: (viewer: Viewer) => void;
@@ -58,6 +88,7 @@ export function ModelViewer({
 	clashSelectionId,
 	clashObjectMatchKeys,
 	contextObjectIds = [],
+	contextBoundingBox = null,
 	clashHighlightMode = "none",
 	onViewerReady,
 	onViewerDisposed,
@@ -96,10 +127,13 @@ export function ModelViewer({
 		onViewerDisposed?.();
 	}, [onViewerDisposed]);
 
-	const onLoadState = useCallback((state: SpeckleLoadState) => {
-		setSpeckleLoadState(state);
-		onLoadStateChange?.(state);
-	}, [onLoadStateChange]);
+	const onLoadState = useCallback(
+		(state: SpeckleLoadState) => {
+			setSpeckleLoadState(state);
+			onLoadStateChange?.(state);
+		},
+		[onLoadStateChange],
+	);
 
 	useSpeckleViewer(containerRef, activeUrls, {
 		enabled: activeUrls.length > 0,
@@ -122,6 +156,163 @@ export function ModelViewer({
 			.filter((s) => s.length > 0),
 	});
 
+	const contextBoundingBoxKey = useMemo(
+		() => (contextBoundingBox ? JSON.stringify(contextBoundingBox) : ""),
+		[contextBoundingBox],
+	);
+
+	/** Re-run clash isolate when highlight inputs *or* bbox helper visibility change. */
+	const clashIsolateEffectDeps = useMemo(
+		() => ({ highlight: clashHighlightEffectKey, bbox: contextBoundingBoxKey }),
+		[clashHighlightEffectKey, contextBoundingBoxKey],
+	);
+
+	/**
+	 * Add/remove the context AABB helper in a layout effect so it is torn down
+	 * *before* the clash isolate `useEffect` runs when the bbox is toggled off.
+	 * Otherwise isolate re-applies while the helper mesh is still in the scene and
+	 * can leave Speckle's batch/depth state inconsistent until the next isolate.
+	 */
+	useLayoutEffect(() => {
+		if (!loadedViewer || !contextBoundingBoxKey) return;
+
+		let box: {
+			min: [number, number, number];
+			max: [number, number, number];
+		};
+		try {
+			box = JSON.parse(contextBoundingBoxKey);
+		} catch {
+			return;
+		}
+
+		const speckleRenderer = loadedViewer.getRenderer();
+		const scene = speckleRenderer?.scene;
+		if (!scene) return;
+
+		const sizeX = Math.max(box.max[0] - box.min[0], 1e-4);
+		const sizeY = Math.max(box.max[1] - box.min[1], 1e-4);
+		const sizeZ = Math.max(box.max[2] - box.min[2], 1e-4);
+		const cx = (box.min[0] + box.max[0]) / 2;
+		const cy = (box.min[1] + box.max[1]) / 2;
+		const cz = (box.min[2] + box.max[2]) / 2;
+
+		const boxGeometry = new BoxGeometry(sizeX, sizeY, sizeZ);
+		const edgesWork = new EdgesGeometry(boxGeometry);
+		const lineGeometry = new LineSegmentsGeometry();
+		lineGeometry.fromEdgesGeometry(edgesWork);
+
+		const lineMaterial = new SpeckleLineMaterial({
+			/** Orange-500: reads clearly vs gray ghosts and light-blue context tint (#7dd3fc). */
+			color: new Color(0xf97316),
+			linewidth: 5,
+			worldUnits: false,
+			transparent: true,
+			opacity: 1,
+			depthWrite: false,
+			/**
+			 * Overlay passes often render without the main scene depth buffer bound, so
+			 * depth tests discard the whole line. Draw on top like other UI helpers.
+			 */
+			depthTest: false,
+			vertexColors: false,
+		});
+
+		// set the diffuse value to orange as well, else it will be gray.
+		(
+			lineMaterial as unknown as {
+				uniforms?: { diffuse?: { value: Color } };
+			}
+		).uniforms?.diffuse?.value?.copy(new Color(0xf97316));
+
+
+		const drawingBufferSize = new Vector2();
+		const glRenderer = speckleRenderer.renderer as unknown as {
+			getDrawingBufferSize(target: Vector2): void;
+		};
+		/** `SpeckleLineMaterial` extends `LineMaterial`; package typings omit inherited fields. */
+		const lineMat = lineMaterial as SpeckleLineMaterial & {
+			resolution: Vector2;
+			needsUpdate: boolean;
+			dispose: () => void;
+		};
+		const updateResolution = () => {
+			glRenderer.getDrawingBufferSize(drawingBufferSize);
+			lineMat.resolution.copy(drawingBufferSize);
+		};
+		updateResolution();
+
+		const edges = new LineSegments2(lineGeometry, lineMaterial);
+		edges.frustumCulled = false;
+		edges.renderOrder = 10000;
+		edges.userData.isContextBoundingBoxOverlay = true;
+		edges.userData.skipFiltering = true;
+		/**
+		 * `OVERLAY` (+ `MEASUREMENTS`) matches Speckle's overlay geometry pass only —
+		 * not stream depth/stencil prepasses or the SHADED `MESH+PROPS` pass, so
+		 * isolate/ghost batches are unaffected. Parent to `scene` in world space (not
+		 * `rootGroup`) so the helper is never part of the streamed subtree.
+		 */
+		// edges.layers.mask =
+		// 	(1 << ObjectLayers.OVERLAY) | (1 << ObjectLayers.MEASUREMENTS);
+		edges.layers.set(ObjectLayers.OVERLAY);
+		edges.position.set(cx, cy, cz);
+		scene.add(edges);
+
+		const worldBox = new Box3(
+			new Vector3(box.min[0], box.min[1], box.min[2]),
+			new Vector3(box.max[0], box.max[1], box.max[2]),
+		);
+		let zoomRaf1 = 0;
+		let zoomRaf2 = 0;
+		const runZoomToContextBox = () => {
+			try {
+				if (!loadedViewer.hasExtension(CameraController)) return;
+				const camera = loadedViewer.getExtension(CameraController);
+				camera.setCameraView(worldBox, true, 1.32);
+				loadedViewer.requestRender();
+			} catch (zoomErr) {
+				console.warn(
+					"[ModelViewer] Context bounding box camera fit failed:",
+					zoomErr,
+				);
+			}
+		};
+		zoomRaf1 = requestAnimationFrame(() => {
+			zoomRaf2 = requestAnimationFrame(runZoomToContextBox);
+		});
+
+		const roTarget = loadedViewer.getContainer();
+		const resizeObserver =
+			typeof ResizeObserver !== "undefined"
+				? new ResizeObserver(() => {
+						updateResolution();
+						lineMat.needsUpdate = true;
+						loadedViewer.requestRender();
+					})
+				: null;
+		if (resizeObserver && roTarget) {
+			resizeObserver.observe(roTarget);
+		}
+
+		loadedViewer.requestRender();
+
+		return () => {
+			cancelAnimationFrame(zoomRaf1);
+			cancelAnimationFrame(zoomRaf2);
+			resizeObserver?.disconnect();
+			try {
+				edges.removeFromParent();
+			} catch {
+				/* scene may be disposed */
+			}
+			lineGeometry.dispose();
+			boxGeometry.dispose();
+			edgesWork.dispose();
+			lineMat.dispose();
+		};
+	}, [loadedViewer, contextBoundingBoxKey]);
+
 	useEffect(() => {
 		if (!loadedViewer) {
 			if (import.meta.env.DEV) {
@@ -132,9 +323,12 @@ export function ModelViewer({
 			return;
 		}
 
-		const { keys: ids, contextObjectIds: contextIds, selectionId, mode } = JSON.parse(
-			clashHighlightEffectKey,
-		) as {
+		const {
+			keys: ids,
+			contextObjectIds: contextIds,
+			selectionId,
+			mode,
+		} = JSON.parse(clashIsolateEffectDeps.highlight) as {
 			selectionId: string;
 			mode: "single" | "severity" | "none";
 			keys: string[];
@@ -186,8 +380,10 @@ export function ModelViewer({
 				};
 			}
 
-			const { matchedObjectIds, unmatchedElementIds } =
+			const { matchedObjectIds, unmatchedElementIds, matchedNodes } =
 				resolveClashObjectNodes(loadedViewer, ids);
+			const contextExclusionIds =
+				expandMatchedClashSubtreeSpeckleIds(matchedNodes);
 
 			if (import.meta.env.DEV) {
 				console.debug("[ModelViewer] clash selection → Speckle", {
@@ -207,7 +403,7 @@ export function ModelViewer({
 			if (matchedObjectIds.length > 0) {
 				const uniqueContextIds = [...new Set(contextIds)];
 				const contextOnlyIds = uniqueContextIds.filter(
-					(id) => !matchedObjectIds.includes(id),
+					(id) => !contextExclusionIds.has(id),
 				);
 				const visibleIds =
 					contextOnlyIds.length > 0
@@ -229,10 +425,7 @@ export function ModelViewer({
 					filteringExt.setUserObjectColors(colors);
 					const renderer = loadedViewer.getRenderer();
 					prevPickFilter = renderer.objectPickConfiguration.pickedObjectsFilter;
-					const pickAllow = expandClashPickAllowIds(
-						loadedViewer,
-						visibleIds,
-					);
+					const pickAllow = expandClashPickAllowIds(loadedViewer, visibleIds);
 					renderer.objectPickConfiguration = {
 						pickedObjectsFilter: (args) => {
 							if (!DefaultObjectPickConfiguration.pickedObjectsFilter(args)) {
@@ -316,7 +509,7 @@ export function ModelViewer({
 				/* viewer may already be disposed */
 			}
 		};
-	}, [clashHighlightEffectKey, loadedViewer]);
+	}, [clashIsolateEffectDeps, loadedViewer]);
 
 	/** Context → Objects list: select + zoom to one participant. */
 	useEffect(() => {

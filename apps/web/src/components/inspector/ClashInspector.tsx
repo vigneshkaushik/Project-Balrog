@@ -5,8 +5,12 @@ import { useToast } from "../../context/ToastContext";
 import { useApp } from "../../context/useApp";
 import type { SpeckleLoadState } from "../../hooks/useSpeckleViewer";
 import { buildClashContextAnalysisPayload } from "../../lib/clashContextRegion";
-import type { NearbySpeckleObjectPayload } from "../../lib/clashContextRegion";
+import type {
+	ContextRegionPayload,
+	NearbySpeckleObjectPayload,
+} from "../../lib/clashContextRegion";
 import { clashReportGateMessage } from "../../lib/clashReportGateMessage";
+import { clashParticipantSpeckleIdsForContextExclusion } from "../../lib/zoomToSmallestClashObject";
 import {
 	postClashAnalyzeContext,
 	type ClashAnalyzeContextRequestBody,
@@ -32,23 +36,23 @@ const INSPECTOR_PANEL_IDS: readonly InspectorPanelId[] = [
 
 function readInitialOpenPanels(): Set<InspectorPanelId> {
 	if (typeof window === "undefined") {
-		return new Set<InspectorPanelId>(["clash-controls"]);
+		return new Set();
 	}
 	try {
 		const raw = window.localStorage.getItem(INSPECTOR_OPEN_PANELS_KEY);
 		if (raw == null) {
-			return new Set<InspectorPanelId>(["clash-controls"]);
+			return new Set();
 		}
 		const parsed = JSON.parse(raw);
 		if (!Array.isArray(parsed)) {
-			return new Set<InspectorPanelId>(["clash-controls"]);
+			return new Set();
 		}
 		const valid = parsed.filter((id): id is InspectorPanelId =>
 			INSPECTOR_PANEL_IDS.includes(id as InspectorPanelId),
 		);
 		return new Set(valid);
 	} catch {
-		return new Set<InspectorPanelId>(["clash-controls"]);
+		return new Set();
 	}
 }
 
@@ -182,6 +186,7 @@ export function ClashInspector() {
 		readInitialOpenPanels,
 	);
 	const [showClashContext, setShowClashContext] = useState(false);
+	const [showContextBoundingBox, setShowContextBoundingBox] = useState(false);
 
 	useEffect(() => {
 		try {
@@ -221,6 +226,9 @@ export function ClashInspector() {
 	const [contextObjectsByClashId, setContextObjectsByClashId] = useState<
 		Record<string, NearbySpeckleObjectPayload[]>
 	>({});
+	const [contextRegionByClashId, setContextRegionByClashId] = useState<
+		Record<string, ContextRegionPayload | null>
+	>({});
 
 	useEffect(() => {
 		// Clear prior Run Analysis output when the user picks another clash.
@@ -239,10 +247,43 @@ export function ClashInspector() {
 	}, [filteredClashes, selectedClashId, setSelectedClashId]);
 
 	const selected = filteredClashes.find((c) => c.id === selectedClashId);
+	const selectedClashObjectMatchKeys = useMemo(() => {
+		const keys = new Set<string>();
+		for (const obj of selected?.objects ?? []) {
+			const e = obj.elementId?.trim();
+			if (e) keys.add(e);
+			const g = obj.revitGlobalId?.trim();
+			if (g) keys.add(g);
+		}
+		return [...keys];
+	}, [selected]);
+
+	const selectedClashParticipantSpeckleIds = useMemo(() => {
+		if (!speckleViewer || selectedClashObjectMatchKeys.length === 0) {
+			return new Set<string>();
+		}
+		try {
+			return clashParticipantSpeckleIdsForContextExclusion(
+				speckleViewer,
+				selectedClashObjectMatchKeys,
+			);
+		} catch {
+			return new Set<string>();
+		}
+	}, [speckleViewer, selectedClashObjectMatchKeys]);
+
 	const selectedClashContextObjects = useMemo(() => {
 		if (!selected) return [];
-		return contextObjectsByClashId[selected.id] ?? [];
-	}, [contextObjectsByClashId, selected]);
+		const raw = contextObjectsByClashId[selected.id] ?? [];
+		if (selectedClashParticipantSpeckleIds.size === 0) return raw;
+		return raw.filter(
+			(obj) => !selectedClashParticipantSpeckleIds.has(obj.id),
+		);
+	}, [
+		contextObjectsByClashId,
+		selected,
+		selectedClashParticipantSpeckleIds,
+	]);
 	const hasComputedSelectedClashContext = useMemo(() => {
 		if (!selected) return false;
 		return Object.hasOwn(contextObjectsByClashId, selected.id);
@@ -257,10 +298,13 @@ export function ClashInspector() {
 	);
 
 	useEffect(() => {
-		if (!showClashContext || !selected || !speckleViewer) {
+		const needsCompute = showClashContext || showContextBoundingBox;
+		if (!needsCompute || !selected || !speckleViewer) {
 			return;
 		}
-		if (Object.hasOwn(contextObjectsByClashId, selected.id)) {
+		const hasObjects = Object.hasOwn(contextObjectsByClashId, selected.id);
+		const hasRegion = Object.hasOwn(contextRegionByClashId, selected.id);
+		if (hasObjects && hasRegion) {
 			return;
 		}
 		try {
@@ -271,19 +315,36 @@ export function ClashInspector() {
 				...prev,
 				[selected.id]: built.nearby_speckle_objects,
 			}));
+			setContextRegionByClashId((prev) => ({
+				...prev,
+				[selected.id]: built.context_region,
+			}));
 		} catch {
 			setContextObjectsByClashId((prev) => ({
 				...prev,
 				[selected.id]: [],
 			}));
+			setContextRegionByClashId((prev) => ({
+				...prev,
+				[selected.id]: null,
+			}));
 		}
 	}, [
 		showClashContext,
+		showContextBoundingBox,
 		selected,
 		speckleViewer,
 		nonEmptySpeckleCount,
 		contextObjectsByClashId,
+		contextRegionByClashId,
 	]);
+
+	const contextBoundingBoxForViewer = useMemo(() => {
+		if (!showContextBoundingBox || !selected) return null;
+		const region = contextRegionByClashId[selected.id];
+		if (!region) return null;
+		return { min: region.min, max: region.max };
+	}, [showContextBoundingBox, selected, contextRegionByClashId]);
 
 	const handleRunAnalysis = useCallback(async () => {
 		if (!selected) {
@@ -333,17 +394,6 @@ export function ClashInspector() {
 		}
 	}, [selected, speckleViewer, nonEmptySpeckleCount, showToast]);
 
-	const selectedClashObjectMatchKeys = useMemo(() => {
-		const keys = new Set<string>();
-		for (const obj of selected?.objects ?? []) {
-			const e = obj.elementId?.trim();
-			if (e) keys.add(e);
-			const g = obj.revitGlobalId?.trim();
-			if (g) keys.add(g);
-		}
-		return [...keys];
-	}, [selected]);
-
 	const severityHighlightMatchKeys = useMemo(() => {
 		if (!highlightFilteredSeverity) return [];
 		const keys = new Set<string>();
@@ -391,6 +441,7 @@ export function ClashInspector() {
 							? selectedClashContextIds
 							: []
 					}
+					contextBoundingBox={contextBoundingBoxForViewer}
 					clashHighlightMode={viewerHighlightMode}
 					onViewerReady={setSpeckleViewer}
 					onViewerDisposed={() => setSpeckleViewer(null)}
@@ -514,6 +565,23 @@ export function ClashInspector() {
 								onClick={() => setShowClashContext((prev) => !prev)}
 							>
 								{showClashContext ? "Hide Context" : "Show Context"}
+							</button>
+							<button
+								type="button"
+								className="cursor-pointer rounded-md border px-2 py-1 text-[11px] font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/60 border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100 aria-pressed:border-primary/40 aria-pressed:bg-primary/10 aria-pressed:text-primary"
+								aria-pressed={showContextBoundingBox}
+								disabled={!selected || !speckleViewer}
+								title={
+									showContextBoundingBox
+										? "Hide context bounding box"
+										: "Show context bounding box"
+								}
+								onPointerDown={(event) => event.stopPropagation()}
+								onClick={() => setShowContextBoundingBox((prev) => !prev)}
+							>
+								{showContextBoundingBox
+									? "Hide Bounding Box"
+									: "Show Bounding Box"}
 							</button>
 							<ClosePanelButton
 								label="Close context panel"
