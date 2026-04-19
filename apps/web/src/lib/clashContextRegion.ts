@@ -2,6 +2,7 @@ import type { Viewer } from "@speckle/viewer";
 import { Box3, Vector3 } from "three";
 import type { Clash } from "../types";
 import {
+	expandMatchedClashSubtreeSpeckleIds,
 	resolveClashObjectNodes,
 	unionBoxesForSpeckleObjectIds,
 } from "./zoomToSmallestClashObject";
@@ -203,10 +204,10 @@ export function buildClashContextAnalysisPayload(
 	const expandMeters = options?.expandMeters ?? readExpandMeters();
 	const speckleUrlCount = options?.speckleUrlCount ?? 0;
 	const keys = clashMatchKeys(clash);
-	const { matchedObjectIds, unmatchedElementIds } = resolveClashObjectNodes(
-		viewer,
-		keys,
-	);
+	const { matchedObjectIds, unmatchedElementIds, matchedNodes } =
+		resolveClashObjectNodes(viewer, keys);
+	const clashParticipantObjectIds =
+		expandMatchedClashSubtreeSpeckleIds(matchedNodes);
 
 	let region: Box3 | null = unionBoxesForSpeckleObjectIds(
 		viewer,
@@ -275,6 +276,7 @@ export function buildClashContextAnalysisPayload(
 
 			const id = node.model?.id;
 			if (!id || typeof id !== "string") return true;
+			if (clashParticipantObjectIds.has(id)) return true;
 
 			const c = new Vector3();
 			nodeBox.getCenter(c);

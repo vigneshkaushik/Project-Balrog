@@ -249,6 +249,52 @@ export function resolveClashObjectNodes(
 }
 
 /**
+ * Speckle ids for every node in the subtrees rooted at clash-matched nodes
+ * (including `nestedNodes`). Meshes often sit on descendants with different ids
+ * than the Revit host row matched by Navis elementId, so excluding only
+ * `matchedObjectIds` leaves sibling geometry in “context”.
+ */
+export function expandMatchedClashSubtreeSpeckleIds(
+  matchedNodes: readonly TreeNode[],
+): Set<string> {
+  const out = new Set<string>()
+
+  const addClashSubtreeSpeckleIds = (node: TreeNode, ids: Set<string>): void => {
+    node.walk((visiting: TreeNode) => {
+      const m = visiting.model
+      if (m) {
+        const id = m.id
+        if (typeof id === 'string' && id.trim().length > 0) {
+          ids.add(id)
+        }
+        const nested = m.nestedNodes
+        if (nested && nested.length > 0) {
+          for (const subRoot of nested) {
+            if (subRoot) addClashSubtreeSpeckleIds(subRoot, ids)
+          }
+        }
+      }
+      return true
+    })
+  }
+
+  for (const root of matchedNodes) {
+    addClashSubtreeSpeckleIds(root, out)
+  }
+  return out
+}
+
+/** Convenience: resolve clash keys then return ids to omit from context/nearby. */
+export function clashParticipantSpeckleIdsForContextExclusion(
+  viewer: Viewer,
+  clashObjectMatchKeys: readonly string[],
+): Set<string> {
+  return expandMatchedClashSubtreeSpeckleIds(
+    resolveClashObjectNodes(viewer, clashObjectMatchKeys).matchedNodes,
+  )
+}
+
+/**
  * Frames the Speckle viewer on the clash object with the smallest world-space
  * axis-aligned bounding box among the nodes resolved from clash `elementId`s.
  *
