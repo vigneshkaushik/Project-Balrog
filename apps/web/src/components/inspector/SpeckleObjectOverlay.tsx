@@ -11,12 +11,15 @@ import {
   type ReactNode,
 } from 'react'
 import { createPortal } from 'react-dom'
+import { useChatAttachments } from '../../context/ChatAttachmentsContext'
 import { useApp } from '../../context/useApp'
 import { useFloatingPanel } from '../../hooks/useFloatingPanel'
+import { buildSelectedObjectAttachment } from '../../lib/buildChatAttachments'
+import { AddToChatButton } from '../layout/AddToChatButton'
 
-interface SpeckleObjectOverlayProps {
-  objectData: Record<string, unknown>
-}
+// No props — the overlay reads the current selection from `AppState` so it can
+// be rendered anywhere in the tree (e.g. beside other overlays) without the
+// caller knowing the shape of `objectData`.
 
 const MIN_WIDTH = 288
 const MIN_HEIGHT = 208
@@ -249,11 +252,31 @@ function readSpeckleId(objectData: Record<string, unknown>): string | null {
   return typeof id === 'string' && id.trim().length > 0 ? id.trim() : null
 }
 
-function SpeckleObjectOverlayComponent({ objectData }: SpeckleObjectOverlayProps) {
+function SpeckleObjectOverlayComponent() {
   const panelId = useId()
   const metadataHelpId = useId()
-  const { objectMetadata, setObjectMetadata, clearObjectMetadata } = useApp()
-  const speckleId = readSpeckleId(objectData)
+  const {
+    objectMetadata,
+    setObjectMetadata,
+    clearObjectMetadata,
+    selectedObjectData,
+  } = useApp()
+  const { addAttachment, hasAttachment } = useChatAttachments()
+  const objectData = selectedObjectData
+  const speckleId =
+    objectData != null ? readSpeckleId(objectData) : null
+
+  const selectedObjectAttachment = useMemo(() => {
+    if (!objectData) return null
+    const id = speckleId ?? ''
+    const meta = id && objectMetadata[id] ? objectMetadata[id] : null
+    return buildSelectedObjectAttachment(objectData, meta)
+  }, [objectData, objectMetadata, speckleId])
+
+  const handleAddSelectedObjectToChat = useCallback(() => {
+    if (!selectedObjectAttachment) return
+    addAttachment(selectedObjectAttachment)
+  }, [addAttachment, selectedObjectAttachment])
   const storedNote = speckleId ? (objectMetadata[speckleId] ?? '') : ''
   const hasNote = storedNote.trim().length > 0
   const [editingMeta, setEditingMeta] = useState(false)
@@ -378,7 +401,7 @@ function SpeckleObjectOverlayComponent({ objectData }: SpeckleObjectOverlayProps
     setDraftMeta(storedNote)
   }, [storedNote, editingMeta])
 
-  const entries = getRenderableEntries(objectData)
+  const entries = objectData ? getRenderableEntries(objectData) : []
   const [expanded, setExpanded] = useState(true)
   const overlayRef = useRef<HTMLElement>(null)
   const initialSize = useMemo(() => {
@@ -440,6 +463,8 @@ function SpeckleObjectOverlayComponent({ objectData }: SpeckleObjectOverlayProps
           document.body,
         )
       : null
+
+  if (!objectData) return null
 
   return (
     <>
@@ -506,6 +531,15 @@ function SpeckleObjectOverlayComponent({ objectData }: SpeckleObjectOverlayProps
             className="flex h-full min-h-0 flex-col overflow-hidden"
           >
             <div className="min-h-0 flex-1 overflow-auto px-4 py-2">
+              {selectedObjectAttachment ? (
+                <div className="mb-2 flex items-center justify-end">
+                  <AddToChatButton
+                    onClick={handleAddSelectedObjectToChat}
+                    added={hasAttachment(selectedObjectAttachment.id)}
+                    title="Attach this object to your next chat message"
+                  />
+                </div>
+              ) : null}
               {speckleId ? (
                 <div className="mb-3 rounded-lg border border-neutral-200 bg-neutral-50/80 px-3 py-2">
                   <div className="flex items-center gap-1.5">

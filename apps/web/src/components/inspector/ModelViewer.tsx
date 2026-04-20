@@ -98,13 +98,14 @@ export function ModelViewer({
 	onLoadStateChange,
 	showLoadProgress = true,
 }: ModelViewerProps) {
-	const { speckleUrls, clashObjectViewerFocus } = useApp();
+	const {
+		speckleUrls,
+		clashObjectViewerFocus,
+		selectedObjectData,
+		setSelectedObjectData,
+	} = useApp();
 	const containerRef = useRef<HTMLElement>(null);
 	const [loadedViewer, setLoadedViewer] = useState<Viewer | null>(null);
-	const [selectedObjectData, setSelectedObjectData] = useState<Record<
-		string,
-		unknown
-	> | null>(null);
 	const [speckleLoadState, setSpeckleLoadState] = useState<SpeckleLoadState>({
 		loading: false,
 		percent: 0,
@@ -587,7 +588,7 @@ export function ModelViewer({
 			cancelAnimationFrame(zoomRaf1);
 			cancelAnimationFrame(zoomRaf2);
 		};
-	}, [loadedViewer, clashObjectViewerFocus]);
+	}, [loadedViewer, clashObjectViewerFocus, setSelectedObjectData]);
 
 	useEffect(() => {
 		if (!loadedViewer) return;
@@ -608,7 +609,7 @@ export function ModelViewer({
 
 		syncSelectedObject();
 		loadedViewer.on(ViewerEvent.ObjectClicked, syncSelectedObject);
-	}, [loadedViewer]);
+	}, [loadedViewer, setSelectedObjectData]);
 
 	useEffect(() => {
 		if (activeUrls.length === 0) {
@@ -616,7 +617,7 @@ export function ModelViewer({
 			setSelectedObjectData(null);
 			setSpeckleLoadState({ loading: false, percent: 0 });
 		}
-	}, [activeUrls.length]);
+	}, [activeUrls.length, setSelectedObjectData]);
 
 	return (
 		<div className="relative h-full w-full min-h-0 flex-1 overflow-hidden bg-neutral-200/50">
@@ -647,9 +648,7 @@ export function ModelViewer({
 							isViewportHovered={isViewportHovered}
 						/>
 					) : null}
-					{selectedObjectData ? (
-						<SpeckleObjectOverlay objectData={selectedObjectData} />
-					) : null}
+					{selectedObjectData ? <SpeckleObjectOverlay /> : null}
 				</div>
 			)}
 		</div>

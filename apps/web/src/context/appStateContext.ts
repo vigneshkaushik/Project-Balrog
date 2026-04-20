@@ -52,6 +52,23 @@ export interface AppState {
   objectMetadata: Record<string, string>
   setObjectMetadata: (speckleId: string, text: string) => void
   clearObjectMetadata: (speckleId: string) => void
+
+  /**
+   * Currently selected Speckle object's raw data from the viewer.
+   * Lifted out of `ModelViewer` so non-viewer UI (e.g. the chat `+` menu) can
+   * reference the active selection without prop drilling.
+   */
+  selectedObjectData: Record<string, unknown> | null
+  setSelectedObjectData: (data: Record<string, unknown> | null) => void
+
+  /**
+   * Ready-to-use Speckle `Viewer` instance. Set by `ClashInspector` once the
+   * viewer hook resolves, cleared when it unmounts. Exposed here so features
+   * outside the inspector (chat attachments in particular) can traverse the
+   * loaded scene without prop drilling.
+   */
+  speckleViewer: import('@speckle/viewer').Viewer | null
+  setSpeckleViewer: (viewer: import('@speckle/viewer').Viewer | null) => void
 }
 
 export const AppContext = createContext<AppState | null>(null)
