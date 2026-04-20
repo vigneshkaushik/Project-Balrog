@@ -24,9 +24,13 @@ import {
 	persistConversationId,
 	readStoredConversationId,
 } from "../../lib/chatHistory";
+import { useChatAttachments } from "../../context/ChatAttachmentsContext";
+import { toChatAttachmentsWire } from "../../lib/chatAttachments";
 import { postChatStream } from "../../lib/postChatStream";
 import type { ChatMessage } from "../../types";
 import { AgentActivityLog } from "./AgentActivityLog";
+import { ChatAddContextMenu } from "./ChatAddContextMenu";
+import { ChatAttachmentChips } from "./ChatAttachmentChips";
 
 function UploadIcon() {
 	return (
@@ -239,6 +243,7 @@ export function ChatWindow({
 	);
 	const [sending, setSending] = useState(false);
 	const abortRef = useRef<AbortController | null>(null);
+	const { attachments, clearAttachments } = useChatAttachments();
 	const [settingsPlacement, setSettingsPlacement] = useState<{
 		top: number;
 		left: number;
@@ -403,6 +408,9 @@ export function ChatWindow({
 
 		setMessages((prev) => [...prev, userMsg, assistantMsg]);
 		setDraft("");
+		const snapshot = attachments;
+		const wireAttachments = toChatAttachmentsWire(snapshot);
+		clearAttachments();
 		setSending(true);
 
 		const ac = new AbortController();
@@ -524,7 +532,7 @@ export function ChatWindow({
 						);
 					},
 				},
-				{ signal: ac.signal },
+				{ signal: ac.signal, attachments: wireAttachments },
 			);
 		} finally {
 			abortRef.current = null;
@@ -535,7 +543,7 @@ export function ChatWindow({
 				),
 			);
 		}
-	}, [conversationId, draft, sending]);
+	}, [attachments, clearAttachments, conversationId, draft, sending]);
 
 	const handleDraftProviderChange = (provider: AgentProvider) => {
 		setSettingsDraft((d) => ({
@@ -913,43 +921,49 @@ export function ChatWindow({
 			</div>
 
 			<div className="shrink-0 p-3">
-				<div className="flex flex-col gap-2 rounded-xl border border-neutral-200 bg-neutral-50 px-2 py-2 focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/20">
-					<label htmlFor={inputId} className="sr-only">
-						Message
-					</label>
-					<textarea
-						id={inputId}
-						rows={1}
-						value={draft}
-						disabled={sending}
-						onChange={(e) => setDraft(e.target.value)}
-						onKeyDown={(e) => {
-							if (e.key === "Enter" && !e.shiftKey) {
-								e.preventDefault();
-								void send();
-							}
-						}}
-						placeholder="Write a message here..."
-						className="max-h-32 min-h-10 w-full resize-none bg-transparent text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none disabled:opacity-60"
-					/>
-					<div className="flex shrink-0 items-center justify-between gap-2">
-						<button
-							type="button"
+				<div className="flex flex-col gap-0 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50 focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/20">
+					<ChatAttachmentChips />
+					<div className="flex flex-col gap-2 px-2 py-2">
+						<label htmlFor={inputId} className="sr-only">
+							Message
+						</label>
+						<textarea
+							id={inputId}
+							rows={1}
+							value={draft}
 							disabled={sending}
-							className="cursor-pointer rounded p-1 text-neutral-500 hover:bg-neutral-200/60 hover:text-neutral-700 disabled:cursor-not-allowed disabled:opacity-50"
-							aria-label="Upload attachment"
-						>
-							<UploadIcon />
-						</button>
-						<button
-							type="button"
-							disabled={sending || !draft.trim()}
-							onClick={() => void send()}
-							className="cursor-pointer rounded-lg p-2 text-primary hover:bg-primary/15 disabled:cursor-not-allowed disabled:opacity-50"
-							aria-label="Send message"
-						>
-							<SendIcon />
-						</button>
+							onChange={(e) => setDraft(e.target.value)}
+							onKeyDown={(e) => {
+								if (e.key === "Enter" && !e.shiftKey) {
+									e.preventDefault();
+									void send();
+								}
+							}}
+							placeholder="Write a message here..."
+							className="max-h-32 min-h-10 w-full resize-none bg-transparent text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none disabled:opacity-60"
+						/>
+						<div className="flex shrink-0 items-center justify-between gap-2">
+							<div className="flex items-center gap-1">
+								<ChatAddContextMenu disabled={sending} />
+								<button
+									type="button"
+									disabled={sending}
+									className="cursor-pointer rounded p-1 text-neutral-500 hover:bg-neutral-200/60 hover:text-neutral-700 disabled:cursor-not-allowed disabled:opacity-50"
+									aria-label="Upload attachment"
+								>
+									<UploadIcon />
+								</button>
+							</div>
+							<button
+								type="button"
+								disabled={sending || !draft.trim()}
+								onClick={() => void send()}
+								className="cursor-pointer rounded-lg p-2 text-primary hover:bg-primary/15 disabled:cursor-not-allowed disabled:opacity-50"
+								aria-label="Send message"
+							>
+								<SendIcon />
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>

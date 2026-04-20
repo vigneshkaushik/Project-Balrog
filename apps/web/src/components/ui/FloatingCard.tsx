@@ -13,6 +13,7 @@ interface FloatingCardProps {
   className?: string
   children: ReactNode
   headerActions?: ReactNode
+  headerToolbar?: ReactNode
   draggable?: boolean
   resizable?: boolean
   minSize?: PanelSize
@@ -40,6 +41,7 @@ export function FloatingCard({
   className = '',
   children,
   headerActions,
+  headerToolbar,
   draggable = true,
   resizable = true,
   minSize,
@@ -76,27 +78,54 @@ export function FloatingCard({
       style={style}
     >
       <header
-        className={`flex items-center justify-between gap-3 border-b border-neutral-200 px-3 py-2 ${
-          draggable ? 'drag-handle cursor-grab active:cursor-grabbing' : ''
-        }`}
-        {...(draggable ? handleProps : {})}
+        className="border-b border-neutral-200"
       >
-        <div className="min-w-0">
-          <h3 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-neutral-600">
-            {titleIcon ? (
-              <span className="inline-flex h-3.5 w-3.5 items-center justify-center text-primary">
-                {titleIcon}
-              </span>
+        <div
+          className={`flex items-center justify-between gap-3 px-3 py-2 ${
+            draggable ? 'drag-handle cursor-grab active:cursor-grabbing' : ''
+          } ${
+            headerToolbar ? 'border-b border-neutral-200' : ''
+          }`}
+          {...(draggable ? handleProps : {})}
+        >
+          <div className="min-w-0">
+            <h3 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-neutral-600">
+              {titleIcon ? (
+                <span className="inline-flex h-3.5 w-3.5 items-center justify-center text-primary">
+                  {titleIcon}
+                </span>
+              ) : null}
+              <span>{title}</span>
+            </h3>
+            {titleSubtitle ? (
+              <p className="mt-0.5 truncate text-xs font-medium normal-case tracking-normal text-neutral-500">
+                {titleSubtitle}
+              </p>
             ) : null}
-            <span>{title}</span>
-          </h3>
-          {titleSubtitle ? (
-            <p className="mt-0.5 truncate text-xs font-medium normal-case tracking-normal text-neutral-500">
-              {titleSubtitle}
-            </p>
-          ) : null}
+          </div>
+          {headerActions ? <div className="shrink-0">{headerActions}</div> : null}
         </div>
-        {headerActions ? <div className="shrink-0">{headerActions}</div> : null}
+        {headerToolbar ? (
+          <div
+            className="overflow-x-auto px-3 py-2"
+            onWheel={(event) => {
+              const el = event.currentTarget
+              if (!el) return
+              // Let mouse wheel pan the horizontal toolbar without requiring Shift.
+              const deltaX =
+                Math.abs(event.deltaX) > 0
+                  ? event.deltaX
+                  : Math.abs(event.deltaY) > 0
+                    ? event.deltaY
+                    : 0
+              if (deltaX === 0) return
+              el.scrollLeft += deltaX
+              event.preventDefault()
+            }}
+          >
+            <div className="min-w-max">{headerToolbar}</div>
+          </div>
+        ) : null}
       </header>
       {showBody ? (
         <div

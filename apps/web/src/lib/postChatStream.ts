@@ -1,4 +1,20 @@
+import type { ChatAttachmentWire } from './chatAttachments'
 import { getApiBaseUrl } from './apiBase'
+
+/**
+ * Soft cap for the chat JSON body (matches `postClashAnalysis` so the user gets
+ * a friendly error before a multi-megabyte request hits the backend).
+ */
+export const CHAT_MAX_BODY_BYTES = 550_000
+
+export class ChatPayloadTooLargeError extends Error {
+	constructor(bytes: number) {
+		super(
+			`Chat payload is too large (${bytes} bytes). Remove some attached items and try again.`,
+		)
+		this.name = 'ChatPayloadTooLargeError'
+	}
+}
 
 export interface ChatStreamHandlers {
   onMetadata: (conversationId: string) => void
@@ -46,13 +62,30 @@ export async function postChatStream(
   message: string,
   conversationId: string | null,
   handlers: ChatStreamHandlers,
-  options?: { signal?: AbortSignal },
+  options?: {
+    signal?: AbortSignal
+    /** Structured context attached to the next user turn (cleared after send). */
+    attachments?: ChatAttachmentWire[]
+  },
 ): Promise<void> {
   const signal = options?.signal
   const base = getApiBaseUrl()
-  const body: { message: string; conversation_id?: string } = { message }
+  const body: {
+    message: string
+    conversation_id?: string
+    attachments?: ChatAttachmentWire[]
+  } = { message }
   if (conversationId) {
     body.conversation_id = conversationId
+  }
+  if (options?.attachments && options.attachments.length > 0) {
+    body.attachments = options.attachments
+  }
+
+  const json = JSON.stringify(body)
+  if (json.length > CHAT_MAX_BODY_BYTES) {
+    handlers.onError(new ChatPayloadTooLargeError(json.length).message)
+    return
   }
 
   let res: Response
@@ -63,7 +96,7 @@ export async function postChatStream(
         'Content-Type': 'application/json',
         Accept: 'text/event-stream',
       },
-      body: JSON.stringify(body),
+      body: json,
       signal,
     })
   } catch (e) {

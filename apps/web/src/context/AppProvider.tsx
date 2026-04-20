@@ -1,3 +1,4 @@
+import type { Viewer } from '@speckle/viewer'
 import {
   useCallback,
   useEffect,
@@ -95,6 +96,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [objectMetadata, setObjectMetadataState] = useState<
     Record<string, string>
   >(readInitialObjectMetadata)
+  const [selectedObjectData, setSelectedObjectDataState] = useState<
+    Record<string, unknown> | null
+  >(null)
+  const [speckleViewer, setSpeckleViewerState] = useState<Viewer | null>(null)
+
+  const setSelectedObjectData = useCallback(
+    (data: Record<string, unknown> | null) => {
+      setSelectedObjectDataState(data)
+    },
+    [],
+  )
+
+  const setSpeckleViewer = useCallback((viewer: Viewer | null) => {
+    setSpeckleViewerState(viewer)
+  }, [])
 
   useEffect(() => {
     try {
@@ -361,6 +377,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setUploadProgress(null)
     setUploadError(null)
     setObjectMetadataState({})
+    setSelectedObjectDataState(null)
+    setSpeckleViewerState(null)
     try {
       window.localStorage.removeItem(OBJECT_METADATA_STORAGE_KEY)
     } catch {
@@ -399,6 +417,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       objectMetadata,
       setObjectMetadata,
       clearObjectMetadata,
+      selectedObjectData,
+      setSelectedObjectData,
+      speckleViewer,
+      setSpeckleViewer,
     }),
     [
       isSessionHydrating,
@@ -426,6 +448,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       objectMetadata,
       setObjectMetadata,
       clearObjectMetadata,
+      selectedObjectData,
+      setSelectedObjectData,
+      speckleViewer,
+      setSpeckleViewer,
     ],
   )
 

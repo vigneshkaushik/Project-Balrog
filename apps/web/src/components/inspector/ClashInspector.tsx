@@ -1,8 +1,15 @@
 import type { Viewer } from "@speckle/viewer";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useChatAttachments } from "../../context/ChatAttachmentsContext";
+import { useClashAnalysis } from "../../context/ClashAnalysisContext";
 import { useToast } from "../../context/ToastContext";
 import { useApp } from "../../context/useApp";
+import { AddToChatButton } from "../layout/AddToChatButton";
+import {
+	buildClashAttachment,
+	buildRecommendationAttachment,
+} from "../../lib/buildChatAttachments";
 import type { SpeckleLoadState } from "../../hooks/useSpeckleViewer";
 import { buildClashContextAnalysisPayload } from "../../lib/clashContextRegion";
 import type {
@@ -133,7 +140,14 @@ export function ClashInspector() {
 		clearSession,
 		requestClashObjectViewerFocus,
 		objectMetadata,
+		setSpeckleViewer: publishSpeckleViewer,
 	} = useApp();
+	const {
+		setAnalysisForClash,
+		clearAnalysisForClash,
+		clearAllAnalysis,
+	} = useClashAnalysis();
+	const { addAttachment, hasAttachment } = useChatAttachments();
 
 	const hasSpeckleUrl = speckleUrls.some((u) => u.trim().length > 0);
 	const hasClashReport = Boolean(navisworksFileName);
@@ -200,6 +214,11 @@ export function ClashInspector() {
 			// Ignore storage failures; in-memory state is source of truth.
 		}
 	}, [openPanels]);
+
+	useEffect(() => {
+		publishSpeckleViewer(speckleViewer);
+		return () => publishSpeckleViewer(null);
+	}, [publishSpeckleViewer, speckleViewer]);
 
 	const togglePanel = useCallback((panelId: InspectorPanelId) => {
 		setOpenPanels((prev) => {
@@ -366,6 +385,7 @@ export function ClashInspector() {
 		setAnalysisWatchOut([]);
 		setAnalysisRecommendations([]);
 		setAnalysisNotes(null);
+		clearAnalysisForClash(selected.id);
 
 		try {
 			const built = buildClashContextAnalysisPayload(speckleViewer, selected, {
@@ -407,6 +427,11 @@ export function ClashInspector() {
 			setAnalysisRecommendations(res.recommendations);
 			setAnalysisNotes(res.notes);
 			setAnalysisCompleted(true);
+			setAnalysisForClash(selected.id, {
+				recommendations: res.recommendations,
+				watchOutFor: res.watch_out_for,
+				notes: res.notes,
+			});
 		} catch (err) {
 			const msg =
 				err instanceof Error ? err.message : "Analysis request failed.";
@@ -421,6 +446,64 @@ export function ClashInspector() {
 		nonEmptySpeckleCount,
 		objectMetadata,
 		showToast,
+		setAnalysisForClash,
+		clearAnalysisForClash,
+	]);
+
+	const currentClashAttachmentId = useMemo(
+		() => (selected ? `clash:${selected.id}` : null),
+		[selected],
+	);
+	const isCurrentClashAttached = currentClashAttachmentId
+		? hasAttachment(currentClashAttachmentId)
+		: false;
+
+	const handleAddClashToChat = useCallback(() => {
+		if (!selected || !speckleViewer) return;
+		try {
+			const cachedRegion = contextRegionByClashId[selected.id];
+			const cachedNearby = contextObjectsByClashId[selected.id];
+			let region: ContextRegionPayload | null | undefined = cachedRegion;
+			let nearby: NearbySpeckleObjectPayload[] | undefined = cachedNearby;
+			let unmatched: string[] | undefined;
+			let speckleUrlCountMeta: number | undefined;
+			let capped: boolean | undefined;
+			if (region === undefined || nearby === undefined) {
+				const built = buildClashContextAnalysisPayload(
+					speckleViewer,
+					selected,
+					{
+						speckleUrlCount: nonEmptySpeckleCount,
+						objectMetadata,
+					},
+				);
+				region = built.context_region;
+				nearby = built.nearby_speckle_objects;
+				unmatched = built.unmatched_clash_keys;
+				speckleUrlCountMeta = built.meta.speckle_url_count;
+				capped = built.meta.capped;
+			}
+			addAttachment(
+				buildClashAttachment(selected, {
+					context_region: region ?? null,
+					nearby_speckle_objects: nearby ?? [],
+					clash_objects_original: [],
+					unmatched_clash_keys: unmatched,
+					speckle_url_count: speckleUrlCountMeta,
+					capped,
+				}),
+			);
+		} catch (err) {
+			console.warn("[ClashInspector] Add clash to chat failed:", err);
+		}
+	}, [
+		addAttachment,
+		contextObjectsByClashId,
+		contextRegionByClashId,
+		nonEmptySpeckleCount,
+		objectMetadata,
+		selected,
+		speckleViewer,
 	]);
 
 	const severityHighlightMatchKeys = useMemo(() => {
@@ -542,6 +625,7 @@ export function ClashInspector() {
 							type="button"
 							onClick={() => {
 								clearSession();
+								clearAllAnalysis();
 								navigate("/");
 							}}
 							className="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white/95 px-2.5 py-1.5 text-xs font-medium text-neutral-700 shadow-sm backdrop-blur-md transition hover:border-neutral-300 hover:bg-white hover:text-neutral-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/50"
@@ -579,7 +663,30 @@ export function ClashInspector() {
 					initialSize={{ width: 464, height: 368 }}
 					minSize={{ width: 352, height: 224 }}
 					headerActions={
+						<ClosePanelButton
+							label="Close context panel"
+							onClose={() => closePanel("clash-context")}
+						/>
+					}
+					headerToolbar={
 						<div className="flex items-center gap-1.5">
+							<span onPointerDown={(event) => event.stopPropagation()}>
+								<AddToChatButton
+									onClick={handleAddClashToChat}
+									added={isCurrentClashAttached}
+									disabled={!selected || !speckleViewer}
+									label="Add clash to chat"
+									title={
+										!selected
+											? "Select a clash first"
+											: !speckleViewer
+												? "Load the 3D model to compute clash context"
+												: isCurrentClashAttached
+													? "Clash already attached to next message"
+													: "Attach this clash and its context to your next chat message"
+									}
+								/>
+							</span>
 							<button
 								type="button"
 								className="cursor-pointer rounded-md border px-2 py-1 text-xs font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/60 border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100 aria-pressed:border-primary/40 aria-pressed:bg-primary/10 aria-pressed:text-primary"
@@ -612,10 +719,6 @@ export function ClashInspector() {
 									? "Hide Bounding Box"
 									: "Show Bounding Box"}
 							</button>
-							<ClosePanelButton
-								label="Close context panel"
-								onClose={() => closePanel("clash-context")}
-							/>
 						</div>
 					}
 				>
@@ -830,9 +933,26 @@ export function ClashInspector() {
 									) : null}
 									{analysisRecommendations.length > 0 ? (
 										<ol className="list-decimal space-y-2 pl-5">
-											{analysisRecommendations.map((rec) => (
-												<li key={rec}>{rec}</li>
-											))}
+											{analysisRecommendations.map((rec, idx) => {
+												const built = selected
+													? buildRecommendationAttachment(selected, rec, idx)
+													: null;
+												return (
+													<li key={rec}>
+														<div className="flex items-start gap-1.5">
+															<span className="min-w-0 flex-1">{rec}</span>
+															{built ? (
+																<AddToChatButton
+																	variant="compact"
+																	added={hasAttachment(built.id)}
+																	onClick={() => addAttachment(built)}
+																	title="Attach this recommendation to your next chat message"
+																/>
+															) : null}
+														</div>
+													</li>
+												);
+											})}
 										</ol>
 									) : analysisCompleted ? (
 										<p className="text-sm text-neutral-500">
