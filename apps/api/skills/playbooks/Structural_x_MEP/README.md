@@ -1,0 +1,1 @@
+Structural × MEP: primary and secondary structure vs mechanical, electrical, and plumbing services — beams, columns, PT slabs, and distribution. Content aligned with `clash_resolution_playbook.html` (Structural × MEP section).

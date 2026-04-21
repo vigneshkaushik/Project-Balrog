@@ -17,6 +17,7 @@ import {
 	buildRecommendationAttachment,
 	buildSelectedObjectAttachment,
 } from "../../lib/buildChatAttachments";
+import { recommendationItemDisplayText } from "../../lib/clashAnalysisFormat";
 import { buildClashContextAnalysisPayload } from "../../lib/clashContextRegion";
 import { chatAttachmentKindLabel } from "../../lib/chatAttachmentLabels";
 import { ChatAttachmentKindIcon } from "./ChatAttachmentIcons";
@@ -227,10 +228,14 @@ export function ChatAddContextMenu({ disabled }: { disabled?: boolean }) {
 	const handleAddRecommendation = useCallback(
 		(index: number) => {
 			if (!selectedClash) return;
-			const text = recommendations[index];
-			if (!text) return;
+			const rec = recommendations[index];
+			if (!rec) return;
 			addAttachment(
-				buildRecommendationAttachment(selectedClash, text, index),
+				buildRecommendationAttachment(
+					selectedClash,
+					recommendationItemDisplayText(rec),
+					index,
+				),
 			);
 			close();
 		},
@@ -360,17 +365,18 @@ export function ChatAddContextMenu({ disabled }: { disabled?: boolean }) {
 							Run analysis on this clash to unlock per-recommendation attachments.
 						</div>
 					) : (
-						recommendations.map((text, idx) => {
+						recommendations.map((item, idx) => {
+							const displayText = recommendationItemDisplayText(item);
 							const built = buildRecommendationAttachment(
 								selectedClash,
-								text,
+								displayText,
 								idx,
 							);
 							return (
 								<MenuRow
 									key={built.id}
 									kind="recommendation"
-									label={`#${idx + 1}: ${text}`}
+									label={`#${idx + 1}: ${displayText}`}
 									alreadyAdded={hasAttachment(built.id)}
 									onAdd={() => handleAddRecommendation(idx)}
 								/>

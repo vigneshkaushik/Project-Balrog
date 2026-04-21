@@ -10,13 +10,14 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, File, HTTPException, Request, UploadFile
-from llama_index.core.agent.workflow import AgentOutput
+from llama_index.core.agent.workflow import AgentOutput, ToolCall
 from llama_index.core.base.llms.types import TextBlock
 from llama_index.core.llms import ChatMessage
 from pydantic import BaseModel, ConfigDict, Field
 from sse_starlette.sse import EventSourceResponse
 
 from app.clash_session import ClashSessionStore
+from app.utils.agent_tool_log import print_tool_call as log_agent_tool_call
 from app.utils.clash_analysis_parse import (
     normalize_analysis_result,
     parse_clash_analysis_json,
@@ -144,8 +145,14 @@ async def analyze_clash_context(
                 max_iterations=settings.max_agent_iterations,
                 early_stopping_method="generate",
             )
-            async for _ in handler.stream_events():
-                pass
+            async for ev in handler.stream_events():
+                if isinstance(ev, ToolCall):
+                    log_agent_tool_call(
+                        "POST /clashes/analyze-context",
+                        ev.tool_name,
+                        ev.tool_id,
+                        ev.tool_kwargs,
+                    )
             result = await handler
     finally:
         store.delete(conv_id)

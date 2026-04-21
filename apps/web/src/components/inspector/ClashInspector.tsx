@@ -12,6 +12,11 @@ import {
 } from "../../lib/buildChatAttachments";
 import type { SpeckleLoadState } from "../../hooks/useSpeckleViewer";
 import { buildClashContextAnalysisPayload } from "../../lib/clashContextRegion";
+import {
+	normalizeClashRecommendations,
+	normalizeClashWatchOut,
+	recommendationItemDisplayText,
+} from "../../lib/clashAnalysisFormat";
 import type {
 	ContextRegionPayload,
 	NearbySpeckleObjectPayload,
@@ -191,9 +196,11 @@ export function ClashInspector() {
 		percent: 0,
 	});
 	const [analysisLoading, setAnalysisLoading] = useState(false);
-	const [analysisWatchOut, setAnalysisWatchOut] = useState<string[]>([]);
+	const [analysisWatchOut, setAnalysisWatchOut] = useState<
+		ReturnType<typeof normalizeClashWatchOut>
+	>([]);
 	const [analysisRecommendations, setAnalysisRecommendations] = useState<
-		string[]
+		ReturnType<typeof normalizeClashRecommendations>
 	>([]);
 	const [analysisNotes, setAnalysisNotes] = useState<string | null>(null);
 	const [analysisError, setAnalysisError] = useState<string | null>(null);
@@ -423,13 +430,17 @@ export function ClashInspector() {
 				},
 			};
 			const res = await postClashAnalyzeContext(requestBody);
-			setAnalysisWatchOut(res.watch_out_for);
-			setAnalysisRecommendations(res.recommendations);
+			const normalizedWatchOut = normalizeClashWatchOut(res.watch_out_for);
+			const normalizedRecommendations = normalizeClashRecommendations(
+				res.recommendations,
+			);
+			setAnalysisWatchOut(normalizedWatchOut);
+			setAnalysisRecommendations(normalizedRecommendations);
 			setAnalysisNotes(res.notes);
 			setAnalysisCompleted(true);
 			setAnalysisForClash(selected.id, {
-				recommendations: res.recommendations,
-				watchOutFor: res.watch_out_for,
+				recommendations: normalizedRecommendations,
+				watchOutFor: normalizedWatchOut,
 				notes: res.notes,
 			});
 		} catch (err) {
@@ -457,7 +468,6 @@ export function ClashInspector() {
 	const isCurrentClashAttached = currentClashAttachmentId
 		? hasAttachment(currentClashAttachmentId)
 		: false;
-
 	const handleAddClashToChat = useCallback(() => {
 		if (!selected || !speckleViewer) return;
 		try {
@@ -923,13 +933,43 @@ export function ClashInspector() {
 										<>
 											<ol className="list-decimal space-y-2 pl-5">
 												{analysisRecommendations.map((rec, idx) => {
+													const recText = recommendationItemDisplayText(rec);
 													const built = selected
-														? buildRecommendationAttachment(selected, rec, idx)
+														? buildRecommendationAttachment(selected, recText, idx)
 														: null;
+													const parsed = rec.parsed;
 													return (
-														<li key={rec}>
+														<li key={rec.raw}>
 															<div className="flex items-start gap-1.5">
-																<span className="min-w-0 flex-1">{rec}</span>
+																<div className="min-w-0 flex-1">
+																	{parsed ? (
+																		<div className="space-y-1 rounded-md border border-neutral-200 bg-neutral-50 p-2">
+																			<p className="text-xs font-semibold text-neutral-900">
+																				{parsed.priority}
+																			</p>
+																			<p className="text-xs text-neutral-700">
+																				<span className="font-medium text-neutral-900">
+																					Action:
+																				</span>{" "}
+																				{parsed.technicalAction}
+																			</p>
+																			<p className="text-xs text-neutral-700">
+																				<span className="font-medium text-neutral-900">
+																					Design impact:
+																				</span>{" "}
+																				{parsed.designImpact}
+																			</p>
+																			<p className="text-xs text-neutral-700">
+																				<span className="font-medium text-neutral-900">
+																					Effort:
+																				</span>{" "}
+																				{parsed.effortLevel}
+																			</p>
+																		</div>
+																	) : (
+																		<span>{rec.raw}</span>
+																	)}
+																</div>
 																{built ? (
 																	<AddToChatButton
 																		variant="compact"
@@ -949,9 +989,23 @@ export function ClashInspector() {
 														Things to watch out for
 													</p>
 													<ul className="mt-1 list-disc space-y-1 pl-5 text-xs">
-														{analysisWatchOut.map((line) => (
-															<li key={line}>{line}</li>
-														))}
+														{analysisWatchOut.map((line) => {
+															const parsed = line.parsed;
+															return (
+																<li key={line.raw}>
+																	{parsed ? (
+																		<>
+																			<span className="font-semibold text-neutral-800">
+																				[{parsed.category}]
+																			</span>{" "}
+																			{parsed.specificMetric}
+																		</>
+																	) : (
+																		line.raw
+																	)}
+																</li>
+															);
+														})}
 													</ul>
 												</div>
 											) : null}
