@@ -14,6 +14,7 @@ from llama_index.llms.openai import OpenAI
 from llama_index.tools.duckduckgo import DuckDuckGoSearchToolSpec
 
 from app.config import AgentSettings
+from app.tools.playbook_tools import playbook_tool_list
 
 
 class OpenAICompatibleLLM(OpenAI):
@@ -62,6 +63,7 @@ def _duckduckgo_tool_list() -> list[FunctionTool]:
 # One id expands to multiple FunctionTools (see resolve_tools).
 _TOOL_BUNDLES: dict[str, Callable[[], list[FunctionTool]]] = {
     "duckduckgo": _duckduckgo_tool_list,
+    "playbooks": playbook_tool_list,
 }
 
 

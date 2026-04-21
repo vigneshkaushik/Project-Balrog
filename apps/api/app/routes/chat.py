@@ -21,10 +21,11 @@ from llama_index.core.tools.types import ToolOutput
 
 from app.config import AgentSettings
 from app.react_scratchpad import parse_react_scratchpad
+from app.utils.agent_tool_log import print_tool_call as log_agent_tool_call
 
 router = APIRouter()
 
-ENABLED_AGENT_TOOL_IDS: list[str] = ["duckduckgo"]
+ENABLED_AGENT_TOOL_IDS: list[str] = ["duckduckgo", "playbooks"]
 
 
 class ClashContextAttachmentBody(BaseModel):
@@ -358,6 +359,12 @@ async def _chat_sse_events(
                             event="agent_thought",
                         )
                 elif isinstance(ev, ToolCall):
+                    log_agent_tool_call(
+                        "POST /chat",
+                        ev.tool_name,
+                        ev.tool_id,
+                        ev.tool_kwargs,
+                    )
                     yield JSONServerSentEvent(
                         {
                             "tool_name": ev.tool_name,

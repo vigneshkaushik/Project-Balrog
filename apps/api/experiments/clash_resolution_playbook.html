@@ -1,0 +1,444 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+.wrap{display:flex;height:720px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;background:var(--color-background-secondary);}
+.sidebar{width:210px;flex-shrink:0;overflow-y:auto;background:var(--color-background-primary);border-right:0.5px solid var(--color-border-tertiary);padding:8px 0;}
+.sb-group{padding:10px 12px 4px;font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--color-text-tertiary);}
+.sb-btn{display:block;width:100%;text-align:left;padding:7px 14px;font-size:12.5px;border:none;background:none;cursor:pointer;color:var(--color-text-secondary);line-height:1.35;border-left:3px solid transparent;}
+.sb-btn:hover{background:var(--color-background-secondary);}
+.sb-btn.active{background:var(--color-background-secondary);color:var(--color-text-primary);font-weight:500;}
+.main{flex:1;overflow-y:auto;padding:20px;}
+.sec-hdr{margin-bottom:16px;}
+.sec-title{font-size:17px;font-weight:500;color:var(--color-text-primary);margin-bottom:8px;}
+.trade-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+.badge{font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;}
+.clash-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:10px;overflow:hidden;background:var(--color-background-primary);}
+.clash-hdr{padding:12px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.clash-hdr:hover{background:var(--color-background-secondary);}
+.clash-title{font-size:13.5px;font-weight:500;color:var(--color-text-primary);flex:1;}
+.clash-meta{display:flex;gap:6px;align-items:center;flex-shrink:0;}
+.sev{font-size:10.5px;font-weight:500;padding:2px 8px;border-radius:20px;}
+.chevron{font-size:11px;color:var(--color-text-tertiary);margin-top:2px;}
+.clash-body{padding:14px;border-top:0.5px solid var(--color-border-tertiary);}
+.section-label{font-size:10px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--color-text-tertiary);margin-bottom:6px;}
+.anchor-box{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px;font-size:12.5px;line-height:1.6;color:var(--color-text-secondary);margin-bottom:14px;border-left:3px solid #BA7517;}
+.res-list{margin-bottom:14px;}
+.res-item{margin-bottom:8px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);overflow:hidden;}
+.res-hdr{display:flex;align-items:center;gap:8px;padding:9px 11px;background:var(--color-background-secondary);}
+.res-num{width:20px;height:20px;border-radius:50%;background:#185FA5;color:#E6F1FB;font-size:10px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.res-name{font-size:12.5px;font-weight:500;color:var(--color-text-primary);flex:1;}
+.effort{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:500;}
+.vo{font-size:10px;padding:2px 7px;border-radius:20px;background:#FAEEDA;color:#633806;font-weight:500;}
+.res-detail{padding:10px 12px;font-size:12px;line-height:1.65;color:var(--color-text-secondary);}
+.checks{margin-top:8px;display:flex;flex-direction:column;gap:4px;}
+.check-item{display:flex;gap:6px;font-size:11.5px;color:var(--color-text-secondary);line-height:1.5;}
+.check-dot{color:#0F6E56;flex-shrink:0;margin-top:2px;}
+.validate-list{margin-bottom:14px;}
+.val-item{display:flex;gap:6px;margin-bottom:5px;font-size:12px;line-height:1.5;color:var(--color-text-secondary);}
+.val-icon{flex-shrink:0;margin-top:2px;color:#534AB7;}
+.esc-list{margin-bottom:14px;}
+.esc-item{display:flex;gap:6px;margin-bottom:5px;font-size:12px;line-height:1.5;color:var(--color-text-secondary);}
+.esc-icon{flex-shrink:0;margin-top:2px;color:#A32D2D;}
+.risk-box{background:#FAEEDA;border-radius:var(--border-radius-md);padding:10px 12px;font-size:12px;line-height:1.6;color:#412402;border-left:3px solid #EF9F27;}
+.divider{height:0.5px;background:var(--color-border-tertiary);margin:12px 0;}
+</style>
+
+<div class="wrap">
+<nav class="sidebar" id="sb"></nav>
+<main class="main" id="main"></main>
+</div>
+
+<script>
+const T={
+  STR:{label:'Structural',c:'#BA7517',bg:'#FAEEDA',tc:'#633806'},
+  MEP:{label:'MEP',c:'#185FA5',bg:'#E6F1FB',tc:'#042C53'},
+  ARC:{label:'Architecture',c:'#534AB7',bg:'#EEEDFE',tc:'#26215C'},
+  FAC:{label:'Facade',c:'#0F6E56',bg:'#E1F5EE',tc:'#04342C'},
+  INT:{label:'Interior Design',c:'#993C1D',bg:'#FAECE7',tc:'#4A1B0C'},
+};
+const SEV={
+  'Critical':{bg:'#FCEBEB',tc:'#501313'},
+  'High':{bg:'#FAEEDA',tc:'#412402'},
+  'Medium':{bg:'#E6F1FB',tc:'#042C53'},
+  'Low':{bg:'#EAF3DE',tc:'#173404'},
+  'Low–Medium':{bg:'#E1F5EE',tc:'#04342C'},
+};
+const EFF={
+  'Low':{bg:'#EAF3DE',tc:'#173404'},
+  'Med':{bg:'#E6F1FB',tc:'#042C53'},
+  'High':{bg:'#FAEEDA',tc:'#412402'},
+};
+
+const SECTIONS=[
+{id:'str-mep',title:'Structural × MEP',trades:['STR','MEP'],clashes:[
+{id:'b-hvac-main',title:'Primary Beam × HVAC Main Duct',sev:'High',
+anchor:'Primary beam is immovable without SE approval. HVAC main duct has low-medium flexibility — resizing or offsetting is possible but affects system-wide pressure balance. The beam yields nothing; the duct engineer must find a solution.',
+resolutions:[
+{n:'Web penetration',detail:'Cut a rectangular or circular opening in the beam web. Rules: opening ≤ 40% of clear web depth; opening width ≤ 60% of web depth; min edge-to-flange = 0.25 × beam depth; min to support = 0.25 × span; min 150mm between adjacent openings. Specify formed steel sleeve + fire collar + SE sign-off. Sleeve OD = duct OD + 25mm all sides.',effort:'Med',vo:false,checks:['SE must confirm penetration location and beam loading','Verify no PT tendons in web at penetration point','IFC fire-stopping spec for sleeve must match compartment rating','Check duct-to-sleeve clearance allows thermal expansion']},
+{n:'Duct height reduction via transition',detail:'Insert transition pieces to reduce duct height to pass below or through the beam zone, then expand back. Velocity increase in reduced section must not exceed 20% of design velocity to avoid noise exceedance. Transition angle ≤ 15° for low noise. Minimum 500mm of reduced section before re-expanding.',effort:'Low',vo:false,checks:['Mechanical engineer to recheck system pressure drop','Acoustic engineer to verify NR rating at transition section','Check transition fits within plenum alongside other services']},
+{n:'Split duct into twin runs',detail:'Split single duct into two smaller ducts of equal total cross-section, routing each flank of the beam web. Rejoin after the beam. Requires equal path lengths for balanced flow. Add splitter and collector boxes. Check plenum width permits twin runs with min 50mm clearance to beam flanges on each side.',effort:'Med',vo:false,checks:['Equal path lengths confirmed for flow balance','Total cross-section of twin ducts ≥ original duct area','Plenum width allows twin layout with hanger clearance']},
+{n:'Duct reroute (last resort)',detail:'Reroute duct around the beam. Quantify additional duct length (typically +1.5–3m), increased pressure drop, and additional hangers. Flag to mechanical engineer for re-commissioning implications. Document via formal RFI.',effort:'High',vo:true,checks:['Mechanical engineer to recalculate pressure drop impact','Check rerouted path for new clashes','Confirm reroute does not cross a fire compartment boundary without a damper']},
+],
+validate:['Confirm beam type (primary/secondary/transfer) and span before recommending web penetration','Confirm beam is not post-tensioned before any penetration proposal','Check IFC drawings for web stiffener locations — stiffeners prohibit penetrations','Verify plenum void height on both sides of beam is adequate for full services stack'],
+escalation:['Clash is at mid-span of a transfer beam — no web penetration permissible','Multiple clashes within 1m of each other on same beam web — cumulative weakening risk','Duct is a fire-rated smoke duct — penetration detailing is significantly more complex','Clash occurs at beam-to-column connection node — no modification permitted'],
+risk:'If unresolved before ductwork fabrication, field cuts may be made to the beam web without structural sign-off — creating a structural liability. Adjacent services (sprinklers, cable trays) in the same zone will also be impacted once one resolution is adopted. Coordinate the full plenum cross-section before any resolution is executed.'},
+
+{id:'b-drainage',title:'Primary Beam × Gravity Drainage Pipe',sev:'Critical',
+anchor:'Gravity drainage is slope-dependent (1:50 for DN100, 1:80 for DN150, 1:100 for DN225+) and CANNOT be rerouted freely without affecting every outlet upstream. Structural beam is equally immovable. This is one of the highest-severity clash pairs — it is a joint design problem, not a field fix.',
+resolutions:[
+{n:'Beam web penetration with sleeved pipe',detail:'Pass drainage pipe through beam web via a formed or core-drilled hole. Hole Ø = pipe OD + 50mm minimum (drainage needs more clearance than pressurised pipes — no-contact rule with structure). Confirm drainage slope gradient is maintained THROUGH the penetration — calculate elevation difference across the beam width. Sleeve must be independently supported; pipe load must not bear on the beam penetration edge.',effort:'Med',vo:false,checks:['SE confirmation for penetration size and location at this beam','Verify slope gradient maintained through beam — calculate EGL','Sleeve independently supported; pipe load not transferred to beam edge','If pressurised sewer gas scenario: sealed penetration required']},
+{n:'Raise beam soffit via haunch (secondary beam only)',detail:'If beam is secondary and headroom is non-critical (BOH or plant), propose a beam haunch or soffit raise to allow drainage to pass below. Requires architectural and structural sign-off. Only viable in areas where ceiling line is not controlled by minimum headroom.',effort:'High',vo:true,checks:['SE approval for beam haunch profile change','Architect to confirm ceiling height impact is acceptable','Check revised beam profile against all other services in zone']},
+{n:'Redesign drainage layout (last resort)',detail:'If beam penetration is not possible and beam elevation is fixed, drainage must be redesigned. Plumbing engineer to re-plan outlet positions and stack connection points. Quantify: additional pipe length, revised fixture invert levels, impact on stack vertical position.',effort:'High',vo:true,checks:['Plumbing engineer to redesign layout and resubmit hydraulic scheme','Architect to confirm relocated floor outlet positions','Check revised route for new clashes with other services']},
+],
+validate:['Calculate precise drainage invert levels at both faces of the beam','Confirm beam type, span, and structural classification BEFORE any recommendation','Identify all outlets served by this run — any change affects every fixture upstream','Check pipe type: waste, soil, or stormwater (different slope and diameter rules)'],
+escalation:['Multiple drainage pipes need to cross same beam — each penetration weakens it cumulatively','Beam is primary structure or transfer beam — no penetration available, full redesign required','Drainage slope cannot be maintained even with penetration — elevation deficit forces full layout redesign','Clash discovered after concrete is poured — coring is high-risk, must be SE-supervised'],
+risk:'Drainage and structural clashes discovered on site after concrete pours are among the most expensive AEC defects to resolve. Coring through structural beams on site without SE supervision has caused structural failures in documented cases globally. Resolve at design stage with SE sign-off in writing.'},
+
+{id:'b-sprinkler',title:'Structural Beam × Sprinkler Main / Branch',sev:'High',
+anchor:'Structural beam is immovable. Sprinkler mains have slope dependency (drainage after activation) and are hydraulically sensitive. Branch lines are more flexible but head positioning must comply with maximum spacing rules.',
+resolutions:[
+{n:'Core-drilled penetration through beam web',detail:'Drill a circular hole through the beam web. Pipe ≤ DN100: hole Ø = pipe OD + 25mm. Pipe DN100–DN200: SE must confirm and may require reinforcement collar plate. Always specify galvanised steel sleeve, fire collar, and intumescent sealant if penetrating a fire compartment boundary. Maintain pipe slope through the penetration (min 1:500 for drainage after activation).',effort:'Low',vo:false,checks:['SE confirmation of hole size and location','Fire-stopping spec if compartment boundary','Pipe slope maintained through penetration','Check if beam web has existing penetrations nearby (cumulative risk)']},
+{n:'Drop branch line with extended pendant drop arm',detail:'Drop the sprinkler branch below the beam soffit and extend the pendant drop arm to reach the required head elevation. Check maximum pendant drop arm per code: typically 300mm standard, up to 600mm for extended drop arms (NFPA 13 / local code). Verify deflector-to-ceiling clearance maintained (typically 25–75mm below ceiling finish).',effort:'Low',vo:false,checks:['Local fire code max pendant drop arm length confirmed','Deflector-to-ceiling clearance maintained','New branch position below beam clear of other services']},
+{n:'Reroute sprinkler branch',detail:'Reroute the branch run to avoid the beam, adjusting takeoff point from the main. If branch length increases by more than 2m, hydraulic calculations must be re-run. Confirm maximum head spacing rules are maintained. Check revised slope direction.',effort:'Med',vo:false,checks:['Fire protection engineer to recheck hydraulics','Maximum head spacing rules confirmed','Revised branch slope direction maintained']},
+],
+validate:['Confirm beam is RC or steel (drilling method and tolerance differ significantly)','Identify if beam web has pre-existing penetrations — cumulative weakness','Check compartment boundary status at penetration location','Confirm pipe schedule (thin-wall vs thick-wall affects sleeve design and penetration size)'],
+escalation:['Sprinkler main is DN200+ — penetration requires major SE involvement and may be refused','Beam is transfer or post-tensioned — no penetration permissible at all','Multiple pipe services need to penetrate same beam at same location — each must be approved individually'],
+risk:'Sprinkler mains installed before this clash is resolved will be cut and modified in the field, adding significant cost and potentially violating the hydraulic design. Discover and resolve before coordination drawings are issued for tender or approval.'},
+
+{id:'b-cable-tray',title:'Structural Beam × Electrical Cable Tray',sev:'Medium',
+anchor:'Structural beam is immovable. Cable trays are highly flexible — they can be re-routed, split, bridged, and repositioned with relatively low impact to the electrical design, provided cable bend radius and segregation rules (HV/LV/data/fire) are maintained.',
+resolutions:[
+{n:'Route tray through beam web aperture',detail:'For perforated or ladder trays up to 300mm wide and 75mm deep: core drill or form an opening in the beam web (same web penetration rules apply as for pipes). Sleeve the opening. Tray must be independently supported on both sides of the beam — the beam edge cannot be a tray support. Maintain min 50mm clearance from tray top to beam flange.',effort:'Med',vo:false,checks:['SE confirmation for tray-size opening at this location','Cable bend radius not violated at penetration edges','Tray supports within 300mm of each side of penetration','If HV/MV cables: additional fire/safety review required for routed section']},
+{n:'Step tray below beam soffit',detail:'Drop the tray below the beam soffit using a formed step-down (vertical run → horizontal run). Requires 2 × 90° bends + a short vertical run. Ensure total transition fits within plenum void. Check other services below beam are clear of the step-down path. Minimum 150mm clearance from bottom of tray to ceiling line.',effort:'Low',vo:false,checks:['Headroom below beam soffit for transition confirmed','Other services below beam clear of tray step-down','Cable bend radius at bends meets manufacturer spec']},
+{n:'Split tray into two narrower trays flanking beam',detail:'Split single wide tray into two narrower trays (e.g., 300mm → 2 × 150mm), routing each flank of the beam web. Rejoin after beam. Maintain HV/LV segregation across the split. Ensure fill ratio on each split tray does not exceed 40%.',effort:'Med',vo:false,checks:['Cable segregation rules maintained across split confirmed by electrical engineer','Fill ratio on each split tray checked after redistribution','Flanking clearance ≥ 50mm from beam web each side']},
+],
+validate:['Identify cable types in tray (HV, LV, data, fire) — segregation governs all splitting decisions','Check tray fill ratio before splitting — may already be near capacity','Confirm beam web has no pre-existing penetrations nearby','Identify if clash is at hanger/support location (the tray hanger, not tray body, may be the actual clash)'],
+escalation:['Tray carries HV/MV cables — routing through beam web requires additional fire/safety review and potentially authority approval','Multiple trays clashing with same beam — zone coordination drawing for this section is required, not individual clash resolutions'],
+risk:'Cable trays are often installed before cables are pulled. Resolving after cable installation means removing all cables, modifying the tray, and re-pulling — extremely labour-intensive. Resolve before tray fabrication drawings are issued.'},
+
+{id:'col-mep',title:'Structural Column × Any MEP Service',sev:'Critical',
+anchor:'Structural columns are ABSOLUTE ANCHORS. No MEP service may penetrate, notch, cut, or apply structural loads to a column without SE-approved fixings. If a clash shows a service routing through a column, it is always a routing error — not a penetration opportunity. Full MEP relocation is the only valid resolution.',
+resolutions:[
+{n:'Distinguish structural column from fire/architectural encasement',detail:'First verify whether the clash is against the structural column itself or against its fire protection build-up (intumescent paint, spray fireproofing, or architectural casing). Column fire protection + architectural casing can add 20–75mm around the column on all faces. If the clash is within the build-up zone only, the service can potentially pass in the gap between column face and finished casing — confirm min 50mm clearance from structural face is maintained.',effort:'Low',vo:false,checks:['Confirm column fire rating and protection method (intumescent / board / spray)','Measure actual gap between structural face and finished casing from drawings','Check service fits in gap with 50mm min clearance from structural face']},
+{n:'Reroute MEP service around all four faces of column',detail:'All MEP services must route around (not through) the column. Analyse available clearance on all four column sides. For large ducts and pipes, reroute around a column adds significant length — quantify and check hydraulic/pressure impact. Check if rerouting creates new clashes with services on flanking sides.',effort:'Med',vo:false,checks:['Quantify additional pipe/duct length','Check pressure drop or flow impact (HVAC ducts and large pipes)','Rerouted path clear of other services on all four column faces']},
+{n:'Full zone coordination at column node',detail:'If the column is at the intersection of multiple services — a coordination node — produce a full multi-trade section drawing showing all services and their correct priority route around the column. Resolve all services at the node simultaneously, not individually.',effort:'High',vo:false,checks:['Zone section drawing produced and reviewed by all trade contractors','All services in correct priority order in the section drawing','Section approved before installation begins in this zone']},
+],
+validate:['Confirm column is structural (some "columns" in arch drawings are purely decorative fins or casings)','Check column encasement drawings for fire protection spec and build-up dimensions','Identify ALL MEP services clashing with the same column — resolve as a package, not individually'],
+escalation:['Any field proposal to notch, cut, drill, or weld to a structural column — immediate escalation to SE and PM required','Column is a transfer column supporting multiple levels above — zero tolerance for any modification or loading','Clash is not a routing error but a design error — structure and MEP grids were never coordinated at this column'],
+risk:'Field cuts to structural columns have resulted in partial structural failures on construction sites. Any such work discovered must be immediately escalated to the structural engineer and project manager. Document all instances in the project risk register.'},
+
+{id:'pt-slab',title:'Post-Tensioned (PT) Slab × MEP Penetration',sev:'Critical',
+anchor:'PT slabs contain live tensioned tendons that are lethal to cut and will structurally compromise the slab if severed. ALL penetrations in PT slabs require SE approval with exact tendon layout confirmed. This is a zero-tolerance safety item.',
+resolutions:[
+{n:'Relocate penetration to SE-approved safe zone',detail:'SE must provide a PT tendon layout drawing with pre-approved penetration zones marked. MEP penetrations must be relocated to land within approved zones: typically column-to-column midpoint (maximum tendon sag), banded slab areas, and specific pre-formed openings. Never core-drill a PT slab without SE confirming tendon-free zone via GPR scan at that exact location.',effort:'Med',vo:false,checks:['PT tendon layout drawing obtained from SE','GPR scan of target area commissioned before any coring','Written SE confirmation that proposed location is tendon-free']},
+{n:'Pre-form opening before concrete pour',detail:'If PT slab is not yet poured, coordinate MEP penetration requirements immediately and pre-form all openings in formwork at SE-approved locations. This is the lowest cost and lowest risk option. MEP engineers must finalise penetration positions before pour date — no exceptions.',effort:'Low',vo:false,checks:['All MEP penetration requirements finalised before pour date','SE to approve and mark all openings on formwork drawings','Contractor pour programme reviewed — penetration coordination must complete first']},
+{n:'GPR scan + core drill in confirmed safe zone (post-pour)',detail:'If slab is already poured and opening was missed: commission a GPR scan from a certified operator. SE reviews GPR results and provides written approval (or denial) for coring at the specific location. Core drill ONLY after written SE approval. Document with photographic record of entire process.',effort:'High',vo:true,checks:['GPR scan from certified operator','SE written approval before any drilling commences','Drilling contractor must not deviate from approved location by more than 25mm']},
+],
+validate:['Confirm slab construction type from structural drawings before ANY clash resolution','Request PT tendon layout plan from SE as the first step — before exploring any resolution options','Check pour programme dates — if slab not yet poured, pre-forming is ALWAYS the preferred option'],
+escalation:['Any field coring of a PT slab without documented SE approval and GPR scan — STOP WORK','A tendon has been struck during drilling — emergency structural assessment required immediately and work halted'],
+risk:'Severed PT tendons cannot be repaired in situ. The structural consequence ranges from local cracking to slab collapse. This clash must be resolved at design stage. Escalate to SE and PM the moment this clash is identified.'},
+]},
+
+{id:'mep-mep',title:'MEP × MEP',trades:['MEP','MEP'],clashes:[
+{id:'duct-duct',title:'HVAC Main Duct × HVAC Main Duct',sev:'High',
+anchor:'Both are mains, so neither automatically yields. Apply system priority: supply air main > return air main > exhaust air main > toilet exhaust. The duct serving the larger area or with the longer AHU run has less rerouting flexibility.',
+resolutions:[
+{n:'Vertical stacking in priority order',detail:'Stack ducts vertically in the plenum: supply at highest elevation, return below, exhaust below that. Calculate total stack depth including hanger hardware (min 50mm above top duct, 50mm below bottom duct). Confirm structural supports are designed for combined load. Produce a coordinated section drawing at the clash location before any duct fabrication.',effort:'Med',vo:false,checks:['Plenum void depth accommodates full services stack with clearances','Combined service weight checked against slab hanger capacity','Hanger spacing for lower duct does not conflict with upper duct body','Coordinated section drawing issued before fabrication']},
+{n:'Transition to circular/oval duct in clash zone',detail:'Where rectangular ducts clash due to depth, transition one or both to circular or oval duct of equivalent cross-section. Circular ducts have a smaller height footprint for the same airflow and can pass alongside or below a rectangular main. Transition fittings (rect-to-round) add pressure drop — mechanical engineer must re-check.',effort:'Med',vo:false,checks:['Mechanical engineer to recheck velocity and pressure drop in circular section','Acoustic NR rating at increased circular duct velocity','Transition fitting angle ≤ 15° on entry and exit to minimise turbulence loss']},
+{n:'Reroute lower-priority duct',detail:'Reroute the lower-priority duct (return or exhaust) around the clash zone. Quantify additional duct length (typically +2–6m) and resultant pressure drop increase. Flag to mechanical engineer for system rebalancing. Check new route does not cross a fire compartment boundary without a damper.',effort:'High',vo:false,checks:['Mechanical engineer to assess pressure drop impact','Check rerouted path for new clashes in full','Confirm reroute does not cross fire compartment boundary without fire damper']},
+],
+validate:['Identify which system each duct serves (AHU number, supply/return/exhaust)','Check fire compartment boundaries — mains crossing compartments require fire/smoke dampers','Confirm acoustic requirements in the zone — duct proximity creates flanking noise paths'],
+escalation:['Both ducts are smoke extraction mains — fire code clearance requirements govern and fire engineer must be involved','Clash indicates an MEP zone where no coordinated plenum section drawing has been produced — individual clash resolution will not be sufficient'],
+risk:'Resolving duct-to-duct clashes one at a time without a coordinated plenum section drawing results in repeated clashes as other services are modelled. Produce a coordinated zone section first, then resolve all clashes in that zone simultaneously.'},
+
+{id:'duct-drainage',title:'HVAC Duct × Gravity Drainage Pipe',sev:'High',
+anchor:'Gravity drainage always has priority — slope dependency makes it the immovable element. Duct yields in all cases. Do not propose raising the drain to clear the duct; this will invalidate the hydraulic design for every outlet upstream.',
+resolutions:[
+{n:'Duct transitions to pass above or alongside drainage pipe',detail:'Insert duct height or width transition to clear the drainage pipe. The duct must pass ABOVE the drainage pipe — never below (condensation drip risk from duct onto drainage pipe insulation). Calculate duct velocity in transition zone. Confirm transition fits within plenum void with clearances.',effort:'Low',vo:false,checks:['Duct passes above drainage pipe (not below)','Velocity in transition does not exceed NR noise limit','Transition fits within plenum void with min 50mm clearance to drainage pipe OD + insulation']},
+{n:'Duct reroutes around drainage run',detail:'If transition cannot clear the drainage, reroute the duct around the drainage run. Quantify additional duct length and pressure drop. Mechanical engineer to confirm system balance. Check new duct route for secondary clashes.',effort:'Med',vo:false,checks:['Mechanical engineer to recheck pressure drop','New duct route modelled for secondary clashes','Confirm new route does not cross fire compartment without damper']},
+],
+validate:['Confirm drainage invert levels and slope direction before finalising duct route','Identify all drainage outlets served by this run — the run cannot be raised or re-sloped without affecting every fixture','Check if drainage is cast-in or suspended — resolution options differ significantly'],
+escalation:['Drainage and duct are on a collision course across a long run — indicates a fundamental zone routing conflict that must be re-planned at design level'],
+risk:'Drainage routing should be finalised and modelled first, before HVAC duct routes are locked. If this sequence was not followed, expect multiple drainage-MEP clashes across the floor plate.'},
+
+{id:'pipe-drainage',title:'Pressurised Pipe × Gravity Drainage Pipe',sev:'High',
+anchor:'Gravity drainage always wins over pressurised pipes. Slope-dependent drainage cannot be relocated without affecting all upstream fixtures. Pressurised pipes (HVAC water, domestic, fire) yield without exception.',
+resolutions:[
+{n:'Pressurised pipe offset around drainage',detail:'Insert a vertical or horizontal offset in the pressurised pipe to pass around the drainage pipe. For domestic water or HVAC pipes: straightforward 2 × 45° offset. For fire pipes (sprinkler, hose reel): offset must avoid air pockets in down-and-up configuration — specify air release valves (ARV) at any high point. Ensure pipe is re-supported within 300mm of each elbow.',effort:'Low',vo:false,checks:['If fire pipe: ARV specified at any high point in offset','Pipe re-supported within 300mm of each elbow','Check condensation risk if cold pressurised pipe is close to drainage pipe at crossing']},
+{n:'Drain layout redesign (if slope deficit)',detail:'If drainage cannot maintain slope due to accumulated elevation changes along its run, the drainage layout must be redesigned by the plumbing engineer. Common fix: raise invert level at source fixture, or introduce an additional stack drop point.',effort:'High',vo:true,checks:['Plumbing engineer reviews entire drainage run for elevation deficit','Architect confirms if raising fixture outlet levels is acceptable','Revised run checked for new clashes']},
+],
+validate:['Confirm drainage slope direction and invert levels at both ends of the run affected','Confirm pressurised pipe material (copper, steel, HDPE) — affects minimum elbow radius for offset','Check if drainage is under-slab or suspended — resolution options differ significantly'],
+escalation:['Multiple pressurised pipes offset around same drainage run — indicates a zone coordination problem requiring a full section drawing'],
+risk:'Drainage routing should be established first on every floor plate before other MEP services are routed. If drainage was modelled last, expect many pressurised-pipe-vs-drainage clashes across the zone. Resolve drainage first as a batch, not one at a time.'},
+
+{id:'cable-tray-pipe',title:'Electrical Cable Tray × MEP Pipe (Any)',sev:'Low–Medium',
+anchor:'Pipes generally take priority over cable trays because tray edges can damage pipe insulation and create moisture risk at contact points. HV/MV trays also require minimum clearance from pipes for thermal and EMC reasons. The cable tray yields.',
+resolutions:[
+{n:'Vertical segregation with minimum clearance',detail:'Maintain minimum 150mm vertical clearance between cable tray and any MEP pipe (300mm for HV/MV trays adjacent to uninsulated pipes). Route tray ABOVE pipes wherever possible — water above electrical is a safety risk. If tray must pass below a pipe, specify a drip shield (min 500×500mm GI sheet) over the tray at the crossing to protect cables from condensation or pipe failure drips.',effort:'Low',vo:false,checks:['Cable type in tray confirmed — HV/MV requires 300mm minimum clearance from pipes','If tray below pipe: drip shield specified and shown on MEP coordination drawing','Check condensation risk if cold pipe (CW, refrigerant) adjacent to tray']},
+{n:'Tray horizontal offset at clash',detail:'Insert a horizontal jog in the cable tray to route around the pipe in the horizontal plane. Cable tray horizontal bends require minimum bend radius: 3 × cable OD. Cables must be secured at bends to prevent movement. Confirm offset takes tray into clear space (check for other services at the offset destination).',effort:'Low',vo:false,checks:['Cable bend radius at jog corners meets spec for all cable types in tray','Offset destination is clear of other services']},
+{n:'Crossing at 90° with drip shield',detail:'If pipe and tray must cross, ensure the crossing is as close to 90° perpendicular as possible to minimise overlap area. Install drip shield over tray at the crossing. Document the crossing on the MEP coordination drawing.',effort:'Low',vo:false,checks:['Crossing angle is 90° or as close as possible','Drip shield specified on coordination drawing']},
+],
+validate:['Identify cable voltage class (LV, HV, fire, data) — each has different clearance requirements from pipes','Check if pipe is insulated — uninsulated pipes adjacent to cable trays require more clearance','Confirm if zone is a wet area (bathroom, plant room, kitchen) — additional protection ratings apply'],
+escalation:['Tray carries fire detection/alarm cables — route and protection requirements are more stringent under fire codes','Tray is immediately below a water-bearing pipe in a humid environment — condensation damage risk is high'],
+risk:'Cables damaged by dripping water from overhead pipes are a persistent maintenance callback. Even where clearances are maintained at design stage, ensure drip shields are detailed on coordination drawings and inspected at installation.'},
+
+{id:'medical-gas',title:'Medical Gas Pipeline × Any MEP Service',sev:'Critical',
+anchor:'Medical gas pipelines (O2, N2, compressed air, vacuum) are LIFE-SAFETY elements. They cannot be rerouted without written medical gas engineer approval and recertification of the modified section. All other MEP services yield without exception.',
+resolutions:[
+{n:'Reroute non-medical MEP around the medical gas line',detail:'Medical gas line position is fixed once installed. All other MEP services route around it. Minimum clearances: 150mm from electrical services, 100mm from other pipework, 300mm from sources of heat. Medical gas lines must never share a ceiling zone with electrical cable trays without a segregation screen. Medical gas lines must remain accessible for inspection at all times.',effort:'Med',vo:false,checks:['150mm min clearance from electrical services confirmed','100mm min from other pipework confirmed','Medical gas line remains accessible for inspection after installation of surrounding services','No shared ceiling zone with cable trays without segregation screen']},
+{n:'Medical gas reroute (only with engineer written approval)',detail:'Only with written medical gas engineer approval. Rerouted sections require pressure testing and recertification to HTM 02-01 (UK) / NFPA 99 (US) / applicable standard. Reroute must maintain continuous pipe identification labels, meet minimum bend radii (copper or stainless with limited bending), and be documented in the as-built medical gas schematic.',effort:'High',vo:true,checks:['Written medical gas engineer approval obtained first','Pressure testing and recertification of modified section completed','Updated as-built medical gas schematic issued to facilities and clinical engineering team']},
+],
+validate:['Confirm gas type in pipeline (O2, vacuum, N2, medical air) — O2 proximity to flammables is the highest risk','Confirm regulatory framework (HTM, NFPA 99, or local equivalent) governing this installation','Check if pipeline has been commissioned — modification to a commissioned system requires full recommissioning'],
+escalation:['Any proposed modification to an O2 pipeline — medical gas engineer and infection control team must be involved','Clash discovered after medical gas commissioning — operational risk during any modification; clinical team must be informed'],
+risk:'Medical gas systems modified without recertification create patient safety risks and may violate the hospital operating licence. Any modification must be flagged to the facilities management and clinical engineering teams, not just the construction team.'},
+]},
+
+{id:'str-arc',title:'Structural × Architecture',trades:['STR','ARC'],clashes:[
+{id:'beam-ceiling',title:'Structural Beam × Architectural Ceiling / Bulkhead',sev:'Medium',
+anchor:'Structural beam is immovable in elevation. Architectural ceiling is the flexible element — ceiling level, bulkhead depth, or reflected ceiling plan (RCP) can be adjusted. The resolution must be agreed between structural, architectural, and MEP teams together, not unilaterally.',
+resolutions:[
+{n:'Lower ceiling locally to accommodate beam soffit',detail:'Adjust the architectural ceiling level at this location to sit below the beam soffit + minimum clearance (typically 50mm for movement + ceiling board thickness + finish). In BOH areas, a local step in the ceiling is standard. For FOH areas, coordinate with the interior designer to incorporate the step as a designed feature — a bulkhead reveal, cove light, or shadow gap can transform a forced step into an architectural feature.',effort:'Low',vo:false,checks:['Headroom below revised ceiling meets code minimum (typically 2400mm habitable, 2100mm corridors)','Revised ceiling line coordinated with lighting, diffusers, and sprinkler positions','If FOH: architect/ID sign-off on design treatment for the ceiling step']},
+{n:'Expose beam as architectural feature',detail:'In exposed or semi-exposed areas, remove the ceiling at the beam location and design the beam as a feature — exposed concrete or painted/cased steel within the ceiling composition. Eliminates the clash by removing the ceiling at the beam. Coordinate paint spec, fireproofing visibility (intumescent paint can be left exposed if spec allows), and MEP services concealment strategy.',effort:'Low',vo:false,checks:['Architect approval for exposed beam treatment','Fire protection method is acceptable for exposed condition','All MEP in zone either concealed or also treated as an exposed installation']},
+{n:'Revise beam profile to tapered or castellated section',detail:'In cases where beam soffit elevation is critical to multiple spaces, propose a castellated (perforated web) or tapered beam profile that reduces beam depth at mid-span. This is a structural change requiring SE redesign. MEP services can also route through castellated beam web openings (designed penetrations), resolving both beam-ceiling and beam-MEP clashes simultaneously. Only viable early in design.',effort:'High',vo:true,checks:['SE to redesign beam profile as castellated or tapered','Check if castellated web openings align with MEP service routes','Confirm revised beam depth clears full MEP services stack below']},
+],
+validate:['Confirm beam soffit elevation from structural drawings — allow ±10mm RC construction tolerance','Identify if area is FOH or BOH — determines aesthetically acceptable resolution approach','Identify all services to be concealed above ceiling — beam acts as a zone divider affecting service layout on both sides'],
+escalation:['Beam soffit drops headroom below minimum code requirement — architectural design must change at design level','Clash affects a series of beams across a floor plate — indicates fundamental misalignment between structural grid and ceiling design intent that cannot be resolved clash by clash'],
+risk:'Beam-ceiling clashes resolved by locally lowering the ceiling in multiple locations create irregular ceiling planes that cannot be coordinated with lighting and diffuser layouts post-facto. Issue a revised RCP after every ceiling-level change and re-coordinate all ceiling-mounted MEP elements in the affected zone.'},
+
+{id:'col-partition',title:'Structural Column × Non-Structural Partition Wall',sev:'Low',
+anchor:'Structural column is immovable. The partition wall position is the flexible element. Resolution should always produce a clean architectural outcome — boxing, wrapping, or featuring the column is preferable to an awkward partition notch.',
+resolutions:[
+{n:'Wrap partition around column as a pilaster',detail:'Extend the partition to wrap around the column face, creating a pilaster or boxed-out column feature. Maintain minimum 25mm clearance from column face to inner face of boxout (fire protection build-up + movement tolerance). Coordinate electrical outlets and data points in the partition — they cannot be on the boxout face without careful MEP coordination.',effort:'Low',vo:false,checks:['Boxout dimensions allow for column fire protection + 25mm clearance','MEP outlets/switches in partition not stranded behind the column boxout','Boxout material and finish matches partition spec']},
+{n:'Offset partition to clear column with expressed column in one space',detail:'Move the partition face to one side of the column, leaving the column partially exposed in the adjacent space. Update room dimensions on architectural drawings. Confirm minimum room width code requirements are still met. Verify interior designer accepts exposed column in adjacent space.',effort:'Low',vo:false,checks:['Minimum room dimensions maintained after offset','ID/architect approval for exposed column face in adjacent space','MEP services in partition re-checked after offset']},
+{n:'Column as room feature with designed casing',detail:'Design the column as an architectural feature — exposed with a designed finish (painted, timber-clad, stone-clad). Eliminates the partition clash at this location. Only applicable where the room layout permits the column to be freestanding within the space.',effort:'Low',vo:false,checks:['Architect/ID approval for exposed column treatment and finish spec','Column casing material does not compromise fire protection rating']},
+],
+validate:['Confirm column is structural — some "columns" in architectural drawings are decorative fins','Identify column fire protection method — affects minimum boxout dimensions','Check any MEP services (conduits, pipes) planned to run in the partition at the column location'],
+escalation:['Partition is a fire-rated compartment boundary wall — column boxout detail must maintain the full fire rating of the wall without compromise'],
+risk:'Column-partition clashes caught during fitout will cascade into joinery revision if built-in furniture is planned against the same partition. Resolve before fitout design is finalised — not during fitout installation.'},
+]},
+
+{id:'mep-arc',title:'MEP × Architecture',trades:['MEP','ARC'],clashes:[
+{id:'mep-ceiling-plane',title:'MEP Services Stack × Architectural Ceiling Void Depth',sev:'Medium',
+anchor:'Ceiling level is architecturally and spatially governed. MEP services must fit within the plenum void above. If the void is insufficient, the ceiling must be lowered OR the services must be redesigned. Neither trade can resolve this alone — it requires a joint decision.',
+resolutions:[
+{n:'Produce a coordinated services section (CSS) drawing for the zone',detail:'This clash is symptomatic of a congested zone. Produce a multi-trade section drawing at the clash location showing ALL services (structure, ductwork, pipework, cable trays, sprinklers) in their correct stack order with actual dimensions and clearances. Include: min 50mm below bottom-most service to ceiling void, 25mm between services, 50mm above services to structural soffit. The CSS reveals the true void depth required and enables a data-driven decision on whether to lower the ceiling or redesign the services.',effort:'Med',vo:false,checks:['All services included in the section, not just the clashing ones','Minimum clearances shown at every service interface','Controlling service identified (the one driving the minimum void depth required)','CSS reviewed and signed off by all trade contractors before ceiling is installed']},
+{n:'Lower ceiling to accommodate services stack',detail:'Lower the ceiling to the minimum achievable headroom. Calculate: structural soffit – services stack depth – min 50mm – ceiling board + finish = finished ceiling level (FCL). Verify resulting headroom meets code minimums. Update the RCP: lighting layout, diffuser positions, and sprinkler pendant positions all change when the ceiling is lowered.',effort:'Med',vo:true,checks:['Headroom code compliance check at revised ceiling level','RCP reissued with revised ceiling level and all ceiling-mounted elements updated','Sprinkler deflector-to-ceiling clearance maintained at revised level (min 25mm, max 75mm typical)']},
+{n:'Reduce service sizes or reroute dominant service out of zone',detail:'Identify the service causing the maximum void depth requirement. Explore: HVAC duct resizing (higher velocity, smaller cross-section — check noise NR criteria); pipe rerouting to a less congested ceiling zone; cable tray splitting. Each must be validated by the responsible MEP engineer.',effort:'High',vo:false,checks:['MEP engineer to validate each resizing option against system performance','Duct velocity and NR rating confirmed after resizing','All services confirmed within void with clearances after resizing']},
+],
+validate:['Measure actual structural soffit level — slab tolerances can vary ±15mm from design','Confirm FFL and FCL from architectural drawings for this space','List all services in the zone with their actual dimensions (including insulation) and clearance requirements'],
+escalation:['Multiple zones across the floor plate are failing void depth — this is a design coordination failure at project level that requires architect + MEP lead to resolve, not individual clash resolution','Headroom is already at minimum code — ceiling cannot be lowered; MEP rerouting is mandatory and the MEP lead must redesign the zone'],
+risk:'Ceiling coordination issues discovered after finishes are installed require ceiling tiles to be removed, services modified, and tiles replaced. This is one of the most common defect callbacks in commercial fitout. Ensure the coordinated section is signed off by all trades before ceiling tile installation begins.'},
+
+{id:'mep-fire-compartment',title:'MEP Penetration × Fire-Rated Compartment Boundary',sev:'Critical',
+anchor:'Fire compartment boundaries (fire-rated walls, floors, and ceilings) are absolute. Every MEP penetration must be sealed with an approved fire-stopping system that maintains the full fire rating of the boundary. No exceptions. No exceptions for small pipes. No exceptions for temporary conditions.',
+resolutions:[
+{n:'Intumescent collar/sleeve for plastic pipes',detail:'For plastic pipes (PVC, CPVC, HDPE, PPR) through fire-rated elements: specify intumescent collars that expand on heat and crush/seal the pipe. Size must match pipe OD exactly and match wall/floor thickness. Brand, product reference, and installation method must match the fire test certification exactly (EI60, EI90, EI120 etc.). Installer must be trained/certified for the specific system. Issue a fire stopping schedule drawing listing every penetration location, element rating, pipe spec, and fire stop product reference.',effort:'Low',vo:false,checks:['Fire rating of element being penetrated confirmed','Correct intumescent collar for pipe material, size, and element thickness specified','Fire stopping schedule issued to contractor before MEP installation begins','Installer certification confirmed for specified system']},
+{n:'Fire/smoke damper at HVAC duct penetration',detail:'For HVAC ducts penetrating fire-rated walls or floors: install a fire/smoke damper at the penetration. Damper must match the element fire rating (EI60, EI90, EI120) and be tested for the duct size and airflow direction. Damper requires an access panel in the ceiling/wall for maintenance and testing (min 600×600mm for body access). Specify actuator type (spring-return thermal, electric, pneumatic) and BMS/fire alarm interface.',effort:'Med',vo:false,checks:['Damper type and rating matches element rating (60/90/120 min)','Access panel specified, coordinated with architectural finish, and shown on RCP','BMS/fire alarm interface confirmed with electrical engineer','Damper is accessible for annual testing']},
+{n:'Intumescent sealant/batt for metal pipes and cables',detail:'For steel pipes, copper pipes, and cable bundles through fire-rated elements: use intumescent putty, batt, or sealant systems around the service at the penetration. Detail must match the fire test certification for the specific service size and element rating. Allow a minimum curing period before the wall/floor is loaded (typically 24–72 hours depending on product).',effort:'Low',vo:false,checks:['Product tested for this service type and size','Curing period respected before element is loaded','Penetration sealed on both faces of the element where required by the test evidence']},
+],
+validate:['Obtain fire compartment layout drawings from architect — confirm every wall and floor rating at each penetration location','Identify service material at each penetration — different materials require entirely different fire stop systems','Confirm fire stopping installer is trained and certified for each specified product — incorrect installation invalidates the system'],
+escalation:['Any MEP penetration discovered without fire stopping post-construction — fire authority notification may be required and occupation permit may be at risk','Penetration is in a smoke barrier wall — smoke sealing adds requirements beyond fire stopping'],
+risk:'Unfire-stopped MEP penetrations through compartment boundaries are a building defect that can invalidate the Occupation Permit and fire certificate. These must be inspected, documented, and closed out before handover — fire authorities increasingly conduct penetration audits as part of their inspection process.'},
+]},
+
+{id:'mep-facade',title:'MEP × Facade',trades:['MEP','FAC'],clashes:[
+{id:'duct-louvre',title:'HVAC Duct × Facade Louvre / Grille',sev:'High',
+anchor:'Facade louvre positions are architecturally fixed — visible on the building exterior, coordinated with the facade module, and structurally framed into the facade system. The HVAC duct connecting to the louvre must align with it. Louvre positions are locked once facade panels are fabricated.',
+resolutions:[
+{n:'Flexible transition plenum at louvre connection',detail:'Where the duct centreline does not align with the louvre centreline, use a tapered transition piece (offset plenum box or angled elbow) to connect them. Maximum offset achievable via transition: approximately 300mm horizontal, 200mm vertical, within the wall/facade buildup zone. Beyond these limits, a full duct reroute is needed. The transition piece must fit within the wall/facade thickness — coordinate against facade and wall thickness drawings.',effort:'Low',vo:false,checks:['Transition piece fits within wall/facade buildup thickness','No condensation pocket created by horizontal transition configuration','Mechanical engineer confirms transition does not create unacceptable pressure drop at AHU intake/exhaust point']},
+{n:'Relocate louvre within facade module (before fabrication)',detail:'If louvre position has flexibility within the spandrel or non-glazed zone, coordinate with the facade designer to move the louvre to align with the duct. This MUST happen before facade panel fabrication — louvre positions are permanently fixed once panels are fabricated. Check: revised louvre position is above minimum height from grade (typically 2400mm for security), is architecturally acceptable, and maintains minimum separation from other louvres (recirculation risk).',effort:'Med',vo:false,checks:['Facade designer confirms louvre can move within module limits','Revised position checked for architectural impact on elevation','Min separation from adjacent intake/exhaust louvres maintained (recirculation risk) — typically 2000mm min vertically']},
+{n:'Reroute HVAC duct to fixed louvre position',detail:'If louvre is fixed (facade panels already fabricated or approved), reroute the HVAC duct to connect to the fixed louvre position. Mechanical engineer to confirm revised duct route does not introduce excessive pressure drop or airflow imbalance.',effort:'Med',vo:false,checks:['Mechanical engineer to check revised pressure drop','Check revised duct route for new clashes with structure and other MEP']},
+],
+validate:['Request facade fabrication programme — louvre positions are locked once panels are ordered. Resolve before this date.','Confirm louvre is intake or exhaust — governs clearance requirements to adjacent louvres (recirculation min distances)','Check louvre anti-rain and bird screen spec — these add depth to the louvre face that affects duct connection design'],
+escalation:['Clash discovered after facade panels are fabricated — louvre relocation is now a fabrication variation at significant cost','HVAC louvre is adjacent to a smoke exhaust louvre — minimum separation distances governed by fire code must be maintained and fire engineer must confirm'],
+risk:'Facade-MEP coordination clashes discovered after panel fabrication lead to very expensive facade variations. All louvre and penetration positions must be confirmed between the MEP engineer and facade subcontractor before the facade shop drawing is approved for fabrication.'},
+
+{id:'mep-facade-panel',title:'MEP Penetration × Facade Panel / Curtain Wall',sev:'High',
+anchor:'Facade systems are weather-critical and structurally engineered. MEP penetrations through facade must be weatherproof, airtight, and must not compromise thermal, structural, or acoustic performance of the facade system. No penetration is trivial in a unitized or high-performance facade.',
+resolutions:[
+{n:'Pre-formed sleeve with weatherproof collar (pre-fabrication)',detail:'All MEP penetrations through facade panels must be pre-formed before panel fabrication or installation. Specify: galvanised steel sleeve (stainless in coastal environments), EPDM/neoprene gasket, and compatible silicone sealant on the exterior face. Sleeve must provide 3mm all-round gap between MEP service and sleeve for differential movement. Minimum 75mm sleeve depth. If the service is a cold pipe or duct, insulation must continue through the sleeve to prevent thermal bridging and condensation within the sleeve.',effort:'Med',vo:false,checks:['Facade engineer to design and approve sleeve detail','Sealant compatibility confirmed with facade system silicone spec','3mm all-round movement gap maintained between service and sleeve','Cold service insulation continuous through sleeve — no thermal bridge','Penetration not located on panel-to-panel joint — panels must be positioned accordingly']},
+{n:'Facade-integrated spigot (for small services)',detail:'For small conduits or pipes (≤DN50), terminate the internal MEP at the inner facade face with a flanged connection, and connect to a facade-integrated spigot or cover plate installed by the facade subcontractor as part of their package. The interface between MEP contractor and facade contractor must be clearly defined in the contract scope and on the facade shop drawing.',effort:'Med',vo:false,checks:['Contract scope interface between MEP and facade contractor clearly defined and agreed','External service material is suitable for exterior exposure (UV, salt, moisture)','Connection point is accessible for maintenance']},
+],
+validate:['Confirm penetration location does not land on a panel-to-panel joint, mullion, or transom','Confirm facade system performance spec (air permeability class, water tightness class) — penetration must not compromise these','Check if facade has a drainage cavity — penetration must not block the cavity drainage plane'],
+escalation:['MEP penetration lands on a structural mullion or transom — structural implications must be assessed by facade engineer','Penetration is through a glass unit — glass replacement or special drilled glass unit required; very expensive and long lead time'],
+risk:'Poorly detailed facade penetrations are a leading cause of building envelope water ingress claims. These details must be reviewed by the facade engineer and must be included in the QA inspection plan at installation. Inspect every penetration before cladding is completed — inaccessible penetrations discovered later require panel removal.'},
+]},
+
+{id:'mep-int',title:'MEP × Interior Design',trades:['MEP','INT'],clashes:[
+{id:'mep-millwork',title:'MEP Rough-in × Joinery / Millwork',sev:'Medium',
+anchor:'Millwork and joinery positions are governed by interior design and are usually custom-fabricated with 8–16 week lead times. MEP rough-in positions (outlet boxes, conduit drop points, pipe penetrations) are flexible during design stage but become fixed once concrete is poured or drywall is closed. Coordinate before either is fixed.',
+resolutions:[
+{n:'Overlay MEP rough-in against joinery shop drawings and adjust before fabrication',detail:'The most effective resolution: once joinery shop drawings are issued, overlay the MEP rough-in position drawing and adjust MEP outlet positions to suit. MEP outlets (power, data, gas drops, A/V, USB) can typically shift up to 300mm in any direction without significant redesign cost. Issue a single coordinated millwork + MEP rough-in drawing with exact positions of every outlet relative to every joinery element.',effort:'Low',vo:false,checks:['Min 50mm setback from joinery edge to nearest outlet/switch plate face confirmed','Accessibility to MEP outlets when joinery is installed and in closed position confirmed','If joinery has integrated MEP (in-drawer power, cable management): bespoke MEP rough-in required — detail on joint shop drawing']},
+{n:'Integrate MEP into joinery design as a designed feature',detail:'For premium interiors: design MEP outlets INTO the joinery — pop-up power modules in kitchen islands, recessed data/AV panels flush in cabinetry, floor boxes integrated into joinery platform bases. This requires MEP and joinery designers to collaborate on a single coordinated shop drawing. All integrated MEP must be accessible for maintenance without full joinery disassembly. Electrical inspector must confirm in-joinery installation meets code.',effort:'Med',vo:false,checks:['Integrated MEP is accessible for maintenance without disassembly','Electrical code compliance confirmed for in-joinery installation (ventilation, clearances, ratings)','Load-bearing capacity of joinery panel at MEP cut-out confirmed with joinery manufacturer']},
+{n:'Adjust joinery layout to accommodate fixed MEP rough-in',detail:'Only if MEP rough-in is already fixed in concrete or closed walls. Adjust the joinery layout to accommodate. Quantify dimensional impact on room layout. Confirm adjusted joinery still meets the design intent and space planning requirements.',effort:'Med',vo:true,checks:['Interior designer approval for revised joinery layout','Revised joinery layout does not affect room space plan or circulation ergonomics','Check adjusted joinery for new clashes with other fixed MEP services']},
+],
+validate:['Request joinery shop drawings before MEP rough-in positions are finalised','Identify all joinery items with integrated or adjacent MEP requirements: kitchen, bathroom, AV wall, reception desk, hospitality counters','Confirm MEP rough-in programme relative to joinery fabrication lead time — if fabrication has started, positions are locked'],
+escalation:['MEP conduits are already cast in concrete at positions conflicting with joinery — only option is core-drilling, which must be assessed against structural drawings','Clash is in a bathroom — waterproof membrane, tile, and MEP rough-in sequencing must all be re-coordinated, not just the MEP position'],
+risk:'Joinery fabricated without MEP coordination will not fit on site. Re-fabrication costs are significant and programme impacts are critical. Ensure coordination happens before joinery shop drawing approval — not after. This is one of the most common and most expensive coordination failures in high-end commercial and hospitality fitout.'},
+
+{id:'mep-feature-ceiling',title:'MEP Services × Interior Feature Ceiling',sev:'High',
+anchor:'Feature ceilings (coffered, curved, timber baton, metal mesh, stretched fabric, GRG, backlit) are interior design flagship elements that command significant cost and fabrication lead time. They cannot be compromised by visible MEP intrusions, inadequate access, or incompatible service positions. MEP must be fully resolved and frozen before feature ceiling design is finalised.',
+resolutions:[
+{n:'Complete MEP coordination above ceiling zone before ceiling is designed',detail:'All MEP services (ducts, pipes, sprinklers, cable trays) must be fully coordinated and frozen within the plenum above the feature ceiling level before the ceiling design is finalised. The ID team receives a confirmed MEP soffit plan showing exact service positions, and designs the ceiling module, access panel locations, and service outlet positions (diffusers, grilles, pendants) around the confirmed MEP layout.',effort:'Med',vo:false,checks:['MEP services fully coordinated in zone before feature ceiling design is locked','All sprinkler heads, diffusers, and grilles positioned within ceiling module before design is finalised','All maintainable MEP items (valves, J-boxes, dampers) above ceiling have designed access panel positions']},
+{n:'Design ceiling access strategy as an architectural feature',detail:'Feature ceilings must include access to all maintainable MEP above them. For lift-out ceilings: removable panels or hinged sections at every accessible valve, junction box, and damper. For fixed ceilings (plasterboard, timber, GRG): access panels must be designed as architectural features — flush-mounted, painted or veneered to match, or with an expressed reveal. All access panel positions are shown on the ID drawing set and approved by the ID team before fabrication.',effort:'Med',vo:false,checks:['Every maintainable MEP item above feature ceiling has an associated access panel','Access panels designed and approved by ID before ceiling fabrication order is placed','Panel sizes meet trade contractor minimum access requirements: 600×600mm for body access, 300×300mm for small valve isolation']},
+{n:'Relocate all maintainable MEP outside the feature ceiling boundary',detail:'If feature ceiling is non-accessible (fixed, curved, artistic), the MEP engineer must redesign service routes so that no maintainable elements (valves, junction boxes, dampers) are located within the feature ceiling boundary. Only self-sealing or non-maintainable items (fixed sprinkler heads) may remain. This is a significant MEP redesign scope.',effort:'High',vo:false,checks:['Confirmed no maintainable MEP within inaccessible feature ceiling zone','MEP engineer has redesigned routes to comply','Fire authority confirmation that sprinkler positions within feature ceiling are code-compliant']},
+],
+validate:['Obtain feature ceiling design drawings including boundary, height, and module before MEP coordination','Confirm whether feature ceiling is accessible (lift-out tiles) or fixed (GRG, timber, stretched fabric)','Identify all MEP elements in the feature ceiling zone that require maintenance access'],
+escalation:['Feature ceiling is fixed, non-accessible, and has already been fabricated — any MEP modification will require ceiling damage and repair at significant cost','Sprinkler head positions within the feature ceiling do not meet fire authority spacing requirements — fire engineering performance solution required'],
+risk:'Feature ceilings are the highest-value, longest-lead interior elements. Any clash discovered after fabrication or installation is a major cost and programme catastrophe. Ensure MEP is fully coordinated and signed off — in writing by all parties — before the feature ceiling fabrication package is released for production.'},
+
+{id:'sprinkler-int',title:'Sprinkler Pendant Head × Interior Ceiling Module',sev:'Medium',
+anchor:'Sprinkler pendant positions are governed by fire code — maximum head spacing, maximum distance from walls, maximum distance from obstructions. Interior ceiling module must accommodate these requirements. The fire code governs; the interior design adapts.',
+resolutions:[
+{n:'Align sprinkler positions to ceiling module within code tolerance',detail:'Sprinkler pendant positions have a tolerance band of typically ±150–200mm from the hydraulically ideal position, within which they can be adjusted to align with the ceiling tile/panel module or intersection. Fire protection engineer must confirm adjusted positions are code-compliant for the specific hazard classification. Confirm pendant drop arm length suits the ceiling board thickness at each position.',effort:'Low',vo:false,checks:['Fire protection engineer confirmation that all adjusted positions are within code coverage requirements','Pendant drop arm length confirmed at each position (varies with ceiling thickness)','Ceiling tile/panel has a cut-out or pre-drilled hole for pendant — confirm tolerance']},
+{n:'Specify concealed or recessed sprinkler heads',detail:'In premium areas, upgrade to concealed sprinkler heads (flush-mounted with flat chrome or painted escutcheon plate). Concealed heads sit flush with the ceiling surface and are invisible when installed. Requires confirming that the specific head type is approved by the fire authority for the occupancy and hazard classification of the space. Specify escutcheon finish to match ceiling colour or material.',effort:'Low',vo:false,checks:['Fire authority approval for concealed head type in this occupancy classification','Concealed heads provide adequate coverage for the room geometry (some have reduced coverage areas)','Escutcheon finish spec (colour match, chrome, custom paint) included in MEP specification']},
+{n:'Fire engineering solution for complex ceiling geometry',detail:'For geometries (coffered, vaulted, stepped, with deep beams) where standard sprinkler rules produce unacceptable visual results or position constraints, commission a performance-based fire engineering solution. Options include: sidewall heads at wall level, extended coverage heads, or alternative suppression (only with AHJ agreement). Fire engineer prepares a performance-based fire design report for authority submission.',effort:'High',vo:true,checks:['Fire engineer engagement confirmed and fee agreed','Authority Having Jurisdiction (AHJ) pre-consultation completed on the alternative approach','Additional cost and programme time for performance-based design acceptance estimated and approved']},
+],
+validate:['Obtain preliminary sprinkler layout drawing (hydraulic design) before interior ceiling design is finalised','Confirm occupancy/hazard classification of each space — this drives head type, spacing, and discharge density','Confirm ceiling type in each area — accessible tiles vs. fixed plasterboard affects head selection significantly'],
+escalation:['Feature ceiling obstructs sprinkler pattern coverage and cannot be modified — fire engineering alternative is mandatory before interior design can proceed','Interior design requests sprinkler-free zones — requires AHJ pre-approval and alternative suppression or fire engineering justification'],
+risk:'Sprinkler and interior ceiling coordination is consistently left too late. Any change to sprinkler head positions after hydraulic calculations are finalised requires recalculation and potentially additional heads. Coordinate before hydraulic design is issued for approval — not after.'},
+]},
+
+{id:'fac-str',title:'Facade × Structure',trades:['FAC','STR'],clashes:[
+{id:'cw-slab-edge',title:'Curtain Wall / Unitized Facade × Structural Slab Edge',sev:'High',
+anchor:'Structural slab edge is fixed in vertical position and horizontal profile. The facade system connects to the slab edge via engineered bracket/anchor systems. Misalignment between the slab as-built position and the facade design is extremely common and MUST be resolved by the adjustable bracket system — not by modifying the structure post-pour.',
+resolutions:[
+{n:'3-axis adjustable bracket system to absorb tolerance',detail:'All curtain wall and unitized facade systems must have a 3-axis adjustable anchor/bracket system (horizontal, vertical, in/out) sized to absorb: slab edge construction tolerance (±20mm typical RC), structural deflection under full load (SE to supply value), facade thermal movement (calculated from temperature differential), and any slab camber. Typical required adjustment range: ±30mm all axes. Facade engineer must confirm bracket design covers the worst-case combination of all tolerances.',effort:'Low',vo:false,checks:['Facade engineer confirms bracket adjustment range against SE-supplied tolerance and deflection values','As-built slab survey must be completed on all floors before facade installation begins — deviations exceeding bracket range must be identified','Bracket capacity at adjusted positions checked (eccentric load calculation)']},
+{n:'Pre-installation as-built slab survey and facade setout reconciliation',detail:'Conduct a full laser scan or total station survey of the slab edges on all floors before facade installation begins. Compare as-built to design and identify floors where bracket adjustment alone is insufficient. For these floors, the facade setout must be revised and panels re-dimensioned. Factor revised fabrication time into the programme before proceeding.',effort:'High',vo:true,checks:['Survey tolerance report reviewed by facade engineer','Panel re-dimensioning (where required) factored into revised fabrication programme','Structural engineer reviews any slab edges with significant deviation (>30mm) to understand cause']},
+{n:'Concrete packing or grinding at bracket fixing zone',detail:'For localised slab edge irregularities at bracket fixing locations (honeycombing, low spots, high spots): apply non-shrink epoxy grout packing to build up to design level, or grind high spots to design level. SE approval required for all remedial work. Packing must cure to specified strength before bracket is loaded.',effort:'Med',vo:false,checks:['SE approval for extent and material of packing/grinding','Packing cured to specified strength before bracket is installed and loaded','Extent of honeycombing assessed before committing to pack vs. replace approach']},
+],
+validate:['Request SE-supplied slab edge tolerance and deflection data before facade bracket design is finalised — this data drives the bracket adjustment range','Confirm slab construction sequence relative to facade installation — creep and shrinkage deflections occurring post-facade installation must be in the SE-supplied deflection values','Confirm anchor type against slab concrete specification — post-installed anchors have different capacities in lightweight vs. normal weight vs. high-strength concrete'],
+escalation:['Slab as-built deviation exceeds 50mm from design — structural investigation required before facade installation proceeds','Facade bracket fixing location lands in a PT tendon anchor zone or at a post-installed anchor cluster — SE must confirm fixing is permissible'],
+risk:'Facade installation that proceeds without a reconciled as-built survey produces cumulative panel misalignments that are visible on the completed building exterior. Re-installation of unitized facade panels costs 3–5× the original installation cost. Survey first, install second — no exceptions.'},
+
+{id:'facade-bracket-beam',title:'Facade Bracket / Anchor × Structural Beam Web or Flange',sev:'High',
+anchor:'Structural beam properties govern the anchor capacity at each fixing location. Facade bracket positions are driven by the facade module — but must match the structural fixing zones approved by the SE.',
+resolutions:[
+{n:'Design facade bracket geometry to suit structural connection zone',detail:'Facade anchor brackets must be designed to suit the available connection geometry — top of slab, slab edge, beam top flange, or beam web. For unitized systems, the vertical bracket interval must match floor-to-floor height, and horizontal anchor positions must land in SE-approved zones. Provide SE with full anchor load data (dead, wind, live, seismic, thermal) for capacity confirmation. SE issues a fixing zone drawing marking approved anchor locations.',effort:'Med',vo:false,checks:['SE to confirm anchor capacity at proposed fixing locations with design loads','Facade engineer confirms bracket design matches structural connection geometry','Anchor spacing meets facade system structural requirements']},
+{n:'Embedded cast-in anchor channels or plates (preferred for high-load brackets)',detail:'For high-load facade brackets, specify cast-in anchor channels (e.g., Halfen, Jordahl, or approved equivalent) or embedded plates in the slab or beam top flange. Cast-in systems provide higher and more predictable capacity than post-installed anchors and eliminate drilling in completed structure. Cast-in items are placed in the formwork before the pour — requires facade anchor layout to be finalised before the concrete pour date.',effort:'Med',vo:false,checks:['Facade anchor layout finalised before concrete pour date — no exceptions','SE specifies cast-in channel/plate type and capacity','Any displaced reinforcement at embedded plate zones approved by SE and replaced if necessary']},
+],
+validate:['Obtain structural beam layout and slab thickness drawings before facade anchor drawing is prepared','Confirm slab and beam concrete specification — post-installed anchor capacity varies significantly','Identify any PT tendons or pre-cast elements in the slab/beam at proposed anchor locations before specifying post-installed anchors'],
+escalation:['Facade anchor loads exceed slab capacity at multiple points — structural engineer must design slab strengthening or specify additional embedded elements before facade can proceed'],
+risk:'Facade anchor positions finalised before structural slab details are confirmed produce field adjustments that compromise bracket geometry and panel alignment. The facade anchor layout must be a collaborative design output between structural and facade engineers, not a unilateral facade assumption.'},
+]},
+
+{id:'int-str',title:'Interior Design × Structural',trades:['INT','STR'],clashes:[
+{id:'millwork-column',title:'Built-in Joinery / Millwork × Structural Column',sev:'Low–Medium',
+anchor:'Structural column is immovable. Joinery is the flexible element, but it has been designed to a specific spatial layout and aesthetic. The resolution should produce a clean design outcome — not a compromised joinery unit with an awkward notch.',
+resolutions:[
+{n:'Design joinery unit with a column pocket (column wrap)',detail:'Integrate the column into the joinery design — design the unit with a recessed "column pocket" to accommodate the column cross-section. Maintain minimum 25mm clearance from structural column face to joinery inner face (fire protection build-up + thermal movement tolerance). If the column is within a joinery run (e.g., kitchen or workspace), the pocket zone becomes a natural transition between units. In display or retail joinery, the column can be cased in the same finish material as the joinery for a seamless appearance.',effort:'Low',vo:false,checks:['25mm min clearance from structural column face to joinery inner face','Fire protection build-up on column not compromised by joinery contact','Joinery units either side of column pocket are independently supported — not hung from or bearing on the column']},
+{n:'Column as joinery design anchor / feature element',detail:'Use the column as a compositional anchor in the joinery design — flank the column with two joinery units, use the column face as a display surface or backing board, or design the column casing as a material highlight within the joinery composition. This approach often produces superior design outcomes to hiding the column.',effort:'Low',vo:false,checks:['Interior designer approval for column-as-feature treatment','Column finish/casing material spec confirmed (fire protection maintained)','Column casing material does not compromise the fire rating of the column protection system']},
+],
+validate:['Confirm column dimensions AND fire protection build-up before joinery design is finalised — the effective column dimension includes the fire protection','Check if column has a separate architectural casing specified separately — this affects the total effective dimension the joinery must accommodate','Identify any MEP conduits or pipes running in the joinery — column presence affects their route within the joinery unit'],
+escalation:['Joinery is already fabricated and cannot accommodate the column without structural modification — re-fabrication required at significant cost'],
+risk:'Built-in joinery around columns that has not been dimensionally coordinated with the as-built column position (including fire protection) will not fit on site. Always verify column position from as-built survey before issuing joinery fabrication drawings. Column as-built positions can vary ±20mm from grid.'},
+
+{id:'raised-floor-str',title:'Raised Access Floor × Structural Slab Upstands / Penetrations',sev:'Medium',
+anchor:'Structural upstands, kerbs, slab penetrations, and drainage outlets are fixed in position. Raised floor pedestal grid must accommodate them without compromising floor levelness or access.',
+resolutions:[
+{n:'Adjust pedestal grid around fixed slab features',detail:'Raised access floor pedestal grids are adjustable in layout. Obtain a slab as-built survey showing all upstands, kerbs, penetrations, and drainage outlets before the raised floor layout is drawn. Adjust the pedestal grid to avoid these elements — smaller corner pedestals or bespoke pedestal heights are used to transition around obstacles. Levelness tolerance must be maintained: ±1.5mm over any 3m length.',effort:'Low',vo:false,checks:['Slab survey completed before raised floor layout is drawn','Levelness tolerance maintained across all adjusted pedestal zones (±1.5mm/3m)','Drainage outlets accessible above raised floor — cut-out tiles or access tiles specified at each drainage position']},
+{n:'Bridging panel over slab penetrations',detail:'Where a slab penetration falls within the raised floor field, design a bridging structural tile with a formed cut-out and removable grommet or access cover. The bridging tile spans the penetration without a pedestal. Confirm structural tile spanning capacity for the clear span. Ensure fire stopping at the penetration is maintained below the raised floor.',effort:'Med',vo:false,checks:['Structural tile spanning capacity confirmed for the clear span dimension','Penetration access maintained (removable grommet or access tile)','Fire stopping at penetration maintained below raised floor level']},
+],
+validate:['Complete slab as-built survey before raised floor layout is produced — without this the layout is guesswork','Confirm all slab penetrations and drainage positions are finalised before raised floor specification is issued','Check if underfloor services (cables, pipes) below raised floor need access doors in the raised floor — this affects pedestal grid layout in those zones'],
+escalation:[],
+risk:'Raised floor pedestals installed without a slab survey on a slab with significant upstands and penetrations will produce an uneven floor and missing panel supports. Survey before layout. Layout before installation. Never the other way around.'},
+]},
+];
+
+let activeSection=SECTIONS[0].id;
+let expandedClashes={};
+
+function badge(tradeKey){
+  const t=T[tradeKey];
+  return `<span class="badge" style="background:${t.bg};color:${t.tc};">${t.label}</span>`;
+}
+function sevBadge(s){
+  const c=SEV[s]||SEV['Medium'];
+  return `<span class="sev" style="background:${c.bg};color:${c.tc};">${s}</span>`;
+}
+function effortBadge(e){
+  const c=EFF[e]||EFF['Low'];
+  return `<span class="effort" style="background:${c.bg};color:${c.tc};">Effort: ${e}</span>`;
+}
+
+function renderSidebar(){
+  const sb=document.getElementById('sb');
+  let html='';
+  SECTIONS.forEach(s=>{
+    const ta=T[s.trades[0]];
+    const active=s.id===activeSection;
+    html+=`<button class="sb-btn${active?' active':''}" style="${active?`border-left-color:${ta.c};`:''}" onclick="switchSection('${s.id}')">${s.title}</button>`;
+  });
+  sb.innerHTML=html;
+}
+
+function renderMain(){
+  const main=document.getElementById('main');
+  const section=SECTIONS.find(s=>s.id===activeSection);
+  let html=`<div class="sec-hdr"><div class="sec-title">${section.title}</div><div class="trade-badges">`;
+  const seen=new Set();
+  section.trades.forEach(tk=>{if(!seen.has(tk)){seen.add(tk);html+=badge(tk);}});
+  html+=`</div></div>`;
+
+  section.clashes.forEach((clash,ci)=>{
+    const expanded=!!expandedClashes[clash.id];
+    html+=`<div class="clash-card">
+      <div class="clash-hdr" onclick="toggleClash('${clash.id}')">
+        <div class="clash-title">${clash.title}</div>
+        <div class="clash-meta">${sevBadge(clash.sev)}<span class="chevron">${expanded?'▲':'▼'}</span></div>
+      </div>`;
+    if(expanded){
+      html+=`<div class="clash-body">
+        <div class="section-label">Anchor constraint</div>
+        <div class="anchor-box">${clash.anchor}</div>
+        <div class="section-label">Recommended resolutions (ranked)</div>
+        <div class="res-list">`;
+      clash.resolutions.forEach((r,ri)=>{
+        html+=`<div class="res-item">
+          <div class="res-hdr">
+            <div class="res-num">${ri+1}</div>
+            <div class="res-name">${r.n}</div>
+            ${effortBadge(r.effort)}
+            ${r.vo?'<span class="vo">VO risk</span>':''}
+          </div>
+          <div class="res-detail">${r.detail}
+            <div class="checks">`;
+        r.checks.forEach(c=>{html+=`<div class="check-item"><span class="check-dot">✓</span>${c}</div>`;});
+        html+=`</div></div></div>`;
+      });
+      html+=`</div>`;
+      html+=`<div class="divider"></div>`;
+      html+=`<div class="section-label">Validate before acting</div>`;
+      html+=`<div class="validate-list">`;
+      clash.validate.forEach(v=>{html+=`<div class="val-item"><span class="val-icon">□</span>${v}</div>`;});
+      html+=`</div>`;
+      if(clash.escalation&&clash.escalation.length){
+        html+=`<div class="section-label">Escalate immediately if</div>`;
+        html+=`<div class="esc-list">`;
+        clash.escalation.forEach(e=>{html+=`<div class="esc-item"><span class="esc-icon">!</span>${e}</div>`;});
+        html+=`</div>`;
+      }
+      html+=`<div class="section-label">Downstream risk if unresolved</div>`;
+      html+=`<div class="risk-box">${clash.risk}</div>`;
+      html+=`</div>`;
+    }
+    html+=`</div>`;
+  });
+  main.innerHTML=html;
+}
+
+window.switchSection=function(id){
+  activeSection=id;
+  expandedClashes={};
+  renderSidebar();
+  renderMain();
+  document.getElementById('main').scrollTop=0;
+};
+window.toggleClash=function(id){
+  expandedClashes[id]=!expandedClashes[id];
+  renderMain();
+};
+
+renderSidebar();
+renderMain();
+</script>

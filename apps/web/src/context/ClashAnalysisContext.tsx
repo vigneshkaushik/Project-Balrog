@@ -6,12 +6,16 @@ import {
 	useMemo,
 	useState,
 } from 'react'
+import type {
+	ClashRecommendationItem,
+	ClashWatchOutItem,
+} from '../lib/clashAnalysisFormat'
 
 export interface ClashAnalysisResult {
 	/** `analysisRecommendations` — ordered list of resolution strategies. */
-	recommendations: string[]
+	recommendations: ClashRecommendationItem[]
 	/** `analysisWatchOut` — list of things to watch out for. */
-	watchOutFor: string[]
+	watchOutFor: ClashWatchOutItem[]
 	/** Optional free-form notes returned by the analysis agent. */
 	notes: string | null
 }
