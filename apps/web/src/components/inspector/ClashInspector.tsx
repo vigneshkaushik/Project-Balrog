@@ -873,18 +873,6 @@ export function ClashInspector() {
 											</ul>
 										)}
 									</div>
-									{analysisWatchOut.length > 0 ? (
-										<div>
-											<p className="text-sm font-semibold text-neutral-900">
-												Things to watch out for
-											</p>
-											<ul className="mt-1 list-disc space-y-1 pl-5 text-xs">
-												{analysisWatchOut.map((line) => (
-													<li key={line}>{line}</li>
-												))}
-											</ul>
-										</div>
-									) : null}
 									{analysisNotes ? (
 										<p className="whitespace-pre-wrap text-xs text-neutral-600">
 											{analysisNotes}
@@ -932,28 +920,42 @@ export function ClashInspector() {
 										</p>
 									) : null}
 									{analysisRecommendations.length > 0 ? (
-										<ol className="list-decimal space-y-2 pl-5">
-											{analysisRecommendations.map((rec, idx) => {
-												const built = selected
-													? buildRecommendationAttachment(selected, rec, idx)
-													: null;
-												return (
-													<li key={rec}>
-														<div className="flex items-start gap-1.5">
-															<span className="min-w-0 flex-1">{rec}</span>
-															{built ? (
-																<AddToChatButton
-																	variant="compact"
-																	added={hasAttachment(built.id)}
-																	onClick={() => addAttachment(built)}
-																	title="Attach this recommendation to your next chat message"
-																/>
-															) : null}
-														</div>
-													</li>
-												);
-											})}
-										</ol>
+										<>
+											<ol className="list-decimal space-y-2 pl-5">
+												{analysisRecommendations.map((rec, idx) => {
+													const built = selected
+														? buildRecommendationAttachment(selected, rec, idx)
+														: null;
+													return (
+														<li key={rec}>
+															<div className="flex items-start gap-1.5">
+																<span className="min-w-0 flex-1">{rec}</span>
+																{built ? (
+																	<AddToChatButton
+																		variant="compact"
+																		added={hasAttachment(built.id)}
+																		onClick={() => addAttachment(built)}
+																		title="Attach this recommendation to your next chat message"
+																	/>
+																) : null}
+															</div>
+														</li>
+													);
+												})}
+											</ol>
+											{analysisWatchOut.length > 0 ? (
+												<div>
+													<p className="text-sm font-semibold text-neutral-900">
+														Things to watch out for
+													</p>
+													<ul className="mt-1 list-disc space-y-1 pl-5 text-xs">
+														{analysisWatchOut.map((line) => (
+															<li key={line}>{line}</li>
+														))}
+													</ul>
+												</div>
+											) : null}
+										</>
 									) : analysisCompleted ? (
 										<p className="text-sm text-neutral-500">
 											No recommendations were returned. Check Context or try again.
