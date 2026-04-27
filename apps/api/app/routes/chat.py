@@ -86,6 +86,13 @@ class ChatRequest(BaseModel):
     )
 
 
+class ChatAttachmentSummary(BaseModel):
+    """Compact display metadata for chat history / UI chips (no large payloads)."""
+
+    kind: Literal["clash", "selected_object", "recommendation"]
+    label: str
+
+
 class ChatHistoryMessage(BaseModel):
     role: str
     text: str
@@ -96,6 +103,10 @@ class ChatHistoryMessage(BaseModel):
     thinking_buffer: str | None = Field(
         default=None,
         description="Reasoning/thinking blocks if the provider stored them on the message.",
+    )
+    attachments: list[ChatAttachmentSummary] | None = Field(
+        default=None,
+        description="User-turn context chips (kind + label) when present.",
     )
 
 
@@ -155,6 +166,11 @@ _USER_MESSAGE_TAG_RE = re.compile(
     re.DOTALL,
 )
 
+_ATTACHMENT_SUMMARIES_TAG_RE = re.compile(
+    r"<attachment_summaries_for_ui>\s*(.*?)\s*</attachment_summaries_for_ui>",
+    re.DOTALL,
+)
+
 
 def _user_display_text(raw: str) -> str:
     """Strip the `<attached_context>` preamble + `<user_message>` tags that the
@@ -169,6 +185,53 @@ def _user_display_text(raw: str) -> str:
         if inner:
             return inner
     return raw
+
+
+def _summaries_from_request_attachments(
+    attachments: list[Any] | None,
+) -> list[ChatAttachmentSummary]:
+    if not attachments:
+        return []
+    out: list[ChatAttachmentSummary] = []
+    for att in attachments:
+        if isinstance(att, ClashAttachment):
+            out.append(ChatAttachmentSummary(kind="clash", label=att.label))
+        elif isinstance(att, SelectedObjectAttachment):
+            out.append(ChatAttachmentSummary(kind="selected_object", label=att.label))
+        elif isinstance(att, RecommendationAttachment):
+            out.append(ChatAttachmentSummary(kind="recommendation", label=att.label))
+    return out
+
+
+def _extract_attachment_summaries_from_stored_user_text(
+    raw: str,
+) -> list[ChatAttachmentSummary] | None:
+    """Parse embedded UI summaries from a stored user message, if present."""
+    if not raw or "<attachment_summaries_for_ui>" not in raw:
+        return None
+    match = _ATTACHMENT_SUMMARIES_TAG_RE.search(raw)
+    if not match:
+        return None
+    try:
+        data = json.loads(match.group(1).strip())
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(data, list):
+        return None
+    out: list[ChatAttachmentSummary] = []
+    for item in data:
+        if not isinstance(item, dict):
+            continue
+        kind = item.get("kind")
+        label = item.get("label")
+        if kind not in ("clash", "selected_object", "recommendation"):
+            continue
+        if not isinstance(label, str) or not label.strip():
+            continue
+        out.append(
+            ChatAttachmentSummary.model_validate({"kind": kind, "label": label}),
+        )
+    return out if out else None
 
 
 def _json_safe(value: Any) -> Any:
@@ -287,8 +350,20 @@ def compose_user_message(
     preamble = build_attached_context_preamble(attachments)
     if not preamble:
         return message
+    summaries = _summaries_from_request_attachments(attachments)
+    summary_block = ""
+    if summaries:
+        summary_json = json.dumps(
+            [s.model_dump() for s in summaries],
+            ensure_ascii=False,
+        )
+        summary_block = (
+            f"<attachment_summaries_for_ui>\n{summary_json}\n"
+            f"</attachment_summaries_for_ui>\n\n"
+        )
     return (
         f"{preamble}"
+        f"{summary_block}"
         f"<user_message>\n{message}\n</user_message>"
     )
 
@@ -422,8 +497,15 @@ async def get_chat_messages(
             text = _agent_message_text(msg)
             if not text:
                 continue
+            attachment_summaries = _extract_attachment_summaries_from_stored_user_text(
+                text,
+            )
             out.append(
-                ChatHistoryMessage(role="user", text=_user_display_text(text)),
+                ChatHistoryMessage(
+                    role="user",
+                    text=_user_display_text(text),
+                    attachments=attachment_summaries,
+                ),
             )
             continue
 

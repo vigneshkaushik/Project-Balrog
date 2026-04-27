@@ -3,7 +3,21 @@ import {
 	useChatAttachments,
 } from "../../context/ChatAttachmentsContext";
 import { chatAttachmentKindLabel } from "../../lib/chatAttachmentLabels";
+import type { ChatAttachmentSummary } from "../../types";
 import { ChatAttachmentKindIcon } from "./ChatAttachmentIcons";
+
+/** Stable list key from kind + label (avoids index-as-key lint). */
+function stableSummaryKey(summary: ChatAttachmentSummary): string {
+	let h = 5381;
+	const s = `${summary.kind}\0${summary.label}`;
+	for (let i = 0; i < s.length; i += 1) {
+		h = ((h << 5) + h) ^ s.charCodeAt(i);
+	}
+	return `${summary.kind}-${(h >>> 0).toString(36)}`;
+}
+
+const CHIP_BASE =
+	"group inline-flex min-w-0 max-w-[260px] shrink-0 items-center gap-1 rounded-full border border-neutral-200 bg-white py-0.5 pl-2 text-xs text-neutral-700 shadow-sm";
 
 function ChipRemoveIcon() {
 	return (
@@ -24,7 +38,7 @@ function ChipRemoveIcon() {
 	);
 }
 
-function Chip({
+function DraftChip({
 	attachment,
 	onRemove,
 }: {
@@ -33,10 +47,7 @@ function Chip({
 }) {
 	const label = attachment.label || chatAttachmentKindLabel(attachment.kind);
 	return (
-		<span
-			className="group inline-flex min-w-0 max-w-[260px] shrink-0 items-center gap-1 rounded-full border border-neutral-200 bg-white py-0.5 pl-2 pr-1 text-xs text-neutral-700 shadow-sm"
-			title={label}
-		>
+		<span className={`${CHIP_BASE} pr-1`} title={label}>
 			<span className="shrink-0 text-neutral-500" aria-hidden>
 				<ChatAttachmentKindIcon kind={attachment.kind} />
 			</span>
@@ -49,6 +60,18 @@ function Chip({
 			>
 				<ChipRemoveIcon />
 			</button>
+		</span>
+	);
+}
+
+function ReadOnlyChip({ summary }: { summary: ChatAttachmentSummary }) {
+	const label = summary.label || chatAttachmentKindLabel(summary.kind);
+	return (
+		<span className={`${CHIP_BASE} pr-2`} title={label}>
+			<span className="shrink-0 text-neutral-500" aria-hidden>
+				<ChatAttachmentKindIcon kind={summary.kind} />
+			</span>
+			<span className="min-w-0 flex-1 truncate">{label}</span>
 		</span>
 	);
 }
@@ -67,7 +90,30 @@ export function ChatAttachmentChips() {
 		>
 			{attachments.map((a) => (
 				<li key={a.id} className="min-w-0">
-					<Chip attachment={a} onRemove={removeAttachment} />
+					<DraftChip attachment={a} onRemove={removeAttachment} />
+				</li>
+			))}
+		</ul>
+	);
+}
+
+/** Read-only chips for a sent or restored user message. */
+export function ChatMessageAttachmentChips({
+	attachments,
+	className = "",
+}: {
+	attachments: ChatAttachmentSummary[];
+	className?: string;
+}) {
+	if (attachments.length === 0) return null;
+	return (
+		<ul
+			className={`mb-1.5 flex flex-wrap items-center gap-1.5 ${className}`}
+			aria-label="Attached context"
+		>
+			{attachments.map((a) => (
+				<li key={stableSummaryKey(a)} className="min-w-0">
+					<ReadOnlyChip summary={a} />
 				</li>
 			))}
 		</ul>
