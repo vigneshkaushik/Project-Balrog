@@ -144,6 +144,17 @@ export type AgentActivityItem =
       isError: boolean
     }
 
+/** Compact chip metadata for user messages (`GET /chat/messages` + optimistic send). */
+export type ChatAttachmentSummaryKind =
+  | 'clash'
+  | 'selected_object'
+  | 'recommendation'
+
+export interface ChatAttachmentSummary {
+  kind: ChatAttachmentSummaryKind
+  label: string
+}
+
 export interface ChatMessage {
   id: string
   role: 'user' | 'assistant'
@@ -155,4 +166,6 @@ export interface ChatMessage {
   activity?: AgentActivityItem[]
   /** Extended-thinking deltas (SSE `thought_delta`) */
   thinkingBuffer?: string
+  /** Context items attached to this user turn (display only; full payloads stay on the API for the model). */
+  attachments?: ChatAttachmentSummary[]
 }

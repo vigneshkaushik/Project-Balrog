@@ -27,10 +27,13 @@ import {
 import { useChatAttachments } from "../../context/ChatAttachmentsContext";
 import { toChatAttachmentsWire } from "../../lib/chatAttachments";
 import { postChatStream } from "../../lib/postChatStream";
-import type { ChatMessage } from "../../types";
+import type { ChatAttachmentSummary, ChatMessage } from "../../types";
 import { AgentActivityLog } from "./AgentActivityLog";
 import { ChatAddContextMenu } from "./ChatAddContextMenu";
-import { ChatAttachmentChips } from "./ChatAttachmentChips";
+import {
+	ChatAttachmentChips,
+	ChatMessageAttachmentChips,
+} from "./ChatAttachmentChips";
 
 function UploadIcon() {
 	return (
@@ -268,12 +271,24 @@ export function ChatWindow({
 				const at = Date.now();
 				setMessages(
 					rows.map((m, i) => {
+						const attachmentSummaries: ChatAttachmentSummary[] | undefined =
+							m.role === "user" &&
+							m.attachments &&
+							m.attachments.length > 0
+								? m.attachments
+								: undefined;
 						const base = {
 							id: `hist-${batch}-${i}`,
 							role: m.role === "user" ? "user" : "assistant",
 							text: m.text,
 							at: at + i,
-						} satisfies Pick<ChatMessage, "id" | "role" | "text" | "at">;
+							...(attachmentSummaries
+								? { attachments: attachmentSummaries }
+								: {}),
+						} satisfies Pick<
+							ChatMessage,
+							"id" | "role" | "text" | "at" | "attachments"
+						>;
 						if (m.role !== "user" && m.activity?.length) {
 							return {
 								...base,
@@ -391,11 +406,17 @@ export function ChatWindow({
 		const text = draft.trim();
 		if (!text || sending) return;
 
+		const snapshot = attachments;
+		const attachmentSummaries: ChatAttachmentSummary[] | undefined =
+			snapshot.length > 0
+				? snapshot.map((a) => ({ kind: a.kind, label: a.label }))
+				: undefined;
 		const userMsg: ChatMessage = {
 			id: crypto.randomUUID(),
 			role: "user",
 			text,
 			at: Date.now(),
+			...(attachmentSummaries ? { attachments: attachmentSummaries } : {}),
 		};
 		const assistantId = crypto.randomUUID();
 		const assistantMsg: ChatMessage = {
@@ -408,7 +429,6 @@ export function ChatWindow({
 
 		setMessages((prev) => [...prev, userMsg, assistantMsg]);
 		setDraft("");
-		const snapshot = attachments;
 		const wireAttachments = toChatAttachmentsWire(snapshot);
 		clearAttachments();
 		setSending(true);
@@ -906,6 +926,11 @@ export function ChatWindow({
 											preAnswerStreaming={preAnswerStreaming}
 										/>
 									)}
+									{m.role === "user" &&
+									m.attachments &&
+									m.attachments.length > 0 ? (
+										<ChatMessageAttachmentChips attachments={m.attachments} />
+									) : null}
 									{m.role === "assistant" &&
 									m.streaming &&
 									!assistantVisible ? null : assistantVisible ? (

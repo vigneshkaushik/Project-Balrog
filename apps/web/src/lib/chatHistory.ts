@@ -1,4 +1,4 @@
-import type { AgentActivityItem } from "../types";
+import type { AgentActivityItem, ChatAttachmentSummary } from "../types";
 import { getApiBaseUrl } from "./apiBase";
 
 /** Single-chat session: survives full page refresh while the tab stays open. */
@@ -9,6 +9,7 @@ export interface ApiChatHistoryMessage {
 	text: string;
 	activity?: AgentActivityItem[] | null;
 	thinking_buffer?: string | null;
+	attachments?: ChatAttachmentSummary[] | null;
 }
 
 /**
