@@ -25,8 +25,11 @@ export interface ClashObject {
   itemType: string | null
   /** Navisworks layer from clash XML, when present */
   layer?: string | null
+  clashMetadata?: Record<string, unknown>
   rawAttributes?: Record<string, string | null>
   rawSmartTags?: Record<string, string | null>
+  /** Preserve additional source properties for downstream payload/debug use. */
+  [key: string]: unknown
 }
 
 export interface Clash {

@@ -46,6 +46,7 @@ Layer D — Severity Escalation Logic
 Layer E — Output Format Instruction
 
 After your analysis, your final answer MUST be a single, valid JSON code block. Do not include surrounding text. You MUST use the following exact schema. Fill it with clear, actionable steps that a BIM coordinator can easily understand, balancing necessary technical terminology with practical clarity.
+provide at least 3 recommendations, ordered by confidence level. Each recommendation must include a specific list of technical validations required for the proposed solution to be executable.
 
 {
   "engineering_scratchpad": {
@@ -62,13 +63,32 @@ After your analysis, your final answer MUST be a single, valid JSON code block. 
       "priority": "Option 1 (In-Situ / Preferred)",
       "technical_action": "[Exact physical action to take, e.g., 'Terminate GWB 25mm below metal deck soffit and install slotted deflection track']",
       "design_impact": "[How this affects performance, aesthetics, or flow]",
-      "effort_level": "[Low/Medium/High]"
+      "effort_level": "[Low/Medium/High]",
+      "validations": [
+        "[Validation 1]",
+        "[Validation 2]",
+        "[Validation 3]"
+      ]
     },
     {
       "priority": "Option 2 (Secondary)",
       "technical_action": "[Alternative specific action]",
       "design_impact": "[Impact]",
-      "effort_level": "[Low/Medium/High]"
+      "effort_level": "[Low/Medium/High]",
+      "validations": [
+        "[Validation 1]",
+        "[Validation 2]"
+      ]
+    },
+    {
+      "priority": "Option 3 (Tertiary)",
+      "technical_action": "[Alternative specific action]",
+      "design_impact": "[Impact]",
+      "effort_level": "[Low/Medium/High]",
+      "validations": [
+        "[Validation 1]",
+        "[Validation 2]"
+      ]
     }
   ],
   "watch_out_for": [

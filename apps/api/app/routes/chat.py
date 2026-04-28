@@ -22,6 +22,7 @@ from llama_index.core.tools.types import ToolOutput
 from app.config import AgentSettings
 from app.react_scratchpad import parse_react_scratchpad
 from app.utils.agent_tool_log import print_tool_call as log_agent_tool_call
+from app.utils.provider_errors import format_provider_error
 
 router = APIRouter()
 
@@ -469,7 +470,7 @@ async def _chat_sse_events(
         yield JSONServerSentEvent({}, event="done")
     except Exception as exc:  # noqa: BLE001 — surfaced to client as SSE error
         yield JSONServerSentEvent(
-            {"detail": str(exc)},
+            {"detail": format_provider_error(exc)},
             event="error",
         )
 

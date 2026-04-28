@@ -23,6 +23,33 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+function toRenderableObjectData(
+	value: unknown,
+	seen: WeakSet<object> = new WeakSet(),
+): unknown {
+	if (
+		value == null ||
+		typeof value === "string" ||
+		typeof value === "number" ||
+		typeof value === "boolean"
+	) {
+		return value;
+	}
+	if (Array.isArray(value)) {
+		return value.map((item) => toRenderableObjectData(item, seen));
+	}
+	if (!isRecord(value)) return String(value);
+	if (seen.has(value)) return "[Circular]";
+	seen.add(value);
+	const out: Record<string, unknown> = {};
+	for (const [k, v] of Object.entries(value)) {
+		if (HIDDEN_KEYS.has(k) || k.startsWith("__")) continue;
+		out[k] = toRenderableObjectData(v, seen);
+	}
+	seen.delete(value);
+	return out;
+}
+
 const HIDDEN_KEYS = new Set([
 	"__closure",
 	"__parents",
@@ -234,6 +261,35 @@ function nearbyPayloadForSpeckleId(
 		item_type: itemType,
 		summary,
 	};
+}
+
+export function fullSpeckleObjectPayloadForId(
+	viewer: Viewer,
+	speckleId: string,
+): Record<string, unknown> | null {
+	const tree = viewer.getWorldTree();
+	const nodes = tree.findId(speckleId) ?? [];
+	const node = nodes[0];
+	if (!node) return null;
+	const renderTree = tree.getRenderTree();
+	const renderViews = renderTree.getRenderViewsForNode(node);
+	let speckleType: string | null = null;
+	if (renderViews) {
+		for (const rv of renderViews) {
+			if (speckleType == null && typeof rv.speckleType === "string") {
+				speckleType = rv.speckleType;
+			}
+		}
+	}
+
+	const raw = node.model?.raw;
+	const base = isRecord(raw) ? toRenderableObjectData(raw) : {};
+	const out: Record<string, unknown> = isRecord(base) ? { ...base } : {};
+	out.id = speckleId;
+	if (speckleType) out.speckle_type = speckleType;
+	if (typeof out.name !== "string") out.name = null;
+	if (typeof out.type !== "string") out.type = null;
+	return out;
 }
 
 function mergeUserMetadataIntoNearby(

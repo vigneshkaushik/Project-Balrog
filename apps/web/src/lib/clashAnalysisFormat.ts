@@ -3,6 +3,7 @@ export interface ClashRecommendation {
 	technicalAction: string;
 	designImpact: string;
 	effortLevel: string;
+	validations: string[];
 }
 
 export interface ClashWatchOut {
@@ -73,6 +74,19 @@ function parseJsonObjectStrings(raw: string): Record<string, string> | null {
 	}
 }
 
+type ApiRecommendation = {
+	priority: string;
+	technical_action: string;
+	design_impact: string;
+	effort_level: string;
+	validations?: string[];
+};
+
+type ApiWatchOut = {
+	category: string;
+	specific_metric: string;
+};
+
 export function parseClashRecommendation(raw: string): ClashRecommendation | null {
 	const parsed =
 		parseJsonObjectStrings(raw) ??
@@ -90,6 +104,17 @@ export function parseClashRecommendation(raw: string): ClashRecommendation | nul
 		technicalAction: parsed.technical_action,
 		designImpact: parsed.design_impact,
 		effortLevel: parsed.effort_level,
+		validations: [],
+	};
+}
+
+function fromApiRecommendation(item: ApiRecommendation): ClashRecommendation {
+	return {
+		priority: item.priority,
+		technicalAction: item.technical_action,
+		designImpact: item.design_impact,
+		effortLevel: item.effort_level,
+		validations: Array.isArray(item.validations) ? item.validations : [],
 	};
 }
 
@@ -104,17 +129,37 @@ export function parseClashWatchOut(raw: string): ClashWatchOut | null {
 }
 
 export function normalizeClashRecommendations(
-	rawList: string[],
+	rawList: Array<string | ApiRecommendation>,
 ): ClashRecommendationItem[] {
-	return rawList.map((raw) => ({ raw, parsed: parseClashRecommendation(raw) }));
+	return rawList.map((item) => {
+		if (typeof item === "string") {
+			return { raw: item, parsed: parseClashRecommendation(item) };
+		}
+		return {
+			raw: JSON.stringify(item),
+			parsed: fromApiRecommendation(item),
+		};
+	});
 }
 
-export function normalizeClashWatchOut(rawList: string[]): ClashWatchOutItem[] {
-	return rawList.map((raw) => ({ raw, parsed: parseClashWatchOut(raw) }));
+export function normalizeClashWatchOut(
+	rawList: Array<string | ApiWatchOut>,
+): ClashWatchOutItem[] {
+	return rawList.map((item) => {
+		if (typeof item === "string") {
+			return { raw: item, parsed: parseClashWatchOut(item) };
+		}
+		return {
+			raw: JSON.stringify(item),
+			parsed: { category: item.category, specificMetric: item.specific_metric },
+		};
+	});
 }
 
 export function recommendationItemDisplayText(item: ClashRecommendationItem): string {
 	if (!item.parsed) return item.raw;
-	const { priority, technicalAction, designImpact, effortLevel } = item.parsed;
-	return `${priority}. Action: ${technicalAction} Design impact: ${designImpact} Effort: ${effortLevel}.`;
+	const { priority, technicalAction, designImpact, effortLevel, validations } = item.parsed;
+	const validationText =
+		validations.length > 0 ? ` Validations: ${validations.join("; ")}.` : "";
+	return `${priority}. Action: ${technicalAction} Design impact: ${designImpact} Effort: ${effortLevel}.${validationText}`;
 }

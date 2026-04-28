@@ -12,6 +12,7 @@ from app.agent import create_llm, create_react_agent
 from app.config import AgentSettings
 from app.routes.chat import ENABLED_AGENT_TOOL_IDS
 from app.utils.clash_analysis_prompt import merge_clash_analysis_system_prompt
+from app.utils.provider_errors import format_provider_error
 from app.user_agent_config import (
     MASKED_API_KEY_DISPLAY,
     PersistedUserAgentConfig,
@@ -148,7 +149,7 @@ def put_agent_config(
         settings = effective_agent_settings(base, persisted)
         llm = create_llm(settings)
     except Exception as exc:  # noqa: BLE001 — return safe message to client
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
+        raise HTTPException(status_code=422, detail=format_provider_error(exc)) from exc
 
     save_user_agent_config(path, persisted)
     request.app.state.user_agent_config = persisted

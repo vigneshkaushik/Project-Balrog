@@ -59,6 +59,12 @@ async def lifespan(app: FastAPI):
     app.state.clash_analysis_agent = clash_analysis_agent
     app.state.chat_store = store
     app.state.clash_session = ClashSessionStore()
+    if effective.verbose_logging:
+        print(
+            "[startup] Agent created successfully "
+            f"(provider={effective.llm_provider}, model={effective.llm_model_id}, "
+            f"tools={','.join(ENABLED_AGENT_TOOL_IDS)})"
+        )
 
     yield
 
