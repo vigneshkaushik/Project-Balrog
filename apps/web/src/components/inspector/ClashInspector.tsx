@@ -12,6 +12,7 @@ import {
 } from "../../lib/buildChatAttachments";
 import type { SpeckleLoadState } from "../../hooks/useSpeckleViewer";
 import { buildClashContextAnalysisPayload } from "../../lib/clashContextRegion";
+import { fullSpeckleObjectPayloadForId } from "../../lib/clashContextRegion";
 import {
 	normalizeClashRecommendations,
 	normalizeClashWatchOut,
@@ -408,16 +409,25 @@ export function ClashInspector() {
 					keys,
 				);
 				let user_metadata: string | undefined;
+				const speckleObjects: Array<Record<string, unknown>> = [];
 				for (const sid of matchedObjectIds) {
 					const note = objectMetadata[sid]?.trim();
 					if (note) {
 						user_metadata = note;
-						break;
+					}
+					const full = fullSpeckleObjectPayloadForId(speckleViewer, sid);
+					if (full) {
+						const perObjectNote = objectMetadata[sid]?.trim();
+						speckleObjects.push(
+							perObjectNote ? { ...full, user_metadata: perObjectNote } : full,
+						);
 					}
 				}
-				return user_metadata !== undefined
-					? { ...obj, user_metadata }
-					: { ...obj };
+				return {
+					...obj,
+					...(user_metadata !== undefined ? { user_metadata } : {}),
+					...(speckleObjects.length > 0 ? { speckle_objects: speckleObjects } : {}),
+				};
 			});
 			const requestBody: ClashAnalyzeContextRequestBody = {
 				clash: selected,
@@ -427,6 +437,9 @@ export function ClashInspector() {
 				meta: {
 					...built.meta,
 					unmatched_clash_keys: built.unmatched_clash_keys,
+					user_object_metadata: Object.fromEntries(
+						Object.entries(objectMetadata).filter(([, v]) => v.trim().length > 0),
+					),
 				},
 			};
 			const res = await postClashAnalyzeContext(requestBody);
@@ -601,7 +614,7 @@ export function ClashInspector() {
 
 				{uploadError ? (
 					<div className="pointer-events-none absolute left-4 right-4 top-28 z-30">
-						<div className="mx-auto max-w-xl rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-xs text-red-700 shadow-sm">
+						<div className="pointer-events-auto mx-auto max-w-xl select-text rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-xs text-red-700 shadow-sm">
 							Upload error: {uploadError}
 						</div>
 					</div>
@@ -883,11 +896,6 @@ export function ClashInspector() {
 											</ul>
 										)}
 									</div>
-									{analysisNotes ? (
-										<p className="whitespace-pre-wrap text-xs text-neutral-600">
-											{analysisNotes}
-										</p>
-									) : null}
 								</div>
 							) : (
 								<p className="text-sm text-neutral-500">
@@ -965,6 +973,18 @@ export function ClashInspector() {
 																				</span>{" "}
 																				{parsed.effortLevel}
 																			</p>
+																		{parsed.validations.length > 0 ? (
+																			<div className="text-xs text-neutral-700">
+																				<p className="font-medium text-neutral-900">
+																					Validations
+																				</p>
+																				<ul className="mt-0.5 list-disc space-y-0.5 pl-5">
+																					{parsed.validations.map((v) => (
+																						<li key={v}>{v}</li>
+																					))}
+																				</ul>
+																			</div>
+																		) : null}
 																		</div>
 																	) : (
 																		<span>{rec.raw}</span>
@@ -1020,6 +1040,16 @@ export function ClashInspector() {
 											strategies for this clash.
 										</p>
 									)}
+									{analysisNotes ? (
+										<div className="rounded-md border border-amber-200 bg-amber-50 p-2">
+											<p className="text-xs font-semibold text-amber-900">
+												Analysis notes
+											</p>
+											<p className="mt-1 whitespace-pre-wrap text-xs text-amber-800">
+												{analysisNotes}
+											</p>
+										</div>
+									) : null}
 								</div>
 							) : (
 								<p className="text-sm text-neutral-500">

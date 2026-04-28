@@ -113,6 +113,11 @@ class AgentSettings(BaseSettings):
         le=200,
         validation_alias="MAX_AGENT_ITERATIONS",
     )
+    verbose_logging: bool = Field(
+        default=False,
+        validation_alias="VERBOSE",
+        description="Enable verbose startup and endpoint payload logs.",
+    )
 
     cors_origins_csv: str = Field(
         default="http://localhost:5173",

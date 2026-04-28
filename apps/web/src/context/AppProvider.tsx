@@ -62,11 +62,13 @@ function mapBackendClash(raw: ParsedClashResult, testName?: string): Clash {
     distance: meta.distance,
     clashPoint: meta.clashPoint,
     objects: raw.objects.map((obj) => ({
+      ...obj,
       revitGlobalId: obj.revitGlobalId,
       elementId: obj.elementId,
       itemName: obj.clashMetadata.itemName,
       itemType: obj.clashMetadata.itemType,
       layer: obj.clashMetadata.layer ?? null,
+      clashMetadata: obj.clashMetadata,
       rawAttributes: obj.rawAttributes,
       rawSmartTags: obj.rawSmartTags,
     })),

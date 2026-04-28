@@ -19,9 +19,14 @@ from sse_starlette.sse import EventSourceResponse
 from app.clash_session import ClashSessionStore
 from app.utils.agent_tool_log import print_tool_call as log_agent_tool_call
 from app.utils.clash_analysis_parse import (
+    ClashRecommendation,
+    ClashSummary,
+    ClashWatchOut,
+    EngineeringScratchpad,
     normalize_analysis_result,
     parse_clash_analysis_json,
 )
+from app.utils.provider_errors import format_provider_error
 from app.utils.clash_inference import (
     DEFAULT_CLASH_SEVERITY_PREPROMPT,
     batch_clashes,
@@ -61,8 +66,10 @@ class ClashAnalyzeContextBody(BaseModel):
 
 
 class ClashAnalyzeContextResponse(BaseModel):
-    watch_out_for: list[str]
-    recommendations: list[str]
+    engineering_scratchpad: EngineeringScratchpad | None = None
+    clash_summary: ClashSummary | None = None
+    watch_out_for: list[ClashWatchOut] = Field(default_factory=list)
+    recommendations: list[ClashRecommendation] = Field(default_factory=list)
     notes: str | None = None
 
 
@@ -110,6 +117,12 @@ async def analyze_clash_context(
 ) -> ClashAnalyzeContextResponse:
     """Run the configured ReAct agent (with web search) on clash + Speckle context."""
     wire = json.dumps(body.model_dump(), ensure_ascii=False, default=str)
+    settings = request.app.state.effective_settings
+    if settings.verbose_logging:
+        print(
+            "[clash-analysis] Incoming analyze-context payload "
+            f"(chars={len(wire)}): {wire}"
+        )
     if len(wire) > MAX_ANALYZE_CONTEXT_BODY_CHARS:
         raise HTTPException(
             status_code=413,
@@ -133,7 +146,6 @@ async def analyze_clash_context(
     store = request.app.state.chat_store
     llm = request.app.state.llm
     agent = request.app.state.clash_analysis_agent
-    settings = request.app.state.effective_settings
     conv_id = str(uuid.uuid4())
     memory = store.get_or_create_memory(conv_id, llm=llm)
 
@@ -162,12 +174,14 @@ async def analyze_clash_context(
         raw_text = _agent_message_text(result.response)
 
     parsed = parse_clash_analysis_json(raw_text)
-    watch_out_for, recommendations, notes = normalize_analysis_result(
+    scratchpad, summary, watch_out_for, recommendations, notes = normalize_analysis_result(
         parsed,
         raw_text=raw_text,
     )
 
     return ClashAnalyzeContextResponse(
+        engineering_scratchpad=scratchpad,
+        clash_summary=summary,
         watch_out_for=watch_out_for,
         recommendations=recommendations,
         notes=notes,
@@ -259,7 +273,7 @@ async def upload_clash_report(
             except Exception as exc:  # noqa: BLE001
                 yield {
                     "event": "error",
-                    "data": json.dumps({"detail": str(exc)}),
+                    "data": json.dumps({"detail": format_provider_error(exc)}),
                 }
                 return
 

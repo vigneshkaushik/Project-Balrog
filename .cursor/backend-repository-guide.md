@@ -54,6 +54,7 @@ This document maps the **FastAPI** backend: entrypoint, configuration, AI agent 
 | Cloud base URLs | **`ANTHROPIC_BASE_URL`** and **`OPENAI_BASE_URL`** are optional custom endpoints for Anthropic-compatible / OpenAI-compatible servers. Blank becomes unset. When **`LLM_PROVIDER=ollama`** and **`OPENAI_BASE_URL`** is set, the backend uses the OpenAI-compatible client instead of the native Ollama client. **`OPENAI_CONTEXT_WINDOW`** supports arbitrary model ids on compatible servers. |
 | Ollama-only | **`OLLAMA_BASE_URL`**, **`OLLAMA_MODEL`**, **`OLLAMA_CONTEXT_WINDOW`** (`num_ctx`; avoids **`POST /api/show`**). Ignored when not using Ollama. |
 | Sampling / agent limits | **`TEMPERATURE`**, **`MAX_TOKENS`** (cloud completion cap), **`MAX_AGENT_ITERATIONS`**. |
+| Verbose logging | **`VERBOSE`** (`true/false`, `1/0`) — gates initialization/payload debug prints. |
 | Agent persona | **`SYSTEM_PROMPT`** (empty string falls back to built-in coordination assistant default). |
 | Tools | **`ENABLED_AGENT_TOOL_IDS`** in **`app/routes/chat.py`** (e.g. **`duckduckgo`**, **`playbooks`**): bundle/registry ids passed to **`create_react_agent`** → **`resolve_tools`**. |
 | CORS | **`CORS_ORIGINS`**: comma-separated list for browser clients (default includes Vite **`http://localhost:5173`**). |
@@ -151,7 +152,7 @@ Implementation walks **`handler.stream_events()`**, mapping **`AgentStream`**, *
 | Endpoint | Method | Description |
 | -------- | ------ | ----------- |
 | **`/clashes/upload`** | `POST` | Upload a Navisworks clash report XML (`multipart/form-data` field: **`file`**), parse all clashes, run LLM severity inference in batches, and stream results via SSE. Uses **`app.state.effective_settings`** for model/key/base-url. |
-| **`/clashes/analyze-context`** | `POST` | Run one-shot clash-context analysis from frontend JSON payload (`clash`, `clash_objects_original`, `context_region`, `nearby_speckle_objects`, `meta`) and return structured `{ watch_out_for, recommendations, notes }`. |
+| **`/clashes/analyze-context`** | `POST` | Run one-shot clash-context analysis from frontend JSON payload (`clash`, `clash_objects_original`, `context_region`, `nearby_speckle_objects`, `meta`) and return typed structured output (`engineering_scratchpad`, `clash_summary`, `watch_out_for[]`, `recommendations[]`, `notes`). |
 
 **Flow**
 
@@ -163,9 +164,10 @@ Implementation walks **`handler.stream_events()`**, mapping **`AgentStream`**, *
 **`POST /clashes/analyze-context` runtime notes**
 
 - Serializes and size-checks incoming context payload before model call (413 on oversized bodies).
+- In verbose mode (`VERBOSE=1`), logs incoming payload JSON and startup initialization messages.
 - Runs the dedicated **`clash_analysis_agent`** with a fresh short-lived conversation memory per request.
 - Uses `max_iterations=settings.max_agent_iterations` with `early_stopping_method="generate"` so max-iteration loops produce a final response instead of throwing runtime errors.
-- Parses model output through **`parse_clash_analysis_json`** and **`normalize_analysis_result`** to enforce resilient structured output.
+- Parses model output through **`parse_clash_analysis_json`** and **`normalize_analysis_result`**, then validates/coerces sections into Pydantic models (`EngineeringScratchpad`, `ClashSummary`, `ClashWatchOut`, `ClashRecommendation`).
 - Streams agent events during the run; each **`ToolCall`** prints **`[Balrog agent] POST /clashes/analyze-context tool_call …`** to stdout (name + args only), same helper as chat.
 
 ---
@@ -176,8 +178,17 @@ Implementation walks **`handler.stream_events()`**, mapping **`AgentStream`**, *
 | ---- | -------------- |
 | **`app/utils/clash_parser.py`** | XML parser + normalization helpers (`parse_clash_xml`, `parse_clash_result`, `parse_clash_object`), and `optimize_clash_for_agent` for LLM-friendly minified clash payloads. |
 | **`app/utils/clash_inference.py`** | Parallel severity inference pipeline using LlamaIndex OpenAI wrapper. Includes adaptive batching (`batch_clashes`), code-fence stripping, minification handoff, default severity preprompt, and ordered result reassembly after concurrent execution. |
-| **`app/utils/clash_analysis_prompt.py`** | Prompt suffix for run-analysis mode. Forces JSON-only final output (`watch_out_for`, `recommendations`), Layer C **playbook retrieval** (directory index → read Markdown), and use of clash + nearby Speckle context. |
-| **`app/utils/clash_analysis_parse.py`** | Extracts/parses fenced or inline JSON from model output and normalizes fallback notes when strict JSON is missing. |
+| **`app/utils/clash_analysis_prompt.py`** | Prompt suffix for run-analysis mode. Forces JSON-only final output (`engineering_scratchpad`, `clash_summary`, `recommendations` with `validations`, `watch_out_for`), Layer C **playbook retrieval** (directory index → read Markdown), and use of clash + nearby Speckle context. |
+| **`app/utils/clash_analysis_parse.py`** | Extracts/parses fenced or inline JSON from model output, supports loose JSON/Python-ish variants, and coerces sections into typed Pydantic models with notes fallback. |
+
+---
+
+## Dev script verbose mode
+
+`apps/api/dev.sh` now supports:
+
+- `./dev.sh` → `VERBOSE=0` (suppress verbose startup/payload logs)
+- `./dev.sh --verbose` (or `-v`) → `VERBOSE=1` (enable verbose initialization + endpoint payload logs)
 
 ---
 
