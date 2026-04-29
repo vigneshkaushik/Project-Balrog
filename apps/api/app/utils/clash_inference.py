@@ -139,11 +139,11 @@ def infer_single_batch(
     preprompt: str,
     settings: AgentSettings,
     minify: bool = True,
-    temperature: float = 0.0,
+    temperature: float = 1.0,
 ) -> list[dict[str, Any]]:
     """Run severity inference on a single batch of clashes (synchronous)."""
     optimized = [_clash_payload(c, minify=minify) for c in clashes]
-    llm_settings = settings.model_copy(update={"temperature": temperature})
+    llm_settings = settings.model_copy(update={"temperature": temperature}) if (settings.llm_provider != "anthropic" and "opus" not in settings.model_name) else settings.model_copy(update={"temperature": 1.0})
     llm = create_llm(
         llm_settings,
         http_request_timeout=CLASH_UPLOAD_LLM_HTTP_TIMEOUT_SEC,

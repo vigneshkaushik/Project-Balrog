@@ -256,7 +256,6 @@ async def upload_clash_report(
                     preprompt=DEFAULT_CLASH_SEVERITY_PREPROMPT,
                     settings=settings,
                     minify=True,
-                    temperature=0.0,
                 )
                 completed += len(batch)
                 await session_store.merge_inference_batch(results)
