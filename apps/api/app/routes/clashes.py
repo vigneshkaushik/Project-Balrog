@@ -19,9 +19,10 @@ from sse_starlette.sse import EventSourceResponse
 from app.clash_session import ClashSessionStore
 from app.utils.agent_tool_log import print_tool_call as log_agent_tool_call
 from app.utils.clash_analysis_parse import (
+    AnalysisMetadata,
     ClashRecommendation,
     ClashSummary,
-    ClashWatchOut,
+    CoordinationWatchListItem,
     EngineeringScratchpad,
     normalize_analysis_result,
     parse_clash_analysis_json,
@@ -66,9 +67,12 @@ class ClashAnalyzeContextBody(BaseModel):
 
 
 class ClashAnalyzeContextResponse(BaseModel):
+    analysis_metadata: AnalysisMetadata | None = None
     engineering_scratchpad: EngineeringScratchpad | None = None
     clash_summary: ClashSummary | None = None
-    watch_out_for: list[ClashWatchOut] = Field(default_factory=list)
+    coordination_watch_list: list[CoordinationWatchListItem] = Field(
+        default_factory=list
+    )
     recommendations: list[ClashRecommendation] = Field(default_factory=list)
     notes: str | None = None
 
@@ -174,15 +178,20 @@ async def analyze_clash_context(
         raw_text = _agent_message_text(result.response)
 
     parsed = parse_clash_analysis_json(raw_text)
-    scratchpad, summary, watch_out_for, recommendations, notes = normalize_analysis_result(
-        parsed,
-        raw_text=raw_text,
-    )
+    (
+        metadata,
+        scratchpad,
+        summary,
+        coordination_watch_list,
+        recommendations,
+        notes,
+    ) = normalize_analysis_result(parsed, raw_text=raw_text)
 
     return ClashAnalyzeContextResponse(
+        analysis_metadata=metadata,
         engineering_scratchpad=scratchpad,
         clash_summary=summary,
-        watch_out_for=watch_out_for,
+        coordination_watch_list=coordination_watch_list,
         recommendations=recommendations,
         notes=notes,
     )

@@ -9,9 +9,16 @@ from typing import Any
 from pydantic import BaseModel, Field, ValidationError
 
 
+class AnalysisMetadata(BaseModel):
+    playbook_source: str
+    severity: str
+    severity_justification: str
+
+
 class EngineeringScratchpad(BaseModel):
     identified_constraint: str
     dimensional_considerations: str
+    logic_path: str
 
 
 class ClashSummary(BaseModel):
@@ -22,15 +29,17 @@ class ClashSummary(BaseModel):
 
 class ClashRecommendation(BaseModel):
     priority: str
-    technical_action: str
+    lead_trade: str
+    supporting_trades: list[str] = Field(default_factory=list)
     design_impact: str
     effort_level: str
-    validations: list[str] = Field(default_factory=list)
+    actions: list[str] = Field(default_factory=list)
+    feasibility_validations: list[str] = Field(default_factory=list)
 
 
-class ClashWatchOut(BaseModel):
+class CoordinationWatchListItem(BaseModel):
     category: str
-    specific_metric: str
+    specific_task: str
 
 
 def _strip_outer_fence(text: str) -> str:
@@ -123,7 +132,11 @@ def parse_clash_analysis_json(raw: str) -> dict[str, Any] | None:
             continue
         if first_object is None:
             first_object = data
-        if "recommendations" in data or "watch_out_for" in data:
+        if (
+            "recommendations" in data
+            or "coordination_watch_list" in data
+            or "watch_out_for" in data
+        ):
             return data
     return first_object
 
@@ -207,6 +220,16 @@ def _coerce_recommendations(value: Any) -> list[ClashRecommendation]:
                 item = parsed
         if not isinstance(item, dict):
             continue
+        if "feasibility_validations" not in item and "validations" in item:
+            item = {**item, "feasibility_validations": item.get("validations")}
+        if "actions" not in item and "technical_action" in item:
+            action = item.get("technical_action")
+            item = {
+                **item,
+                "actions": [action] if isinstance(action, str) and action.strip() else [],
+            }
+        if "lead_trade" not in item:
+            item = {**item, "lead_trade": "Unspecified"}
         try:
             out.append(ClashRecommendation.model_validate(item))
         except ValidationError:
@@ -214,8 +237,8 @@ def _coerce_recommendations(value: Any) -> list[ClashRecommendation]:
     return out
 
 
-def _coerce_watch_out(value: Any) -> list[ClashWatchOut]:
-    out: list[ClashWatchOut] = []
+def _coerce_coordination_watch_list(value: Any) -> list[CoordinationWatchListItem]:
+    out: list[CoordinationWatchListItem] = []
     for item in _coerce_item_list(value):
         if isinstance(item, str):
             parsed = _parse_loose_value(item)
@@ -223,11 +246,22 @@ def _coerce_watch_out(value: Any) -> list[ClashWatchOut]:
                 item = parsed
         if not isinstance(item, dict):
             continue
+        if "specific_task" not in item and "specific_metric" in item:
+            item = {**item, "specific_task": item.get("specific_metric")}
         try:
-            out.append(ClashWatchOut.model_validate(item))
+            out.append(CoordinationWatchListItem.model_validate(item))
         except ValidationError:
             continue
     return out
+
+
+def _coerce_analysis_metadata(value: Any) -> AnalysisMetadata | None:
+    if not isinstance(value, dict):
+        return None
+    try:
+        return AnalysisMetadata.model_validate(value)
+    except ValidationError:
+        return None
 
 
 def normalize_analysis_result(
@@ -235,29 +269,40 @@ def normalize_analysis_result(
     *,
     raw_text: str,
 ) -> tuple[
+    AnalysisMetadata | None,
     EngineeringScratchpad | None,
     ClashSummary | None,
-    list[ClashWatchOut],
+    list[CoordinationWatchListItem],
     list[ClashRecommendation],
     str | None,
 ]:
     """Return structured analysis sections + fallback notes."""
     if data is None:
         t = raw_text.strip()
-        return None, None, [], [], (t if t else None)
+        return None, None, None, [], [], (t if t else None)
 
+    metadata = _coerce_analysis_metadata(data.get("analysis_metadata"))
     scratchpad = _coerce_scratchpad(data.get("engineering_scratchpad"))
     summary = _coerce_summary(data.get("clash_summary"))
-    out_wf = _coerce_watch_out(
-        data.get("watch_out_for") or data.get("watch_out") or data.get("watchouts"),
+    out_watch_list = _coerce_coordination_watch_list(
+        data.get("coordination_watch_list")
+        or data.get("watch_out_for")
+        or data.get("watch_out")
+        or data.get("watchouts"),
     )
     out_rec = _coerce_recommendations(
         data.get("recommendations") or data.get("recommendation"),
     )
 
     notes: str | None = None
-    if scratchpad is None and summary is None and not out_wf and not out_rec:
+    if (
+        metadata is None
+        and scratchpad is None
+        and summary is None
+        and not out_watch_list
+        and not out_rec
+    ):
         t = raw_text.strip()
         notes = t if t else None
 
-    return scratchpad, summary, out_wf, out_rec, notes
+    return metadata, scratchpad, summary, out_watch_list, out_rec, notes
