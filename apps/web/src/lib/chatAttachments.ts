@@ -1,10 +1,13 @@
-import type { Clash } from '../types'
 import type { ChatAttachment } from '../context/ChatAttachmentsContext'
+import type { Clash } from '../types'
 import type {
 	ContextRegionPayload,
 	NearbySpeckleObjectPayload,
 } from './clashContextRegion'
-import type { ClashObjectWithUserMetadata } from './postClashAnalysis'
+import type {
+	ClashContextRecommendation,
+	ClashObjectWithUserMetadata,
+} from './postClashAnalysis'
 
 /**
  * Keys on a Speckle `raw` object that are large or not useful for an LLM (they
@@ -64,9 +67,11 @@ export interface ChatAttachmentSelectedObjectWire {
 export interface ChatAttachmentRecommendationWire {
 	kind: 'recommendation'
 	label: string
-	text: string
 	clash_id: string
 	clash_label: string
+	recommendation_index: number
+	recommendation: ClashContextRecommendation | null
+	mode: 'attach' | 'modify'
 }
 
 export type ChatAttachmentWire =
@@ -74,9 +79,17 @@ export type ChatAttachmentWire =
 	| ChatAttachmentSelectedObjectWire
 	| ChatAttachmentRecommendationWire
 
+export interface ToChatAttachmentsWireOptions {
+	resolveRecommendation: (
+		clashId: string,
+		index: number,
+	) => ClashContextRecommendation | null
+}
+
 /** Convert an in-memory `ChatAttachment` into the wire shape sent to `POST /chat`. */
 export function toChatAttachmentWire(
 	attachment: ChatAttachment,
+	opts?: ToChatAttachmentsWireOptions,
 ): ChatAttachmentWire {
 	switch (attachment.kind) {
 		case 'clash':
@@ -112,20 +125,29 @@ export function toChatAttachmentWire(
 				object_data: trimObjectData(attachment.objectData),
 				user_metadata: attachment.userMetadata,
 			}
-		case 'recommendation':
+		case 'recommendation': {
+			const resolved =
+				opts?.resolveRecommendation(
+					attachment.clashId,
+					attachment.recommendationIndex,
+				) ?? null
 			return {
 				kind: 'recommendation',
 				label: attachment.label,
-				text: attachment.text,
 				clash_id: attachment.clashId,
 				clash_label: attachment.clashLabel,
+				recommendation_index: attachment.recommendationIndex,
+				recommendation: resolved,
+				mode: attachment.mode,
 			}
+		}
 	}
 }
 
 export function toChatAttachmentsWire(
 	attachments: readonly ChatAttachment[] | null | undefined,
+	opts?: ToChatAttachmentsWireOptions,
 ): ChatAttachmentWire[] | undefined {
 	if (!attachments || attachments.length === 0) return undefined
-	return attachments.map(toChatAttachmentWire)
+	return attachments.map((a) => toChatAttachmentWire(a, opts))
 }

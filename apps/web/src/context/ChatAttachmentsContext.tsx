@@ -13,6 +13,8 @@ import type {
 } from '../lib/clashContextRegion'
 import type { ClashObjectWithUserMetadata } from '../lib/postClashAnalysis'
 
+export type RecommendationAttachmentMode = 'attach' | 'modify'
+
 export interface ClashAttachmentContext {
 	context_region: ContextRegionPayload | null
 	nearby_speckle_objects: NearbySpeckleObjectPayload[]
@@ -42,9 +44,10 @@ export type ChatAttachment =
 			kind: 'recommendation'
 			id: string
 			label: string
-			text: string
 			clashId: string
 			clashLabel: string
+			recommendationIndex: number
+			mode: RecommendationAttachmentMode
 	  }
 
 export type ChatAttachmentKind = ChatAttachment['kind']
@@ -55,6 +58,11 @@ interface ChatAttachmentsContextValue {
 	addAttachment: (a: ChatAttachment) => void
 	removeAttachment: (id: string) => void
 	clearAttachments: () => void
+	/** Removes clash / selected_object / attach-mode recommendation chips only;
+	 * keeps sticky modify-mode recommendation chips. */
+	clearOneShotAttachments: () => void
+	/** Removes recommendation attachments targeting one clash (e.g. after re-run analysis). */
+	removeRecommendationAttachmentsForClash: (clashId: string) => void
 	hasAttachment: (id: string) => boolean
 }
 
@@ -89,6 +97,36 @@ export function ChatAttachmentsProvider({
 		setAttachments((prev) => (prev.length === 0 ? prev : []))
 	}, [])
 
+	const clearOneShotAttachments = useCallback(() => {
+		setAttachments((prev) => {
+			const next = prev.filter(
+				(a) =>
+					!(
+						a.kind === 'clash' ||
+						a.kind === 'selected_object' ||
+						(a.kind === 'recommendation' && a.mode === 'attach')
+					),
+			)
+			return next.length === prev.length ? prev : next
+		})
+	}, [])
+
+	const removeRecommendationAttachmentsForClash = useCallback(
+		(clashId: string) => {
+			const id = clashId.trim()
+			if (!id) return
+			setAttachments((prev) => {
+				const next = prev.filter(
+					(a) =>
+						a.kind !== 'recommendation' ||
+						a.clashId.trim() !== id,
+				)
+				return next.length === prev.length ? prev : next
+			})
+		},
+		[],
+	)
+
 	const hasAttachment = useCallback(
 		(id: string) => attachments.some((a) => a.id === id),
 		[attachments],
@@ -100,9 +138,19 @@ export function ChatAttachmentsProvider({
 			addAttachment,
 			removeAttachment,
 			clearAttachments,
+			clearOneShotAttachments,
+			removeRecommendationAttachmentsForClash,
 			hasAttachment,
 		}),
-		[attachments, addAttachment, removeAttachment, clearAttachments, hasAttachment],
+		[
+			attachments,
+			addAttachment,
+			removeAttachment,
+			clearAttachments,
+			clearOneShotAttachments,
+			removeRecommendationAttachmentsForClash,
+			hasAttachment,
+		],
 	)
 
 	return (
@@ -138,19 +186,12 @@ export function selectedObjectAttachmentId(
 	return `selected_object:${id && id.length > 0 ? id : fallback}`
 }
 
-/** Stable id for a recommendation scoped to its clash. Text is hashed for brevity. */
+/** Stable id for a recommendation scoped to clash + index + mode. */
 // eslint-disable-next-line react-refresh/only-export-components -- pure helpers
 export function recommendationAttachmentId(
 	clashId: string,
-	text: string,
+	recommendationIndex: number,
+	mode: RecommendationAttachmentMode,
 ): string {
-	return `recommendation:${clashId}:${djb2Hash(text)}`
-}
-
-function djb2Hash(input: string): string {
-	let h = 5381
-	for (let i = 0; i < input.length; i += 1) {
-		h = ((h << 5) + h) ^ input.charCodeAt(i)
-	}
-	return (h >>> 0).toString(36)
+	return `recommendation:${clashId}:${recommendationIndex}:${mode}`
 }

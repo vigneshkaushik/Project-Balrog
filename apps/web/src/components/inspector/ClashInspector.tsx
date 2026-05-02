@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useChatAttachments } from "../../context/ChatAttachmentsContext";
 import { useClashAnalysis } from "../../context/ClashAnalysisContext";
+import { useFloatingChat } from "../../context/FloatingChatContext";
 import { useToast } from "../../context/ToastContext";
 import { useApp } from "../../context/useApp";
 import { AddToChatButton } from "../layout/AddToChatButton";
@@ -15,8 +16,8 @@ import { buildClashContextAnalysisPayload } from "../../lib/clashContextRegion";
 import { fullSpeckleObjectPayloadForId } from "../../lib/clashContextRegion";
 import {
 	normalizeClashRecommendations,
-	normalizeClashWatchOut,
-	recommendationItemDisplayText,
+	normalizeCoordinationWatchList,
+	type ClashRecommendationItem,
 } from "../../lib/clashAnalysisFormat";
 import type {
 	ContextRegionPayload,
@@ -29,6 +30,7 @@ import {
 } from "../../lib/zoomToSmallestClashObject";
 import {
 	postClashAnalyzeContext,
+	type ClashAnalysisMetadata,
 	type ClashAnalyzeContextRequestBody,
 	type ClashObjectWithUserMetadata,
 } from "../../lib/postClashAnalysis";
@@ -112,6 +114,7 @@ const INSPECTOR_GATE_TOAST_DEDUPE_MS = 400;
 
 const SEVERITY_COLORS: Record<string, string> = {
 	CRITICAL: "bg-red-100 text-red-700",
+	HIGH: "bg-orange-100 text-orange-800",
 	MEDIUM: "bg-amber-100 text-amber-700",
 	LOW: "bg-emerald-100 text-emerald-700",
 };
@@ -126,6 +129,44 @@ function matchKeysForClashObject(obj: {
 	const g = obj.revitGlobalId?.trim();
 	if (g) keys.push(g);
 	return keys;
+}
+
+function recommendationSeverityLabel(metadata: ClashAnalysisMetadata | null) {
+	const raw = metadata?.severity.trim();
+	if (!raw) return null;
+	const lower = raw.toLowerCase();
+	return `${lower.charAt(0).toUpperCase()}${lower.slice(1)} Severity`;
+}
+
+function recommendationSummaryText(
+	item: ClashRecommendationItem | null,
+	metadata: ClashAnalysisMetadata | null,
+) {
+	if (metadata?.severity_justification.trim()) {
+		return metadata.severity_justification.trim();
+	}
+	return item?.parsed?.design_impact.trim() || null;
+}
+
+/** Bulleted section: maps to API `actions` or `feasibility_validations`. */
+function RecommendationListSection({
+	title,
+	items,
+}: {
+	title: string;
+	items: string[];
+}) {
+	if (items.length === 0) return null;
+	return (
+		<div className="py-3">
+			<p className="mb-1 text-xs font-semibold text-neutral-800">{title}</p>
+			<ul className="list-disc space-y-0.5 pl-5 text-xs leading-snug text-neutral-500">
+				{items.map((item) => (
+					<li key={item}>{item}</li>
+				))}
+			</ul>
+		</div>
+	);
 }
 
 export function ClashInspector() {
@@ -149,11 +190,18 @@ export function ClashInspector() {
 		setSpeckleViewer: publishSpeckleViewer,
 	} = useApp();
 	const {
+		getAnalysisForClash,
 		setAnalysisForClash,
 		clearAnalysisForClash,
 		clearAllAnalysis,
 	} = useClashAnalysis();
-	const { addAttachment, hasAttachment } = useChatAttachments();
+	const {
+		addAttachment,
+		hasAttachment,
+		clearAttachments,
+		removeRecommendationAttachmentsForClash,
+	} = useChatAttachments();
+	const { setChatOpen, requestComposerFocus } = useFloatingChat();
 
 	const hasSpeckleUrl = speckleUrls.some((u) => u.trim().length > 0);
 	const hasClashReport = Boolean(navisworksFileName);
@@ -197,13 +245,7 @@ export function ClashInspector() {
 		percent: 0,
 	});
 	const [analysisLoading, setAnalysisLoading] = useState(false);
-	const [analysisWatchOut, setAnalysisWatchOut] = useState<
-		ReturnType<typeof normalizeClashWatchOut>
-	>([]);
-	const [analysisRecommendations, setAnalysisRecommendations] = useState<
-		ReturnType<typeof normalizeClashRecommendations>
-	>([]);
-	const [analysisNotes, setAnalysisNotes] = useState<string | null>(null);
+	const [activeRecommendationIndex, setActiveRecommendationIndex] = useState(0);
 	const [analysisError, setAnalysisError] = useState<string | null>(null);
 	const [analysisCompleted, setAnalysisCompleted] = useState(false);
 	const [openPanels, setOpenPanels] = useState<Set<InspectorPanelId>>(
@@ -259,15 +301,24 @@ export function ClashInspector() {
 		Record<string, ContextRegionPayload | null>
 	>({});
 
+	const storedAnalysis = getAnalysisForClash(selectedClashId);
+	const analysisRecommendations = storedAnalysis.recommendations;
+	const analysisMetadata = storedAnalysis.analysis_metadata;
+	const analysisNotes = storedAnalysis.notes;
+
 	useEffect(() => {
-		// Clear prior Run Analysis output when the user picks another clash.
 		void selectedClashId;
-		setAnalysisWatchOut([]);
-		setAnalysisRecommendations([]);
-		setAnalysisNotes(null);
+		setActiveRecommendationIndex(0);
 		setAnalysisError(null);
 		setAnalysisCompleted(false);
 	}, [selectedClashId]);
+
+	useEffect(() => {
+		setActiveRecommendationIndex((prev) => {
+			if (analysisRecommendations.length === 0) return 0;
+			return Math.min(prev, analysisRecommendations.length - 1);
+		});
+	}, [analysisRecommendations.length]);
 
 	useEffect(() => {
 		if (!selectedClashId) return;
@@ -276,6 +327,25 @@ export function ClashInspector() {
 	}, [filteredClashes, selectedClashId, setSelectedClashId]);
 
 	const selected = filteredClashes.find((c) => c.id === selectedClashId);
+	const activeRecommendation =
+		analysisRecommendations[activeRecommendationIndex] ?? null;
+	const activeRecommendationAttachment =
+		selected && activeRecommendation
+			? buildRecommendationAttachment(
+					selected,
+					activeRecommendationIndex,
+					"modify",
+				)
+			: null;
+	const isActiveRecommendationAttached = activeRecommendationAttachment
+		? hasAttachment(activeRecommendationAttachment.id)
+		: false;
+	const activeRecommendationSeverity =
+		recommendationSeverityLabel(analysisMetadata);
+	const activeRecommendationSummary = recommendationSummaryText(
+		activeRecommendation,
+		analysisMetadata,
+	);
 	const selectedClashObjectMatchKeys = useMemo(() => {
 		const keys = new Set<string>();
 		for (const obj of selected?.objects ?? []) {
@@ -390,9 +460,8 @@ export function ClashInspector() {
 		setAnalysisLoading(true);
 		setAnalysisCompleted(false);
 		setAnalysisError(null);
-		setAnalysisWatchOut([]);
-		setAnalysisRecommendations([]);
-		setAnalysisNotes(null);
+		setActiveRecommendationIndex(0);
+		removeRecommendationAttachmentsForClash(selected.id);
 		clearAnalysisForClash(selected.id);
 
 		try {
@@ -443,17 +512,19 @@ export function ClashInspector() {
 				},
 			};
 			const res = await postClashAnalyzeContext(requestBody);
-			const normalizedWatchOut = normalizeClashWatchOut(res.watch_out_for);
+			const normalizedWatchList = normalizeCoordinationWatchList(
+				res.coordination_watch_list,
+			);
 			const normalizedRecommendations = normalizeClashRecommendations(
 				res.recommendations,
 			);
-			setAnalysisWatchOut(normalizedWatchOut);
-			setAnalysisRecommendations(normalizedRecommendations);
-			setAnalysisNotes(res.notes);
 			setAnalysisCompleted(true);
 			setAnalysisForClash(selected.id, {
+				analysis_metadata: res.analysis_metadata,
+				engineering_scratchpad: res.engineering_scratchpad,
+				clash_summary: res.clash_summary,
 				recommendations: normalizedRecommendations,
-				watchOutFor: normalizedWatchOut,
+				coordination_watch_list: normalizedWatchList,
 				notes: res.notes,
 			});
 		} catch (err) {
@@ -472,6 +543,7 @@ export function ClashInspector() {
 		showToast,
 		setAnalysisForClash,
 		clearAnalysisForClash,
+		removeRecommendationAttachmentsForClash,
 	]);
 
 	const currentClashAttachmentId = useMemo(
@@ -649,6 +721,7 @@ export function ClashInspector() {
 							onClick={() => {
 								clearSession();
 								clearAllAnalysis();
+								clearAttachments();
 								navigate("/");
 							}}
 							className="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white/95 px-2.5 py-1.5 text-xs font-medium text-neutral-700 shadow-sm backdrop-blur-md transition hover:border-neutral-300 hover:bg-white hover:text-neutral-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/50"
@@ -788,12 +861,21 @@ export function ClashInspector() {
 										)}
 									</p>
 									{selected.disciplines && selected.disciplines.length > 0 ? (
-										<p>
+										<div className="flex flex-wrap items-baseline gap-x-2 gap-y-1.5">
 											<span className="font-medium text-neutral-900">
 												Disciplines:
-											</span>{" "}
-											{selected.disciplines.join(", ")}
-										</p>
+											</span>
+											<span className="flex flex-wrap gap-1.5">
+												{selected.disciplines.map((d) => (
+													<span
+														key={d}
+														className="inline-flex rounded-full bg-neutral-200/90 px-2 py-0.5 text-xs font-medium text-neutral-700"
+													>
+														{d}
+													</span>
+												))}
+											</span>
+										</div>
 									) : null}
 									{selected.lead && selected.lead.length > 0 ? (
 										<p>
@@ -923,140 +1005,168 @@ export function ClashInspector() {
 						/>
 					}
 				>
-					<div className="h-full min-h-0">
-						<AnalysisPanel
-							title="Recommendations"
-							onRunAnalysis={handleRunAnalysis}
-							runAnalysisPending={analysisLoading}
-							runAnalysisDisabled={!selected || !speckleViewer}
-						>
-							{selected ? (
-								<div className="space-y-3 text-sm text-neutral-700">
+					{/*
+						Layout mirrors API-backed fields:
+						- severity / description ← analysis_metadata.severity + severity_justification (else design_impact)
+						- currentStep badges ← recommendation index among recommendations[]
+						- lead / supporting ← lead_trade + supporting_trades[]
+						- actions ← actions[]
+						- validations ← feasibility_validations[]
+					*/}
+					<div className="flex h-full min-h-0 flex-col text-xs text-neutral-700">
+						{selected ? (
+							<>
+								<div className="min-h-0 flex-1 divide-y divide-neutral-200 overflow-y-auto">
 									{analysisLoading ? (
-										<p className="text-xs italic text-neutral-500">
+										<p className="py-3 italic text-neutral-500">
 											Running analysis…
 										</p>
 									) : null}
-									{analysisRecommendations.length > 0 ? (
+									{activeRecommendation ? (
 										<>
-											<ol className="list-decimal space-y-2 pl-5">
-												{analysisRecommendations.map((rec, idx) => {
-													const recText = recommendationItemDisplayText(rec);
-													const built = selected
-														? buildRecommendationAttachment(selected, recText, idx)
-														: null;
-													const parsed = rec.parsed;
-													return (
-														<li key={rec.raw}>
-															<div className="flex items-start gap-1.5">
-																<div className="min-w-0 flex-1">
-																	{parsed ? (
-																		<div className="space-y-1 rounded-md border border-neutral-200 bg-neutral-50 p-2">
-																			<p className="text-xs font-semibold text-neutral-900">
-																				{parsed.priority}
-																			</p>
-																			<p className="text-xs text-neutral-700">
-																				<span className="font-medium text-neutral-900">
-																					Action:
-																				</span>{" "}
-																				{parsed.technicalAction}
-																			</p>
-																			<p className="text-xs text-neutral-700">
-																				<span className="font-medium text-neutral-900">
-																					Design impact:
-																				</span>{" "}
-																				{parsed.designImpact}
-																			</p>
-																			<p className="text-xs text-neutral-700">
-																				<span className="font-medium text-neutral-900">
-																					Effort:
-																				</span>{" "}
-																				{parsed.effortLevel}
-																			</p>
-																		{parsed.validations.length > 0 ? (
-																			<div className="text-xs text-neutral-700">
-																				<p className="font-medium text-neutral-900">
-																					Validations
-																				</p>
-																				<ul className="mt-0.5 list-disc space-y-0.5 pl-5">
-																					{parsed.validations.map((v) => (
-																						<li key={v}>{v}</li>
-																					))}
-																				</ul>
-																			</div>
-																		) : null}
-																		</div>
-																	) : (
-																		<span>{rec.raw}</span>
-																	)}
-																</div>
-																{built ? (
-																	<AddToChatButton
-																		variant="compact"
-																		added={hasAttachment(built.id)}
-																		onClick={() => addAttachment(built)}
-																		title="Attach this recommendation to your next chat message"
-																	/>
-																) : null}
-															</div>
-														</li>
-													);
-												})}
-											</ol>
-											{analysisWatchOut.length > 0 ? (
-												<div>
-													<p className="text-sm font-semibold text-neutral-900">
-														Things to watch out for
+											{/* analysis_metadata severity + rationale (description) */}
+											<div className="space-y-2 py-3">
+												{activeRecommendationSeverity ? (
+													<p className="text-sm font-semibold text-red-600">
+														{activeRecommendationSeverity}
 													</p>
-													<ul className="mt-1 list-disc space-y-1 pl-5 text-xs">
-														{analysisWatchOut.map((line) => {
-															const parsed = line.parsed;
-															return (
-																<li key={line.raw}>
-																	{parsed ? (
-																		<>
-																			<span className="font-semibold text-neutral-800">
-																				[{parsed.category}]
-																			</span>{" "}
-																			{parsed.specificMetric}
-																		</>
-																	) : (
-																		line.raw
-																	)}
-																</li>
-															);
-														})}
-													</ul>
+												) : null}
+												{activeRecommendationSummary ? (
+													<p className="leading-snug text-neutral-600">
+														{activeRecommendationSummary}
+													</p>
+												) : null}
+											</div>
+
+											{/* currentStep: one badge per recommendation option */}
+											<div className="space-y-3 py-3">
+												<div className="flex flex-wrap gap-2">
+													{analysisRecommendations.map((rec, idx) => {
+														const isActive = idx === activeRecommendationIndex;
+														return (
+															<button
+																type="button"
+																key={`${selected.id}:${rec.raw}`}
+																onClick={() =>
+																	setActiveRecommendationIndex(idx)
+																}
+																className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-xs font-semibold transition ${
+																	isActive
+																		? "bg-blue-500 text-white shadow-sm hover:bg-blue-600"
+																		: "bg-neutral-600 text-white hover:bg-neutral-500"
+																}`}
+																aria-pressed={isActive}
+																aria-label={`Show recommendation ${idx + 1}`}
+															>
+																{idx + 1}
+															</button>
+														);
+													})}
 												</div>
+
+												{activeRecommendation.parsed ? (
+													<dl className="grid grid-cols-[5.25rem_minmax(0,1fr)] gap-x-2 gap-y-2 text-xs">
+														<dt className="font-semibold text-neutral-800">
+															Lead
+														</dt>
+														<dd className="text-neutral-500">
+															{activeRecommendation.parsed.lead_trade}
+														</dd>
+														<dt className="font-semibold text-neutral-800">
+															Supporting
+														</dt>
+														<dd className="text-neutral-500">
+															{activeRecommendation.parsed.supporting_trades
+																.length > 0
+																? activeRecommendation.parsed.supporting_trades.join(
+																		", ",
+																	)
+																: "—"}
+														</dd>
+													</dl>
+												) : (
+													<p className="whitespace-pre-wrap leading-snug text-neutral-600">
+														{activeRecommendation.raw}
+													</p>
+												)}
+											</div>
+
+											{activeRecommendation.parsed ? (
+												<>
+													<RecommendationListSection
+														title="Actions"
+														items={activeRecommendation.parsed.actions}
+													/>
+													<RecommendationListSection
+														title="Validations"
+														items={
+															activeRecommendation.parsed
+																.feasibility_validations
+														}
+													/>
+												</>
+											) : null}
+
+											{analysisNotes ? (
+												<p className="py-3 text-[11px] leading-snug text-amber-800">
+													<span className="font-semibold">Notes:</span>{" "}
+													{analysisNotes}
+												</p>
 											) : null}
 										</>
 									) : analysisCompleted ? (
-										<p className="text-sm text-neutral-500">
+										<p className="py-3 text-neutral-500">
 											No recommendations were returned. Check Context or try again.
 										</p>
 									) : (
-										<p className="text-sm text-neutral-500">
-											Run analysis to generate three ranked resolution
-											strategies for this clash.
+										<p className="py-3 text-neutral-500">
+											Run analysis to generate ranked resolution strategies for
+											this clash.
 										</p>
 									)}
-									{analysisNotes ? (
-										<div className="rounded-md border border-amber-200 bg-amber-50 p-2">
-											<p className="text-xs font-semibold text-amber-900">
-												Analysis notes
-											</p>
-											<p className="mt-1 whitespace-pre-wrap text-xs text-amber-800">
-												{analysisNotes}
-											</p>
-										</div>
-									) : null}
 								</div>
-							) : (
-								<p className="text-sm text-neutral-500">
-									Select a clash to see recommendations.
-								</p>
-							)}
-						</AnalysisPanel>
+
+								<div className="mt-3 grid shrink-0 grid-cols-[minmax(0,7rem)_minmax(0,1fr)] gap-2 border-t border-neutral-200 pt-3">
+									<button
+										type="button"
+										disabled={
+											!activeRecommendationAttachment ||
+											isActiveRecommendationAttached
+										}
+										onClick={() => {
+											if (!activeRecommendationAttachment) return;
+											addAttachment(activeRecommendationAttachment);
+											setChatOpen(true);
+											requestComposerFocus();
+										}}
+										className="cursor-pointer rounded-lg bg-neutral-600 px-2 py-2 text-xs font-semibold text-white transition hover:bg-neutral-500 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-neutral-600"
+										title={
+											isActiveRecommendationAttached
+												? "Recommendation already in chat composer"
+												: "Send this recommendation to chat for revision"
+										}
+									>
+										Modify
+									</button>
+									<button
+										type="button"
+										onClick={handleRunAnalysis}
+										disabled={!speckleViewer || analysisLoading}
+										className="cursor-pointer rounded-lg bg-neutral-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-neutral-500 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-neutral-600"
+									>
+										{analysisLoading
+											? "Running…"
+											: analysisCompleted
+												? "Re-Run Analysis"
+												: "Run Analysis"}
+									</button>
+								</div>
+							</>
+						) : (
+							<p className="py-2 text-neutral-500">
+								Select a clash to see recommendations.
+							</p>
+						)}
 					</div>
 				</FloatingCard>
 				) : null}

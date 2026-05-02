@@ -26,7 +26,7 @@ from app.utils.provider_errors import format_provider_error
 
 router = APIRouter()
 
-ENABLED_AGENT_TOOL_IDS: list[str] = ["duckduckgo", "playbooks"]
+ENABLED_AGENT_TOOL_IDS: list[str] = ["duckduckgo", "playbooks", "update_clash_recommendation"]
 
 
 class ClashContextAttachmentBody(BaseModel):
@@ -60,9 +60,11 @@ class SelectedObjectAttachment(BaseModel):
 class RecommendationAttachment(BaseModel):
     kind: Literal["recommendation"] = "recommendation"
     label: str
-    text: str
     clash_id: str
     clash_label: str
+    recommendation_index: int = 0
+    recommendation: dict[str, Any] | None = None
+    mode: Literal["attach", "modify"] = "attach"
 
 
 ChatAttachment = Annotated[
@@ -280,6 +282,58 @@ def _clash_attachment_summary_line(attachment: ClashAttachment) -> str:
     return ", ".join(parts) if parts else "(no summary)"
 
 
+_RECOMMENDATION_SCHEMA_REMINDER = """\
+Each recommendation object must include:
+- priority (string)
+- lead_trade (string)
+- supporting_trades (array of strings)
+- design_impact (string)
+- effort_level (string)
+- actions (array of strings, each a single actionable step)
+- feasibility_validations (array of strings)
+"""
+
+
+def _format_recommendation_attachment(attachment: RecommendationAttachment) -> str:
+    idx = attachment.recommendation_index
+    rec_json = _dump_attachment_json(attachment.recommendation)
+
+    if attachment.mode == "modify":
+        return (
+            "[Modify recommendation — active target]\n"
+            f"clash_id={attachment.clash_id}\n"
+            f"clash_label={attachment.clash_label}\n"
+            f"recommendation_index={idx}\n\n"
+            "Current recommendation (JSON):\n"
+            f"```json\n{rec_json}\n```\n\n"
+            f"{_RECOMMENDATION_SCHEMA_REMINDER}\n"
+            "Instructions:\n"
+            "- This recommendation is the active MODIFY target until the user removes it from "
+            "the chat composer.\n"
+            "- If the user asks a clarifying question or wants an explanation only, answer "
+            "normally without calling tools.\n"
+            "- When the user requests a change or an updated recommendation, you MUST call the "
+            "`update_clash_recommendation` tool with: clash_id (string, same as above), "
+            "recommendation_index (integer, same as above), and recommendation (object matching "
+            "the schema).\n"
+            "- After the tool call succeeds, briefly summarise what you changed and why.\n"
+        )
+
+    payload = _dump_attachment_json(
+        {
+            "clash_id": attachment.clash_id,
+            "clash_label": attachment.clash_label,
+            "recommendation_index": idx,
+            "recommendation": attachment.recommendation,
+            "mode": attachment.mode,
+        },
+    )
+    return (
+        f"[Recommendation] {attachment.label}\n"
+        f"```json\n{payload}\n```"
+    )
+
+
 def _format_attachment(attachment: Any) -> str:
     """Render one attachment as a labeled block + fenced JSON body."""
     if isinstance(attachment, ClashAttachment):
@@ -315,11 +369,7 @@ def _format_attachment(attachment: Any) -> str:
             f"```json\n{body}\n```"
         )
     if isinstance(attachment, RecommendationAttachment):
-        return (
-            f"[Recommendation for '{attachment.clash_label}' "
-            f"(clash_id={attachment.clash_id})]\n"
-            f"  {attachment.text}"
-        )
+        return _format_recommendation_attachment(attachment)
     return ""
 
 
