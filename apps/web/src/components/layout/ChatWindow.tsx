@@ -3,6 +3,7 @@ import {
 	useEffect,
 	useId,
 	useLayoutEffect,
+	useMemo,
 	useRef,
 	useState,
 	type RefObject,
@@ -25,6 +26,12 @@ import {
 	readStoredConversationId,
 } from "../../lib/chatHistory";
 import { useChatAttachments } from "../../context/ChatAttachmentsContext";
+import { useClashAnalysis } from "../../context/ClashAnalysisContext";
+import { useFloatingChat } from "../../context/FloatingChatContext";
+import {
+	applyAgentRecommendationUpdate,
+	isUpdateClashRecommendationToolName,
+} from "../../lib/applyAgentRecommendationUpdate";
 import { toChatAttachmentsWire } from "../../lib/chatAttachments";
 import { postChatStream } from "../../lib/postChatStream";
 import type { ChatAttachmentSummary, ChatMessage } from "../../types";
@@ -246,7 +253,13 @@ export function ChatWindow({
 	);
 	const [sending, setSending] = useState(false);
 	const abortRef = useRef<AbortController | null>(null);
-	const { attachments, clearAttachments } = useChatAttachments();
+	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+	const {
+		attachments,
+		clearOneShotAttachments,
+	} = useChatAttachments();
+	const { getAnalysisForClash, setAnalysisForClash } = useClashAnalysis();
+	const { composerFocusEpoch } = useFloatingChat();
 	const [settingsPlacement, setSettingsPlacement] = useState<{
 		top: number;
 		left: number;
@@ -254,6 +267,21 @@ export function ChatWindow({
 		maxHeight: number;
 	} | null>(null);
 	const settingsPlacementRaf = useRef<number>(0);
+
+	const hasStickyModifyChip = useMemo(
+		() =>
+			attachments.some(
+				(a) => a.kind === "recommendation" && a.mode === "modify",
+			),
+		[attachments],
+	);
+
+	useEffect(() => {
+		if (composerFocusEpoch === 0) return;
+		requestAnimationFrame(() => {
+			textareaRef.current?.focus();
+		});
+	}, [composerFocusEpoch]);
 
 	useEffect(() => {
 		return () => {
@@ -429,8 +457,13 @@ export function ChatWindow({
 
 		setMessages((prev) => [...prev, userMsg, assistantMsg]);
 		setDraft("");
-		const wireAttachments = toChatAttachmentsWire(snapshot);
-		clearAttachments();
+		const wireAttachments = toChatAttachmentsWire(snapshot, {
+			resolveRecommendation: (clashId, idx) => {
+				const item = getAnalysisForClash(clashId).recommendations[idx];
+				return item?.parsed ?? null;
+			},
+		});
+		clearOneShotAttachments();
 		setSending(true);
 
 		const ac = new AbortController();
@@ -480,6 +513,13 @@ export function ChatWindow({
 						);
 					},
 					onToolCall: (p) => {
+						if (isUpdateClashRecommendationToolName(p.tool_name)) {
+							applyAgentRecommendationUpdate(
+								p.tool_kwargs,
+								getAnalysisForClash,
+								setAnalysisForClash,
+							);
+						}
 						setMessages((prev) =>
 							prev.map((m) => {
 								if (m.id !== assistantId) return m;
@@ -563,7 +603,15 @@ export function ChatWindow({
 				),
 			);
 		}
-	}, [attachments, clearAttachments, conversationId, draft, sending]);
+	}, [
+		attachments,
+		clearOneShotAttachments,
+		conversationId,
+		draft,
+		sending,
+		getAnalysisForClash,
+		setAnalysisForClash,
+	]);
 
 	const handleDraftProviderChange = (provider: AgentProvider) => {
 		setSettingsDraft((d) => ({
@@ -954,6 +1002,7 @@ export function ChatWindow({
 						</label>
 						<textarea
 							id={inputId}
+							ref={textareaRef}
 							rows={1}
 							value={draft}
 							disabled={sending}
@@ -964,7 +1013,11 @@ export function ChatWindow({
 									void send();
 								}
 							}}
-							placeholder="Write a message here..."
+							placeholder={
+								hasStickyModifyChip
+									? "Ask about or describe changes for the attached recommendation…"
+									: "Write a message here..."
+							}
 							className="max-h-32 min-h-10 w-full resize-none bg-transparent text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none disabled:opacity-60"
 						/>
 						<div className="flex shrink-0 items-center justify-between gap-2">

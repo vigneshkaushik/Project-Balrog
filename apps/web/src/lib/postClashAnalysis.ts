@@ -25,27 +25,46 @@ export interface ClashAnalyzeContextRequestBody {
 	};
 }
 
+/** Mirrors `ClashAnalyzeContextResponse` / `clash_analysis_parse` on the API. */
+export interface ClashAnalysisMetadata {
+	playbook_source: string;
+	severity: string;
+	severity_justification: string;
+}
+
+export interface EngineeringScratchpad {
+	identified_constraint: string;
+	dimensional_considerations: string;
+	logic_path: string;
+}
+
+export interface ClashAnalysisSummary {
+	elements_involved: string[];
+	yielding_element: string;
+	anchor_constraint: string;
+}
+
+export interface ClashContextRecommendation {
+	priority: string;
+	lead_trade: string;
+	supporting_trades: string[];
+	design_impact: string;
+	effort_level: string;
+	actions: string[];
+	feasibility_validations: string[];
+}
+
+export interface CoordinationWatchListEntry {
+	category: string;
+	specific_task: string;
+}
+
 export interface ClashAnalyzeContextResponseBody {
-	engineering_scratchpad: {
-		identified_constraint: string;
-		dimensional_considerations: string;
-	} | null;
-	clash_summary: {
-		elements_involved: string[];
-		yielding_element: string;
-		anchor_constraint: string;
-	} | null;
-	watch_out_for: Array<{
-		category: string;
-		specific_metric: string;
-	}>;
-	recommendations: Array<{
-		priority: string;
-		technical_action: string;
-		design_impact: string;
-		effort_level: string;
-		validations?: string[];
-	}>;
+	analysis_metadata: ClashAnalysisMetadata | null;
+	engineering_scratchpad: EngineeringScratchpad | null;
+	clash_summary: ClashAnalysisSummary | null;
+	coordination_watch_list: CoordinationWatchListEntry[];
+	recommendations: ClashContextRecommendation[];
 	notes: string | null;
 }
 
@@ -90,13 +109,27 @@ export async function postClashAnalyzeContext(
 		throw new Error("Invalid analysis response");
 	}
 
-	const watch = data.watch_out_for;
+	const metadata = data.analysis_metadata;
+	const watch = data.coordination_watch_list;
 	const rec = data.recommendations;
 	const notes = data.notes;
 	const scratchpad = data.engineering_scratchpad;
 	const summary = data.clash_summary;
 
 	return {
+		analysis_metadata: isRecord(metadata)
+			? {
+					playbook_source:
+						typeof metadata.playbook_source === "string"
+							? metadata.playbook_source
+							: "",
+					severity: typeof metadata.severity === "string" ? metadata.severity : "",
+					severity_justification:
+						typeof metadata.severity_justification === "string"
+							? metadata.severity_justification
+							: "",
+				}
+			: null,
 		engineering_scratchpad: isRecord(scratchpad)
 			? {
 					identified_constraint:
@@ -106,6 +139,10 @@ export async function postClashAnalyzeContext(
 					dimensional_considerations:
 						typeof scratchpad.dimensional_considerations === "string"
 							? scratchpad.dimensional_considerations
+							: "",
+					logic_path:
+						typeof scratchpad.logic_path === "string"
+							? scratchpad.logic_path
 							: "",
 				}
 			: null,
@@ -126,21 +163,21 @@ export async function postClashAnalyzeContext(
 							: "",
 				}
 			: null,
-		watch_out_for: Array.isArray(watch)
+		coordination_watch_list: Array.isArray(watch)
 			? watch
 					.filter(isRecord)
 					.map((item) => ({
 						category:
 							typeof item.category === "string" ? item.category : "",
-						specific_metric:
-							typeof item.specific_metric === "string"
-								? item.specific_metric
+						specific_task:
+							typeof item.specific_task === "string"
+								? item.specific_task
 								: "",
 					}))
 					.filter(
 						(item) =>
 							item.category.trim().length > 0 &&
-							item.specific_metric.trim().length > 0,
+							item.specific_task.trim().length > 0,
 					)
 			: [],
 		recommendations: Array.isArray(rec)
@@ -149,24 +186,30 @@ export async function postClashAnalyzeContext(
 					.map((item) => ({
 						priority:
 							typeof item.priority === "string" ? item.priority : "",
-						technical_action:
-							typeof item.technical_action === "string"
-								? item.technical_action
-								: "",
+						lead_trade:
+							typeof item.lead_trade === "string" ? item.lead_trade : "",
+						supporting_trades: Array.isArray(item.supporting_trades)
+							? item.supporting_trades.filter((x): x is string => typeof x === "string")
+							: [],
+						actions: Array.isArray(item.actions)
+							? item.actions.filter((x): x is string => typeof x === "string")
+							: [],
 						design_impact:
 							typeof item.design_impact === "string"
 								? item.design_impact
 								: "",
 						effort_level:
 							typeof item.effort_level === "string" ? item.effort_level : "",
-						validations: Array.isArray(item.validations)
-							? item.validations.filter((x): x is string => typeof x === "string")
+						feasibility_validations: Array.isArray(item.feasibility_validations)
+							? item.feasibility_validations.filter(
+									(x): x is string => typeof x === "string",
+								)
 							: [],
 					}))
 					.filter(
 						(item) =>
 							item.priority.trim().length > 0 &&
-							item.technical_action.trim().length > 0 &&
+							item.lead_trade.trim().length > 0 &&
 							item.design_impact.trim().length > 0 &&
 							item.effort_level.trim().length > 0,
 					)

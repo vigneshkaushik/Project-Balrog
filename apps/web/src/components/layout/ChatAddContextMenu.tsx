@@ -228,14 +228,9 @@ export function ChatAddContextMenu({ disabled }: { disabled?: boolean }) {
 	const handleAddRecommendation = useCallback(
 		(index: number) => {
 			if (!selectedClash) return;
-			const rec = recommendations[index];
-			if (!rec) return;
+			if (!recommendations[index]) return;
 			addAttachment(
-				buildRecommendationAttachment(
-					selectedClash,
-					recommendationItemDisplayText(rec),
-					index,
-				),
+				buildRecommendationAttachment(selectedClash, index, "attach"),
 			);
 			close();
 		},
@@ -369,8 +364,8 @@ export function ChatAddContextMenu({ disabled }: { disabled?: boolean }) {
 							const displayText = recommendationItemDisplayText(item);
 							const built = buildRecommendationAttachment(
 								selectedClash,
-								displayText,
 								idx,
+								"attach",
 							);
 							return (
 								<MenuRow

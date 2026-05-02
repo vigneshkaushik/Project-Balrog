@@ -23,6 +23,9 @@ interface FloatingChatContextValue {
 	isChatOpen: boolean;
 	setChatOpen: (open: boolean) => void;
 	toggleChat: () => void;
+	/** Increments when callers request focus on the chat composer (e.g. after Modify). */
+	composerFocusEpoch: number;
+	requestComposerFocus: () => void;
 }
 
 const FloatingChatContext = createContext<FloatingChatContextValue | null>(
@@ -31,6 +34,7 @@ const FloatingChatContext = createContext<FloatingChatContextValue | null>(
 
 export function FloatingChatProvider({ children }: { children: ReactNode }) {
 	const [isChatOpen, setChatOpenState] = useState(readInitialOpenState);
+	const [composerFocusEpoch, setComposerFocusEpoch] = useState(0);
 
 	useEffect(() => {
 		try {
@@ -48,9 +52,19 @@ export function FloatingChatProvider({ children }: { children: ReactNode }) {
 		setChatOpenState((prev) => !prev);
 	}, []);
 
+	const requestComposerFocus = useCallback(() => {
+		setComposerFocusEpoch((n) => n + 1);
+	}, []);
+
 	const value = useMemo(
-		() => ({ isChatOpen, setChatOpen, toggleChat }),
-		[isChatOpen, setChatOpen, toggleChat],
+		() => ({
+			isChatOpen,
+			setChatOpen,
+			toggleChat,
+			composerFocusEpoch,
+			requestComposerFocus,
+		}),
+		[isChatOpen, setChatOpen, toggleChat, composerFocusEpoch, requestComposerFocus],
 	);
 
 	return (

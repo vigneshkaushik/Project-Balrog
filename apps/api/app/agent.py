@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
+from typing import Any
 
 import tiktoken
 from llama_index.core.agent.workflow import ReActAgent
@@ -50,8 +51,47 @@ def _echo_tool(text: str) -> str:
     return text
 
 
+def _validate_recommendation_tool_payload(rec: dict[str, Any]) -> None:
+    for key in ("priority", "lead_trade", "design_impact", "effort_level"):
+        val = rec.get(key)
+        if not isinstance(val, str) or not val.strip():
+            raise ValueError(f"recommendation.{key} must be a non-empty string")
+    for list_key in ("supporting_trades", "actions", "feasibility_validations"):
+        raw = rec.get(list_key, [])
+        if raw is None:
+            continue
+        if not isinstance(raw, list) or not all(isinstance(x, str) for x in raw):
+            raise ValueError(f"recommendation.{list_key} must be a list of strings")
+
+
+def _update_clash_recommendation(
+    clash_id: str,
+    recommendation_index: int,
+    recommendation: dict[str, Any],
+) -> str:
+    """Validate recommendation edits; the web client applies updates from SSE tool_call."""
+    cid = clash_id.strip()
+    if not cid:
+        raise ValueError("clash_id must be a non-empty string")
+    if recommendation_index < 0:
+        raise ValueError("recommendation_index must be >= 0")
+    _validate_recommendation_tool_payload(recommendation)
+    return "ok"
+
+
 _TOOL_REGISTRY: dict[str, FunctionTool] = {
     "echo": FunctionTool.from_defaults(_echo_tool),
+    "update_clash_recommendation": FunctionTool.from_defaults(
+        _update_clash_recommendation,
+        name="update_clash_recommendation",
+        description=(
+            "Publish a revised clash recommendation to the user's UI. "
+            "Call only when the user attached a recommendation in modify mode and asks for a change. "
+            "Use the same clash_id and recommendation_index as in the attached context. "
+            "The recommendation object must include: priority, lead_trade, supporting_trades, "
+            "design_impact, effort_level, actions, feasibility_validations (arrays of strings)."
+        ),
+    ),
 }
 
 

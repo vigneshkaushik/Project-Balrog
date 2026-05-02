@@ -125,6 +125,8 @@ curl -X POST "http://localhost:8000/clashes/upload" \
   -H "Accept: application/json"
 ```
 
+**Run analysis:** `POST /clashes/analyze-context` accepts clash + nearby Speckle context and returns structured output with `analysis_metadata`, `engineering_scratchpad`, `clash_summary`, `coordination_watch_list`, `recommendations`, and fallback `notes`.
+
 #### LLM and model configuration
 
 Settings live in **`apps/api/.env`** (see **[apps/api/.env.example](apps/api/.env.example)** for provider-specific blocks).

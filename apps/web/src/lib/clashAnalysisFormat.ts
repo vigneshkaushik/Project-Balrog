@@ -1,24 +1,20 @@
-export interface ClashRecommendation {
-	priority: string;
-	technicalAction: string;
-	designImpact: string;
-	effortLevel: string;
-	validations: string[];
-}
+import type {
+	ClashContextRecommendation,
+	CoordinationWatchListEntry,
+} from "./postClashAnalysis";
 
-export interface ClashWatchOut {
-	category: string;
-	specificMetric: string;
-}
+export type { ClashContextRecommendation, CoordinationWatchListEntry };
 
+/** One recommendation row for UI (legacy string blobs or structured API objects). */
 export interface ClashRecommendationItem {
 	raw: string;
-	parsed: ClashRecommendation | null;
+	parsed: ClashContextRecommendation | null;
 }
 
-export interface ClashWatchOutItem {
+/** One coordination watch-list row for UI. */
+export interface CoordinationWatchListItemRow {
 	raw: string;
-	parsed: ClashWatchOut | null;
+	parsed: CoordinationWatchListEntry | null;
 }
 
 /**
@@ -74,62 +70,157 @@ function parseJsonObjectStrings(raw: string): Record<string, string> | null {
 	}
 }
 
-type ApiRecommendation = {
-	priority: string;
-	technical_action: string;
-	design_impact: string;
-	effort_level: string;
-	validations?: string[];
-};
+function coerceStringList(value: unknown): string[] {
+	if (!Array.isArray(value)) return [];
+	return value.filter((x): x is string => typeof x === "string");
+}
 
-type ApiWatchOut = {
-	category: string;
-	specific_metric: string;
-};
+function recommendationFromLooseRecord(
+	parsed: Record<string, string>,
+): ClashContextRecommendation | null {
+	const priority = (parsed.priority ?? "").trim();
+	const lead_trade = (parsed.lead_trade ?? "Unspecified").trim();
+	const design_impact = (parsed.design_impact ?? "").trim();
+	const effort_level = (parsed.effort_level ?? "").trim();
+	if (!priority || !lead_trade || !design_impact || !effort_level) {
+		return null;
+	}
 
-export function parseClashRecommendation(raw: string): ClashRecommendation | null {
-	const parsed =
-		parseJsonObjectStrings(raw) ??
-		parsePythonishDictString(raw);
-	if (
-		!parsed?.priority ||
-		!parsed.technical_action ||
-		!parsed.design_impact ||
-		!parsed.effort_level
-	) {
+	let actions: string[] = [];
+	const rawActions = parsed.actions;
+	if (rawActions) {
+		try {
+			const a = JSON.parse(rawActions) as unknown;
+			actions = coerceStringList(a);
+		} catch {
+			actions = [];
+		}
+	}
+	const technicalAction = parsed.technical_action?.trim();
+	if (actions.length === 0 && technicalAction) {
+		actions = [technicalAction];
+	}
+
+	let feasibility_validations: string[] = [];
+	const rawVal = parsed.feasibility_validations ?? parsed.validations;
+	if (rawVal) {
+		try {
+			const v = JSON.parse(rawVal) as unknown;
+			feasibility_validations = coerceStringList(v);
+		} catch {
+			feasibility_validations = [];
+		}
+	}
+
+	let supporting_trades: string[] = [];
+	const rawSupports = parsed.supporting_trades;
+	if (rawSupports) {
+		try {
+			const s = JSON.parse(rawSupports) as unknown;
+			supporting_trades = coerceStringList(s);
+		} catch {
+			supporting_trades = [];
+		}
+	}
+
+	return {
+		priority,
+		lead_trade,
+		supporting_trades,
+		design_impact,
+		effort_level,
+		actions,
+		feasibility_validations,
+	};
+}
+
+/** Parse a loose recommendation string (legacy / debug paths). */
+export function parseClashRecommendation(
+	raw: string,
+): ClashContextRecommendation | null {
+	const trimmed = raw.trim();
+	if (trimmed.startsWith("{")) {
+		try {
+			const obj = JSON.parse(trimmed) as unknown;
+			if (obj && typeof obj === "object" && !Array.isArray(obj)) {
+				const v = validateRecommendation(obj as ClashContextRecommendation);
+				if (v) return v;
+			}
+		} catch {
+			/* fall through */
+		}
+	}
+	const flat =
+		parseJsonObjectStrings(raw) ?? parsePythonishDictString(raw);
+	if (!flat) return null;
+	return recommendationFromLooseRecord(flat);
+}
+
+function validateRecommendation(
+	item: ClashContextRecommendation,
+): ClashContextRecommendation | null {
+	const priority = item.priority?.trim() ?? "";
+	const lead_trade = item.lead_trade?.trim() ?? "";
+	const design_impact = item.design_impact?.trim() ?? "";
+	const effort_level = item.effort_level?.trim() ?? "";
+	if (!priority || !lead_trade || !design_impact || !effort_level) {
 		return null;
 	}
 	return {
-		priority: parsed.priority,
-		technicalAction: parsed.technical_action,
-		designImpact: parsed.design_impact,
-		effortLevel: parsed.effort_level,
-		validations: [],
+		priority,
+		lead_trade,
+		supporting_trades: Array.isArray(item.supporting_trades)
+			? item.supporting_trades.filter((x): x is string => typeof x === "string")
+			: [],
+		design_impact,
+		effort_level,
+		actions: Array.isArray(item.actions)
+			? item.actions.filter((x): x is string => typeof x === "string")
+			: [],
+		feasibility_validations: Array.isArray(item.feasibility_validations)
+			? item.feasibility_validations.filter(
+					(x): x is string => typeof x === "string",
+				)
+			: [],
 	};
 }
 
-function fromApiRecommendation(item: ApiRecommendation): ClashRecommendation {
-	return {
-		priority: item.priority,
-		technicalAction: item.technical_action,
-		designImpact: item.design_impact,
-		effortLevel: item.effort_level,
-		validations: Array.isArray(item.validations) ? item.validations : [],
-	};
-}
-
-export function parseClashWatchOut(raw: string): ClashWatchOut | null {
-	const parsed =
+export function parseCoordinationWatchListEntry(
+	raw: string,
+): CoordinationWatchListEntry | null {
+	const trimmed = raw.trim();
+	if (trimmed.startsWith("{")) {
+		try {
+			const obj = JSON.parse(trimmed) as unknown;
+			if (obj && typeof obj === "object" && !Array.isArray(obj)) {
+				const o = obj as Record<string, unknown>;
+				const category =
+					typeof o.category === "string" ? o.category.trim() : "";
+				const specific_taskRaw =
+					(typeof o.specific_task === "string" && o.specific_task) ||
+					(typeof o.specific_metric === "string" && o.specific_metric) ||
+					"";
+				const specific_task = specific_taskRaw.trim();
+				if (category && specific_task) {
+					return { category, specific_task };
+				}
+			}
+		} catch {
+			/* fall through */
+		}
+	}
+	const flat =
 		parseJsonObjectStrings(raw) ?? parsePythonishDictString(raw);
-	if (!parsed?.category || !parsed.specific_metric) return null;
-	return {
-		category: parsed.category,
-		specificMetric: parsed.specific_metric,
-	};
+	if (!flat) return null;
+	const category = (flat.category ?? "").trim();
+	const specific_task =
+		(flat.specific_task ?? flat.specific_metric ?? "").trim();
+	if (!category || !specific_task) return null;
+	return { category, specific_task };
 }
 
 export function normalizeClashRecommendations(
-	rawList: Array<string | ApiRecommendation>,
+	rawList: Array<string | ClashContextRecommendation>,
 ): ClashRecommendationItem[] {
 	return rawList.map((item) => {
 		if (typeof item === "string") {
@@ -137,29 +228,48 @@ export function normalizeClashRecommendations(
 		}
 		return {
 			raw: JSON.stringify(item),
-			parsed: fromApiRecommendation(item),
+			parsed: validateRecommendation(item),
 		};
 	});
 }
 
-export function normalizeClashWatchOut(
-	rawList: Array<string | ApiWatchOut>,
-): ClashWatchOutItem[] {
+export function normalizeCoordinationWatchList(
+	rawList: Array<string | CoordinationWatchListEntry>,
+): CoordinationWatchListItemRow[] {
 	return rawList.map((item) => {
 		if (typeof item === "string") {
-			return { raw: item, parsed: parseClashWatchOut(item) };
+			return { raw: item, parsed: parseCoordinationWatchListEntry(item) };
 		}
+		const category = item.category?.trim() ?? "";
+		const specific_task = item.specific_task?.trim() ?? "";
+		const parsed =
+			category.length > 0 && specific_task.length > 0
+				? { category, specific_task }
+				: null;
 		return {
 			raw: JSON.stringify(item),
-			parsed: { category: item.category, specificMetric: item.specific_metric },
+			parsed,
 		};
 	});
 }
 
-export function recommendationItemDisplayText(item: ClashRecommendationItem): string {
+/** @deprecated Use normalizeCoordinationWatchList */
+export const normalizeClashWatchOut = normalizeCoordinationWatchList;
+
+export function recommendationItemDisplayText(
+	item: ClashRecommendationItem,
+): string {
 	if (!item.parsed) return item.raw;
-	const { priority, technicalAction, designImpact, effortLevel, validations } = item.parsed;
-	const validationText =
-		validations.length > 0 ? ` Validations: ${validations.join("; ")}.` : "";
-	return `${priority}. Action: ${technicalAction} Design impact: ${designImpact} Effort: ${effortLevel}.${validationText}`;
+	const r = item.parsed;
+	const supporting =
+		r.supporting_trades.length > 0
+			? ` Supporting trades: ${r.supporting_trades.join(", ")}.`
+			: "";
+	const actions =
+		r.actions.length > 0 ? ` Actions: ${r.actions.join("; ")}.` : "";
+	const validations =
+		r.feasibility_validations.length > 0
+			? ` Feasibility validations: ${r.feasibility_validations.join("; ")}.`
+			: "";
+	return `${r.priority}. Lead: ${r.lead_trade}.${supporting} Design impact: ${r.design_impact}. Effort: ${r.effort_level}.${actions}${validations}`;
 }

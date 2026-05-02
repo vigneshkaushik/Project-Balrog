@@ -56,7 +56,7 @@ This document maps the **FastAPI** backend: entrypoint, configuration, AI agent 
 | Sampling / agent limits | **`TEMPERATURE`**, **`MAX_TOKENS`** (cloud completion cap), **`MAX_AGENT_ITERATIONS`**. |
 | Verbose logging | **`VERBOSE`** (`true/false`, `1/0`) — gates initialization/payload debug prints. |
 | Agent persona | **`SYSTEM_PROMPT`** (empty string falls back to built-in coordination assistant default). |
-| Tools | **`ENABLED_AGENT_TOOL_IDS`** in **`app/routes/chat.py`** (e.g. **`duckduckgo`**, **`playbooks`**): bundle/registry ids passed to **`create_react_agent`** → **`resolve_tools`**. |
+| Tools | **`ENABLED_AGENT_TOOL_IDS`** in **`app/routes/chat.py`** — **`duckduckgo`**, **`playbooks`**, **`update_clash_recommendation`**; bundle/registry ids passed to **`create_react_agent`** → **`resolve_tools`**. |
 | CORS | **`CORS_ORIGINS`**: comma-separated list for browser clients (default includes Vite **`http://localhost:5173`**). |
 | **`get_settings()`** | **`@lru_cache`** singleton — same resolved settings for app lifetime (reload dev server to pick up `.env` changes). |
 
@@ -69,14 +69,24 @@ See **`apps/api/.env.example`** for copy-paste env names and comments.
 | Function / object | Responsibility |
 | ----------------- | -------------- |
 | **`create_llm`** | Instantiates LlamaIndex **`Anthropic`**, **`OpenAI`**, **`GoogleGenAI`**, or **`Ollama`**. **`model=`** is always **`settings.llm_model_id`**. Anthropic optionally receives **`anthropic_base_url`**. OpenAI cloud uses the standard wrapper; when **`OPENAI_BASE_URL`** is set, the backend uses a small **OpenAI-compatible wrapper** (`OpenAICompatibleLLM`) that accepts arbitrary model ids and uses **`OPENAI_CONTEXT_WINDOW`**. **Google** uses **`google_api_key`**. Ollama uses **`context_window`** and **`ollama_base_url`** (native client), or the OpenAI-compatible wrapper when **`OPENAI_BASE_URL`** is set. |
-| **`_TOOL_REGISTRY`** | Maps string ids to single **`FunctionTool`** instances. Includes a demo **`echo`** tool (optional demos). |
+| **`_TOOL_REGISTRY`** | Maps string ids to single **`FunctionTool`** instances. Includes **`echo`** (optional demos) and **`update_clash_recommendation`** (validates recommendation edits for the UI; see below). |
 | **`_TOOL_BUNDLES`** | Maps bundle ids to callables returning **`list[FunctionTool]`**. **`duckduckgo`** → **`DuckDuckGoSearchToolSpec.to_tool_list()`**. **`playbooks`** → **`playbook_tool_list()`** from **`app/tools/playbook_tools.py`** (`get_playbook_directory`, **`read_clash_playbook`** over Markdown under **`apps/api/skills/playbooks/`**). |
 | **`resolve_tools`** | Expands registry + bundle ids into concrete **`FunctionTool`** instances; raises if an unknown id is requested. |
 | **`create_react_agent`** | **`resolve_tools(tool_ids)`** → passes resolved **`FunctionTool`** list to **`ReActAgent`** (name/description, **`system_prompt`**, **`llm`**, **`streaming=True`**). |
 
 **Clash playbooks (local Markdown, no vector store):** Trade-category folders (e.g. **`Structural_x_MEP/`**) contain **`*.md`** playbooks with YAML frontmatter (**`title`**, **`elements`**, **`applies_when`**, …). The agent is instructed via **`app/utils/clash_analysis_prompt.py`** (Layer C) to call **`get_playbook_directory`** then **`read_clash_playbook`** for run-analysis flows.
 
-**Extension point:** add a single tool id → **`_TOOL_REGISTRY`**, or a bundle → **`_TOOL_BUNDLES`**, then register the bundle id in **`ENABLED_AGENT_TOOL_IDS`** in **`app/routes/chat.py`** (same list is used for the main agent and **`clash_analysis_agent`** in **`main.py`** / **`PUT /agent-config`**).
+**Extension point:** add a single tool id → **`_TOOL_REGISTRY`**, or a bundle → **`_TOOL_BUNDLES`**, then list that **bundle id** or **registry id** in **`ENABLED_AGENT_TOOL_IDS`** in **`app/routes/chat.py`** (same list is used for the main agent and **`clash_analysis_agent`** in **`main.py`** / **`PUT /agent-config`**).
+
+**`update_clash_recommendation` (registry tool)**
+
+- Implemented by **`_update_clash_recommendation`** in **`app/agent.py`**. Validates **`clash_id`**, **`recommendation_index`**, and a **`recommendation`** object (required string fields **`priority`**, **`lead_trade`**, **`design_impact`**, **`effort_level`**; string-list fields **`supporting_trades`**, **`actions`**, **`feasibility_validations`**). Returns **`"ok"`** on success.
+- The backend **does not** persist revised recommendations. The **web client** listens for SSE **`tool_call`** events and merges the payload into **`ClashAnalysisContext`** (see **`applyAgentRecommendationUpdate`** in the frontend guide).
+- **`FunctionTool.from_defaults`** defaults the streamed tool **`name`** to the Python function’s **`__name__`**. This tool is registered with **`name="update_clash_recommendation"`** so **`tool_call`** events use that stable string (not **`_update_clash_recommendation`**), matching the UI handler.
+
+**Chat attachments — recommendation**
+
+- **`RecommendationAttachment`** in **`app/routes/chat.py`** includes **`recommendation_index`**, **`mode`** (**`attach`** \| **`modify`**), clash label/context, and optional embedded recommendation snapshot. **`_format_recommendation_attachment`** expands **`modify`** into explicit instructions to call **`update_clash_recommendation`** with matching **`clash_id`** / index; **`attach`** emits structured JSON context only.
 
 **Server logs — tool calls:** When the ReAct loop issues a tool invocation, **`app/utils/agent_tool_log.py`** prints one stdout line per call (**function `name`**, optional internal **`tool_id`**, JSON **`args` only** — never tool output). Wired for **`POST /chat`** (SSE) and **`POST /clashes/analyze-context`**. Look for the **`[Balrog agent]`** prefix in the uvicorn terminal.
 
@@ -138,7 +148,7 @@ See **`apps/api/.env.example`** for copy-paste env names and comments.
 | **`token`** | `{"content": "<delta>"}` | Incremental model/agent output (often includes ReAct **`Thought:` / `Action:`** as well as the user-facing answer). The web app may **hide** scratchpad noise in the main bubble while still showing reasoning under agent metadata—see frontend **`assistantDisplayText`**. |
 | **`thought_delta`** | `{"delta": "<text>"}` | Extended-thinking chunks when the LLM exposes them on **`AgentStream`**. |
 | **`agent_thought`** | `{"text": "<thought>"}` | Parsed **`Thought:`** line from **`AgentOutput`** after each LLM step. |
-| **`tool_call`** | `{"tool_name", "tool_id", "tool_kwargs"}` | Tool invocation (kwargs JSON-safe). The server also **`print`**s a one-line **`[Balrog agent] POST /chat tool_call …`** summary (name + args only) to the process stdout for terminal debugging. |
+| **`tool_call`** | `{"tool_name", "tool_id", "tool_kwargs"}` | Tool invocation (kwargs JSON-safe). **`tool_name`** is the LlamaIndex tool metadata name (registry tools should set **`name=`** explicitly when the Python **`fn.__name__`** would differ). The web app uses **`tool_call`** for side effects such as **`update_clash_recommendation`** (refresh recommendations UI during the stream). The server also **`print`**s a one-line **`[Balrog agent] POST /chat tool_call …`** summary (name + args only) to stdout. |
 | **`tool_result`** | `{"tool_name", "tool_id", "content", "is_error"}` | Tool output (long content may be truncated). |
 | **`done`** | `{}` | Normal completion for this request. |
 | **`error`** | `{"detail": "<message>"}` | Failure (e.g. LLM error); surfaced from exception handling. |
@@ -152,7 +162,7 @@ Implementation walks **`handler.stream_events()`**, mapping **`AgentStream`**, *
 | Endpoint | Method | Description |
 | -------- | ------ | ----------- |
 | **`/clashes/upload`** | `POST` | Upload a Navisworks clash report XML (`multipart/form-data` field: **`file`**), parse all clashes, run LLM severity inference in batches, and stream results via SSE. Uses **`app.state.effective_settings`** for model/key/base-url. |
-| **`/clashes/analyze-context`** | `POST` | Run one-shot clash-context analysis from frontend JSON payload (`clash`, `clash_objects_original`, `context_region`, `nearby_speckle_objects`, `meta`) and return typed structured output (`engineering_scratchpad`, `clash_summary`, `watch_out_for[]`, `recommendations[]`, `notes`). |
+| **`/clashes/analyze-context`** | `POST` | Run one-shot clash-context analysis from frontend JSON payload (`clash`, `clash_objects_original`, `context_region`, `nearby_speckle_objects`, `meta`) and return typed structured output (`analysis_metadata`, `engineering_scratchpad`, `clash_summary`, `coordination_watch_list[]`, `recommendations[]`, `notes`). |
 
 **Flow**
 
@@ -167,7 +177,7 @@ Implementation walks **`handler.stream_events()`**, mapping **`AgentStream`**, *
 - In verbose mode (`VERBOSE=1`), logs incoming payload JSON and startup initialization messages.
 - Runs the dedicated **`clash_analysis_agent`** with a fresh short-lived conversation memory per request.
 - Uses `max_iterations=settings.max_agent_iterations` with `early_stopping_method="generate"` so max-iteration loops produce a final response instead of throwing runtime errors.
-- Parses model output through **`parse_clash_analysis_json`** and **`normalize_analysis_result`**, then validates/coerces sections into Pydantic models (`EngineeringScratchpad`, `ClashSummary`, `ClashWatchOut`, `ClashRecommendation`).
+- Parses model output through **`parse_clash_analysis_json`** and **`normalize_analysis_result`**, then validates/coerces sections into Pydantic models (`AnalysisMetadata`, `EngineeringScratchpad`, `ClashSummary`, `CoordinationWatchListItem`, `ClashRecommendation`).
 - Streams agent events during the run; each **`ToolCall`** prints **`[Balrog agent] POST /clashes/analyze-context tool_call …`** to stdout (name + args only), same helper as chat.
 
 ---
@@ -178,7 +188,7 @@ Implementation walks **`handler.stream_events()`**, mapping **`AgentStream`**, *
 | ---- | -------------- |
 | **`app/utils/clash_parser.py`** | XML parser + normalization helpers (`parse_clash_xml`, `parse_clash_result`, `parse_clash_object`), and `optimize_clash_for_agent` for LLM-friendly minified clash payloads. |
 | **`app/utils/clash_inference.py`** | Parallel severity inference pipeline using LlamaIndex OpenAI wrapper. Includes adaptive batching (`batch_clashes`), code-fence stripping, minification handoff, default severity preprompt, and ordered result reassembly after concurrent execution. |
-| **`app/utils/clash_analysis_prompt.py`** | Prompt suffix for run-analysis mode. Forces JSON-only final output (`engineering_scratchpad`, `clash_summary`, `recommendations` with `validations`, `watch_out_for`), Layer C **playbook retrieval** (directory index → read Markdown), and use of clash + nearby Speckle context. |
+| **`app/utils/clash_analysis_prompt.py`** | Prompt suffix for run-analysis mode. Forces JSON-only final output (`analysis_metadata`, `engineering_scratchpad`, `clash_summary`, `recommendations` with `actions` + `feasibility_validations`, `coordination_watch_list`), Layer C **playbook retrieval** (directory index → read Markdown), and use of clash + nearby Speckle context. |
 | **`app/utils/clash_analysis_parse.py`** | Extracts/parses fenced or inline JSON from model output, supports loose JSON/Python-ish variants, and coerces sections into typed Pydantic models with notes fallback. |
 
 ---

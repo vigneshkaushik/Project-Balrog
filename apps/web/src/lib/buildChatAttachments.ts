@@ -1,6 +1,7 @@
 import type {
 	ChatAttachment,
 	ClashAttachmentContext,
+	RecommendationAttachmentMode,
 } from '../context/ChatAttachmentsContext'
 import {
 	clashAttachmentId,
@@ -52,17 +53,22 @@ export function buildSelectedObjectAttachment(
 
 export function buildRecommendationAttachment(
 	clash: Clash,
-	text: string,
 	index: number,
+	mode: RecommendationAttachmentMode,
 ): ChatAttachment {
 	const clashLabel = clashAttachmentLabel(clash)
 	const n = index + 1
+	const label =
+		mode === 'modify'
+			? `Modifying Rec #${n} for '${clashLabel}'`
+			: `Recommendation #${n} for '${clashLabel}'`
 	return {
 		kind: 'recommendation',
-		id: recommendationAttachmentId(clash.id, text),
-		label: `Recommendation #${n} for '${clashLabel}'`,
-		text,
+		id: recommendationAttachmentId(clash.id, index, mode),
+		label,
 		clashId: clash.id,
 		clashLabel,
+		recommendationIndex: index,
+		mode,
 	}
 }

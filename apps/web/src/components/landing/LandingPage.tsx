@@ -57,16 +57,10 @@ export function LandingPage() {
 				</ol>
 
 				<div className="mt-8 flex flex-col gap-3">
-					<FileUpload onFileSelected={setNavisworksReport} />
-
-					{navisworksFileName && (
-						<p className="text-center text-xs text-neutral-500">
-							Selected:{" "}
-							<span className="font-medium text-neutral-700">
-								{navisworksFileName}
-							</span>
-						</p>
-					)}
+					<FileUpload
+						onFileSelected={setNavisworksReport}
+						selectedFileName={navisworksFileName}
+					/>
 
 					<SpeckleUrlInput />
 				</div>

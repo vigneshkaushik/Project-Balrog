@@ -38,6 +38,24 @@ function ChipRemoveIcon() {
 	);
 }
 
+function ModifyStickyIcon() {
+	return (
+		<svg
+			className="h-3 w-3 shrink-0 text-primary"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth={2}
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			aria-hidden="true"
+		>
+			<title>Sticky until removed</title>
+			<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+		</svg>
+	);
+}
+
 function DraftChip({
 	attachment,
 	onRemove,
@@ -46,11 +64,26 @@ function DraftChip({
 	onRemove: (id: string) => void;
 }) {
 	const label = attachment.label || chatAttachmentKindLabel(attachment.kind);
+	const isModifySticky =
+		attachment.kind === "recommendation" && attachment.mode === "modify";
+	const chipClass = isModifySticky
+		? `${CHIP_BASE} border-primary/35 bg-primary/5 pr-1`
+		: `${CHIP_BASE} pr-1`;
+	const titleHint = isModifySticky
+		? `${label} — stays attached until you remove it or re-run analysis`
+		: label;
 	return (
-		<span className={`${CHIP_BASE} pr-1`} title={label}>
+		<span className={chipClass} title={titleHint}>
 			<span className="shrink-0 text-neutral-500" aria-hidden>
-				<ChatAttachmentKindIcon kind={attachment.kind} />
+				{isModifySticky ? <ModifyStickyIcon /> : (
+					<ChatAttachmentKindIcon kind={attachment.kind} />
+				)}
 			</span>
+			{isModifySticky ? (
+				<span className="shrink-0 rounded bg-primary/15 px-1 py-px text-[10px] font-semibold uppercase tracking-wide text-primary">
+					Modify
+				</span>
+			) : null}
 			<span className="min-w-0 flex-1 truncate">{label}</span>
 			<button
 				type="button"
