@@ -18,8 +18,7 @@ import {
 	MODEL_OPTIONS,
 	saveAgentConfigToServer,
 } from "../../lib/agentConfig";
-import { splitAnswerStream } from "../../lib/answerStreamSplit";
-import { assistantBubbleText } from "../../lib/assistantDisplayText";
+import { assistantDisplaySlices } from "../../lib/assistantDisplaySlices";
 import {
 	fetchChatHistory,
 	persistConversationId,
@@ -947,20 +946,18 @@ export function ChatWindow({
 						aria-busy={sending}
 					>
 						{messages.map((m) => {
-							const { preamble, answer } =
+							const slices =
 								m.role === "assistant"
-									? splitAnswerStream(m.text)
-									: { preamble: "", answer: m.text };
-							const assistantVisible =
-								m.role === "assistant" ? assistantBubbleText(m.text) : m.text;
-							const preAnswerStreaming =
-								m.role === "assistant" &&
-								Boolean(m.streaming) &&
-								!answer.trim();
+									? assistantDisplaySlices(m)
+									: {
+											streamPreamble: "",
+											bubbleMarkdown: "",
+											preAnswerStreaming: false,
+										};
 							return (
 								<li
 									key={m.id}
-									className={`rounded-lg px-3 py-2 text-sm ${
+									className={`rounded-lg px-3 py-2 text-xs leading-snug ${
 										m.role === "user"
 											? "ml-6 bg-primary/10 text-neutral-900"
 											: "mr-6 bg-neutral-100 text-neutral-800"
@@ -970,9 +967,9 @@ export function ChatWindow({
 										<AgentActivityLog
 											activity={m.activity}
 											thinkingBuffer={m.thinkingBuffer}
-											streamPreamble={preamble}
+											streamPreamble={slices.streamPreamble}
 											streaming={m.streaming}
-											preAnswerStreaming={preAnswerStreaming}
+											preAnswerStreaming={slices.preAnswerStreaming}
 										/>
 									)}
 									{m.role === "user" &&
@@ -993,12 +990,14 @@ export function ChatWindow({
 									) : null}
 									{m.role === "assistant" &&
 									m.streaming &&
-									!assistantVisible ? null : assistantVisible ? (
-										<ChatMarkdown
-											content={assistantVisible}
-											variant="assistant"
-										/>
-									) : null}
+									!slices.bubbleMarkdown.trim()
+										? null
+										: slices.bubbleMarkdown.trim() ? (
+											<ChatMarkdown
+												content={slices.bubbleMarkdown}
+												variant="assistant"
+											/>
+										) : null}
 								</li>
 							);
 						})}

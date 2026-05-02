@@ -13,7 +13,12 @@ import {
 import { createPortal } from 'react-dom'
 import { useChatAttachments } from '../../context/ChatAttachmentsContext'
 import { useApp } from '../../context/useApp'
-import { useFloatingPanel } from '../../hooks/useFloatingPanel'
+import {
+  FLOATING_OVERLAY_GUTTER,
+  getFloatingOverlayViewport,
+  snapToGrid,
+  useFloatingPanel,
+} from '../../hooks/useFloatingPanel'
 import { buildSelectedObjectAttachment } from '../../lib/buildChatAttachments'
 import { AddToChatButton } from '../layout/AddToChatButton'
 
@@ -408,16 +413,19 @@ function SpeckleObjectOverlayComponent() {
     if (typeof window === 'undefined') {
       return { width: DEFAULT_WIDTH, height: 560 }
     }
+    const { height: vh } = getFloatingOverlayViewport()
     return {
       width: DEFAULT_WIDTH,
-      height: Math.max(MIN_HEIGHT, Math.min(560, window.innerHeight - 32)),
+      height: Math.max(MIN_HEIGHT, Math.min(560, vh - 32)),
     }
   }, [])
   const initialPosition = useMemo(() => {
     if (typeof window === 'undefined') return { x: 16, y: 64 }
+    const g = FLOATING_OVERLAY_GUTTER
+    const { width: vw } = getFloatingOverlayViewport()
     return {
-      x: Math.max(16, window.innerWidth - initialSize.width - 16),
-      y: 64,
+      x: Math.max(g, vw - g - initialSize.width),
+      y: g + snapToGrid(64 - g),
     }
   }, [initialSize.width])
   const { position, size, handleProps, getResizeHandleProps } = useFloatingPanel({

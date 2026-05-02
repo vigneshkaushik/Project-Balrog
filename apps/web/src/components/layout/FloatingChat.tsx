@@ -1,28 +1,35 @@
 import { useMemo, useRef } from "react";
 import { useFloatingChat } from "../../context/FloatingChatContext";
-import { PANEL_GRID, snapToGrid, useFloatingPanel } from "../../hooks/useFloatingPanel";
+import {
+	FLOATING_OVERLAY_GUTTER,
+	getFloatingOverlayViewport,
+	PANEL_GRID,
+	snapToGrid,
+	useFloatingPanel,
+} from "../../hooks/useFloatingPanel";
 import { ChatWindow } from "./ChatWindow";
 
 const G = PANEL_GRID;
+const inset = FLOATING_OVERLAY_GUTTER;
 
 export function FloatingChat() {
 	const { isChatOpen } = useFloatingChat();
 	const panelRef = useRef<HTMLElement>(null);
 	const initialSize = useMemo(() => {
 		if (typeof window === "undefined") return { width: 416, height: 560 };
+		const { width: vw, height: vh } = getFloatingOverlayViewport();
 		return {
-			width: snapToGrid(Math.min(416, window.innerWidth - 2 * G)),
-			height: snapToGrid(
-				Math.min(Math.round(window.innerHeight * 0.64), 720),
-			),
+			width: snapToGrid(Math.min(416, vw - 2 * inset)),
+			height: snapToGrid(Math.min(Math.round(vh * 0.64), 720)),
 		};
 	}, []);
 	const initialPosition = useMemo(() => {
-		if (typeof window === "undefined") return { x: G, y: 96 };
+		if (typeof window === "undefined") return { x: inset, y: 96 };
+		const { width: vw, height: vh } = getFloatingOverlayViewport();
 		return {
-			x: snapToGrid(Math.max(G, window.innerWidth - initialSize.width - G)),
-			y: snapToGrid(
-				Math.max(4 * G, window.innerHeight - initialSize.height - 5 * G),
+			x: Math.max(inset, vw - inset - initialSize.width),
+			y: inset + snapToGrid(
+				Math.max(3 * G, vh - initialSize.height - 5 * G - inset),
 			),
 		};
 	}, [initialSize.height, initialSize.width]);
