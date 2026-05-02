@@ -18,9 +18,37 @@ import {
 
 export const PANEL_GRID = 16
 
+/** Viewport inset for the floating chrome (matches `FloatingNavbar`). Snap math uses this so panel edges line up with the nav bar. */
+export const FLOATING_OVERLAY_GUTTER = PANEL_GRID
+
+/**
+ * Layout viewport size excluding a classic vertical scrollbar.
+ * Matches how wide `absolute inset-0` overlays are laid out better than `window.innerWidth`,
+ * which includes the scrollbar gutter and lets panels extend past the navbar on some platforms.
+ */
+export function getFloatingOverlayViewport(): { width: number; height: number } {
+  if (typeof document === 'undefined') {
+    return {
+      width: typeof window !== 'undefined' ? window.innerWidth : 0,
+      height: typeof window !== 'undefined' ? window.innerHeight : 0,
+    }
+  }
+  const root = document.documentElement
+  return { width: root.clientWidth, height: root.clientHeight }
+}
+
 /** Round a value to the nearest grid step. */
 export function snapToGrid(value: number, grid = PANEL_GRID): number {
   return Math.round(value / grid) * grid
+}
+
+/** Snap coordinates on the overlay grid anchored at the gutter (not the viewport origin). */
+function snapPositionToOverlayGrid(pos: PanelPosition): PanelPosition {
+  const g = FLOATING_OVERLAY_GUTTER
+  return {
+    x: g + snapToGrid(pos.x - g),
+    y: g + snapToGrid(pos.y - g),
+  }
 }
 
 interface FloatingPanelOptions {
@@ -63,11 +91,13 @@ function clampPosition(
   panelW: number,
   panelH: number,
 ): PanelPosition {
-  const maxX = Math.max(0, window.innerWidth - panelW)
-  const maxY = Math.max(0, window.innerHeight - panelH)
+  const g = FLOATING_OVERLAY_GUTTER
+  const { width: vw, height: vh } = getFloatingOverlayViewport()
+  const maxX = Math.max(g, vw - g - panelW)
+  const maxY = Math.max(g, vh - g - panelH)
   return {
-    x: Math.max(0, Math.min(pos.x, maxX)),
-    y: Math.max(0, Math.min(pos.y, maxY)),
+    x: Math.max(g, Math.min(pos.x, maxX)),
+    y: Math.max(g, Math.min(pos.y, maxY)),
   }
 }
 
@@ -76,11 +106,18 @@ function snapClampPosition(
   panelW: number,
   panelH: number,
 ): PanelPosition {
-  const maxX = Math.max(0, Math.floor((window.innerWidth - panelW) / G) * G)
-  const maxY = Math.max(0, Math.floor((window.innerHeight - panelH) / G) * G)
+  const g = FLOATING_OVERLAY_GUTTER
+  const { width: iw, height: ih } = getFloatingOverlayViewport()
+  const maxX = Math.max(g, iw - g - panelW)
+  const maxY = Math.max(g, ih - g - panelH)
+  const clamped = {
+    x: Math.max(g, Math.min(pos.x, maxX)),
+    y: Math.max(g, Math.min(pos.y, maxY)),
+  }
+  const snapped = snapPositionToOverlayGrid(clamped)
   return {
-    x: Math.max(0, Math.min(snapToGrid(pos.x), maxX)),
-    y: Math.max(0, Math.min(snapToGrid(pos.y), maxY)),
+    x: clamped.x >= maxX - G ? maxX : Math.max(g, Math.min(snapped.x, maxX)),
+    y: clamped.y >= maxY - G ? maxY : Math.max(g, Math.min(snapped.y, maxY)),
   }
 }
 
@@ -279,26 +316,29 @@ export function useFloatingPanel({
       if (!r || e.pointerId !== r.pointerId) return
       const dx = e.clientX - r.originX
       const dy = e.clientY - r.originY
-      const vw = window.innerWidth
-      const vh = window.innerHeight
+      const { width: vw, height: vh } = getFloatingOverlayViewport()
+      const margin = FLOATING_OVERLAY_GUTTER
       let nx = r.startX, ny = r.startY, nw = r.startWidth, nh = r.startHeight
 
-      if (r.direction.includes('e')) nw = Math.max(mw, Math.min(vw - r.startX, r.startWidth + dx))
-      if (r.direction.includes('s')) nh = Math.max(mh, Math.min(vh - r.startY, r.startHeight + dy))
+      if (r.direction.includes('e')) nw = Math.max(mw, Math.min(vw - margin - r.startX, r.startWidth + dx))
+      if (r.direction.includes('s')) nh = Math.max(mh, Math.min(vh - margin - r.startY, r.startHeight + dy))
       if (r.direction.includes('w')) {
         const cw = Math.max(mw, r.startWidth - dx)
-        nx = Math.max(0, r.startX + (r.startWidth - cw))
+        nx = Math.max(margin, r.startX + (r.startWidth - cw))
         nw = cw
       }
       if (r.direction.includes('n')) {
         const ch = Math.max(mh, r.startHeight - dy)
-        ny = Math.max(0, r.startY + (r.startHeight - ch))
+        ny = Math.max(margin, r.startY + (r.startHeight - ch))
         nh = ch
       }
       const cp = elClamp({ x: nx, y: ny }, getEl())
       setLayout({
         position: cp,
-        size: { width: Math.min(nw, vw - cp.x), height: Math.min(nh, vh - cp.y) },
+        size: {
+          width: Math.min(nw, vw - margin - cp.x),
+          height: Math.min(nh, vh - margin - cp.y),
+        },
       })
     }
 
@@ -308,9 +348,11 @@ export function useFloatingPanel({
       resizeRef.current = null
       const ss = snapSize(size, minSize)
       const sp = snapClampPosition(position, ss.width, ss.height)
+      const g = FLOATING_OVERLAY_GUTTER
+      const { width: vw, height: vh } = getFloatingOverlayViewport()
       const fs = {
-        width: Math.max(mw, Math.floor(Math.min(ss.width, window.innerWidth - sp.x) / G) * G),
-        height: Math.max(mh, Math.floor(Math.min(ss.height, window.innerHeight - sp.y) / G) * G),
+        width: Math.max(mw, Math.floor(Math.min(ss.width, vw - g - sp.x) / G) * G),
+        height: Math.max(mh, Math.floor(Math.min(ss.height, vh - g - sp.y) / G) * G),
       }
       setLayout({ position: sp, size: fs })
       savePanelPosition(panelId, sp)

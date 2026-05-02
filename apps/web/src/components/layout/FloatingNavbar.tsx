@@ -1,14 +1,19 @@
 import { useLocation } from 'react-router-dom'
 import { useFloatingChat } from '../../context/FloatingChatContext'
+import { FLOATING_OVERLAY_GUTTER } from '../../hooks/useFloatingPanel'
 import { AiChatIcon } from './AiChatIcon'
 
 export function FloatingNavbar() {
   const { pathname } = useLocation()
   const { isChatOpen, toggleChat } = useFloatingChat()
   const showChatInNavbar = pathname !== '/inspector'
+  const inset = FLOATING_OVERLAY_GUTTER
 
   return (
-    <nav className="pointer-events-auto absolute left-4 right-4 top-4 z-20">
+    <nav
+      className="pointer-events-auto absolute z-20"
+      style={{ left: inset, right: inset, top: inset }}
+    >
       <div className="flex h-12 w-full items-center justify-between gap-3 rounded-xl border border-neutral-200 bg-white/80 px-4 shadow-sm backdrop-blur-md">
         <span className="text-sm font-semibold tracking-wide text-neutral-900">
           Balrog

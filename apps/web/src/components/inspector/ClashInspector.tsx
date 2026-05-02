@@ -337,8 +337,19 @@ export function ClashInspector() {
 					"modify",
 				)
 			: null;
+	const activeRecommendationInfoAttachment =
+		selected && activeRecommendation
+			? buildRecommendationAttachment(
+					selected,
+					activeRecommendationIndex,
+					"attach",
+				)
+			: null;
 	const isActiveRecommendationAttached = activeRecommendationAttachment
 		? hasAttachment(activeRecommendationAttachment.id)
+		: false;
+	const isActiveRecommendationInfoAttached = activeRecommendationInfoAttachment
+		? hasAttachment(activeRecommendationInfoAttachment.id)
 		: false;
 	const activeRecommendationSeverity =
 		recommendationSeverityLabel(analysisMetadata);
@@ -1040,28 +1051,57 @@ export function ClashInspector() {
 
 											{/* currentStep: one badge per recommendation option */}
 											<div className="space-y-3 py-3">
-												<div className="flex flex-wrap gap-2">
-													{analysisRecommendations.map((rec, idx) => {
-														const isActive = idx === activeRecommendationIndex;
-														return (
-															<button
-																type="button"
-																key={`${selected.id}:${rec.raw}`}
-																onClick={() =>
-																	setActiveRecommendationIndex(idx)
-																}
-																className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-xs font-semibold transition ${
-																	isActive
-																		? "bg-blue-500 text-white shadow-sm hover:bg-blue-600"
-																		: "bg-neutral-600 text-white hover:bg-neutral-500"
-																}`}
-																aria-pressed={isActive}
-																aria-label={`Show recommendation ${idx + 1}`}
-															>
-																{idx + 1}
-															</button>
-														);
-													})}
+												<div className="flex flex-wrap items-center justify-between gap-2">
+													<div className="flex flex-wrap gap-2">
+														{analysisRecommendations.map((rec, idx) => {
+															const isActive =
+																idx === activeRecommendationIndex;
+															return (
+																<button
+																	type="button"
+																	key={`${selected.id}:${rec.raw}`}
+																	onClick={() =>
+																		setActiveRecommendationIndex(idx)
+																	}
+																	className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-xs font-semibold transition ${
+																		isActive
+																			? "bg-blue-500 text-white shadow-sm hover:bg-blue-600"
+																			: "bg-neutral-600 text-white hover:bg-neutral-500"
+																	}`}
+																	aria-pressed={isActive}
+																	aria-label={`Show recommendation ${idx + 1}`}
+																>
+																	{idx + 1}
+																</button>
+															);
+														})}
+													</div>
+													<AddToChatButton
+														className="h-8 shrink-0 !py-0"
+														disabled={
+															activeRecommendationInfoAttachment === null
+														}
+														added={isActiveRecommendationInfoAttached}
+														title={
+															isActiveRecommendationInfoAttached
+																? "Recommendation already attached for context on your next message"
+																: "Attach this recommendation to your next chat message as reference only"
+														}
+														label="Add to chat"
+														onClick={() => {
+															if (
+																!activeRecommendationInfoAttachment ||
+																isActiveRecommendationInfoAttached
+															) {
+																return;
+															}
+															addAttachment(
+																activeRecommendationInfoAttachment,
+															);
+															setChatOpen(true);
+															requestComposerFocus();
+														}}
+													/>
 												</div>
 
 												{activeRecommendation.parsed ? (

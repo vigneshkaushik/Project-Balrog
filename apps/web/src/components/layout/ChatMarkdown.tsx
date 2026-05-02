@@ -31,23 +31,23 @@ function markdownComponents(
 
 	return {
 		p: ({ children }) => (
-			<p className="mb-2 text-[0.9375rem] leading-relaxed last:mb-0">
+			<p className="mb-2 text-xs leading-snug last:mb-0">
 				{children}
 			</p>
 		),
 		ul: ({ children }) => (
-			<ul className="mb-2 ml-4 list-disc space-y-1 pl-0 marker:text-neutral-500 last:mb-0">
+			<ul className="mb-2 ml-3.5 list-disc space-y-0.5 pl-0 text-xs leading-snug marker:text-neutral-500 last:mb-0">
 				{children}
 			</ul>
 		),
 		ol: ({ children }) => (
-			<ol className="mb-2 ml-4 list-decimal space-y-1 pl-0 marker:text-neutral-500 last:mb-0">
+			<ol className="mb-2 ml-3.5 list-decimal space-y-0.5 pl-0 text-xs leading-snug marker:text-neutral-500 last:mb-0">
 				{children}
 			</ol>
 		),
 		li: ({ children, className }) => (
 			<li
-				className={`leading-relaxed [&.task-list-item]:flex [&.task-list-item]:items-start [&.task-list-item]:gap-0.5 ${className ?? ""}`.trim()}
+				className={`text-xs leading-snug [&.task-list-item]:flex [&.task-list-item]:items-start [&.task-list-item]:gap-0.5 ${className ?? ""}`.trim()}
 			>
 				{children}
 			</li>
@@ -70,22 +70,22 @@ function markdownComponents(
 			</a>
 		),
 		blockquote: ({ children }) => (
-			<blockquote className="mb-2 border-l-2 border-neutral-400/70 pl-3 text-neutral-600 last:mb-0 [&_p]:mb-1 [&_p:last-child]:mb-0">
+			<blockquote className="mb-2 border-l-2 border-neutral-400/70 pl-2.5 text-xs leading-snug text-neutral-600 last:mb-0 [&_p]:mb-1 [&_p:last-child]:mb-0">
 				{children}
 			</blockquote>
 		),
 		h1: ({ children }) => (
-			<h1 className="mb-2 mt-1 text-lg font-semibold tracking-tight text-neutral-950 first:mt-0">
+			<h1 className="mb-1.5 mt-1 text-sm font-semibold tracking-tight text-neutral-950 first:mt-0">
 				{children}
 			</h1>
 		),
 		h2: ({ children }) => (
-			<h2 className="mb-1.5 mt-2 text-base font-semibold tracking-tight text-neutral-950 first:mt-0">
+			<h2 className="mb-1 mt-1.5 text-xs font-semibold tracking-tight text-neutral-950 first:mt-0">
 				{children}
 			</h2>
 		),
 		h3: ({ children }) => (
-			<h3 className="mb-1.5 mt-2 text-[0.9375rem] font-semibold text-neutral-950 first:mt-0">
+			<h3 className="mb-1 mt-1.5 text-xs font-semibold text-neutral-950 first:mt-0">
 				{children}
 			</h3>
 		),
@@ -105,7 +105,7 @@ function markdownComponents(
 
 			return (
 				<code
-					className={`rounded px-1 py-px font-mono text-[0.85em] ${inlineCodeBg}`}
+					className={`rounded px-0.5 py-px font-mono text-[0.6875rem] leading-snug ${inlineCodeBg}`}
 					{...props}
 				>
 					{children}
@@ -113,13 +113,13 @@ function markdownComponents(
 			);
 		},
 		pre: ({ children }) => (
-			<pre className="mb-2 max-w-full overflow-x-auto rounded-lg border border-neutral-200 bg-neutral-900 px-3 py-2 font-mono text-[0.8125rem] leading-relaxed text-neutral-100 last:mb-0 [&_code]:rounded-none [&_code]:bg-transparent [&_code]:p-0 [&_code]:font-mono [&_code]:text-inherit">
+			<pre className="mb-2 max-w-full overflow-x-auto rounded-lg border border-neutral-200 bg-neutral-900 px-2 py-1.5 font-mono text-[0.6875rem] leading-relaxed text-neutral-100 last:mb-0 [&_code]:rounded-none [&_code]:bg-transparent [&_code]:p-0 [&_code]:font-mono [&_code]:text-inherit">
 				{children}
 			</pre>
 		),
 		table: ({ children }) => (
 			<div className="mb-2 max-w-full overflow-x-auto last:mb-0">
-				<table className="w-full border-collapse border border-neutral-300 text-left text-[0.8125rem]">
+				<table className="w-full border-collapse border border-neutral-300 text-left text-xs">
 					{children}
 				</table>
 			</div>
