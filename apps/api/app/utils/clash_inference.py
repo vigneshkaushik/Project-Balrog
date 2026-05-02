@@ -24,15 +24,15 @@ Role: You are a BIM Coordination Engine. Your mission is to analyze multi-object
 
 1. Trade Priority Hierarchy (High to Low):
 
-STR (Structural): Beams, Columns, Slabs, Metal Decks.
+STRUCTURAL: Beams, Columns, Slabs, Metal Decks.
 
-PLUMB-G (Gravity Plumbing): Sanitary, Storm, Drainage.
+PLUMBING: Sanitary, Storm, Drainage.
 
-MECH-L (Large Mechanical): Primary Duct Mains, AHUs.
+MECHANICAL: Primary Duct Mains, AHUs.
 
-PLUMB-P (Pressurized): Domestic Water, Gas, Fire Protection.
+PLUMBING: Domestic Water, Gas, Fire Protection.
 
-ELEC (Electrical): Cable Trays, Conduits, Lighting.
+ELECTRICAL: Cable Trays, Conduits, Lighting.
 
 2. Triage Logic:
 
@@ -41,10 +41,8 @@ Determine Severity:
 - MEDIUM: Any clash containing Priority 3 vs. Priority 1/2.
 - LOW: Clashes containing only Priority 4 and 5 items.
 
-Identify the "Lead": The item with the highest priority in the hierarchy. If there is a tie between two items of the same priority (e.g., two structural beams), both are designated as "Lead."
-
 3. Discipline Codes:
-ARC (Architectural), STR (Structural), MECH (Mechanical), PLUMB (Plumbing), FP (Fire Protection), ELEC (Electrical).
+ARCHITECTURAL, STRUCTURAL, MECHANICAL, PLUMBING, FIRE_PROTECTION, ELECTRICAL.
 
 Input Format (JSON):
 {
@@ -60,7 +58,6 @@ Return a JSON array of objects:
     "clash": "uuid",
     "severity": "LOW | MEDIUM | CRITICAL",
     "disciplines": ["CODE1", "CODE2"],
-    "lead": ["Item Name 1"]
   }
 ]
 """
@@ -143,7 +140,11 @@ def infer_single_batch(
 ) -> list[dict[str, Any]]:
     """Run severity inference on a single batch of clashes (synchronous)."""
     optimized = [_clash_payload(c, minify=minify) for c in clashes]
-    llm_settings = settings.model_copy(update={"temperature": temperature}) if (settings.llm_provider != "anthropic" and "opus" not in settings.model_name) else settings.model_copy(update={"temperature": 1.0})
+    llm_settings = (
+        settings.model_copy(update={"temperature": temperature})
+        if (settings.llm_provider != "anthropic" and "opus" not in settings.model_name)
+        else settings.model_copy(update={"temperature": 1.0})
+    )
     llm = create_llm(
         llm_settings,
         http_request_timeout=CLASH_UPLOAD_LLM_HTTP_TIMEOUT_SEC,
@@ -189,7 +190,9 @@ def infer_clash_severities(
         max_workers=max_workers,
     )
 
-    worker_count = 1 if len(batches) <= 1 or max_workers <= 1 else min(max_workers, len(batches))
+    worker_count = (
+        1 if len(batches) <= 1 or max_workers <= 1 else min(max_workers, len(batches))
+    )
     _dbg(
         f"clashes={len(clashes)} batches={len(batches)} max_batch_size={max_batch_size} "
         f"worker_count={worker_count} provider={settings.llm_provider} "
@@ -197,7 +200,9 @@ def infer_clash_severities(
     )
     _dbg("batch sizes: " + ", ".join(str(len(chunk)) for chunk in batches))
 
-    def _infer_batch(index: int, chunk: list[dict[str, Any]]) -> tuple[int, list[dict[str, Any]]]:
+    def _infer_batch(
+        index: int, chunk: list[dict[str, Any]]
+    ) -> tuple[int, list[dict[str, Any]]]:
         thread_name = threading.current_thread().name
         batch_start = time.perf_counter()
         _dbg(f"batch {index} START thread={thread_name} chunk_size={len(chunk)}")
@@ -236,7 +241,9 @@ def infer_clash_severities(
         return index, parsed
 
     if worker_count == 1:
-        ordered_results = [_infer_batch(index, chunk) for index, chunk in enumerate(batches)]
+        ordered_results = [
+            _infer_batch(index, chunk) for index, chunk in enumerate(batches)
+        ]
     else:
         ordered_results: list[tuple[int, list[dict[str, Any]]]] = []
         with ThreadPoolExecutor(max_workers=worker_count) as executor:
@@ -251,6 +258,7 @@ def infer_clash_severities(
     for _, parsed in sorted(ordered_results, key=lambda item: item[0]):
         out.extend(parsed)
 
-    _dbg(f"done total_results={len(out)} total_time={time.perf_counter() - t_global:.2f}s")
+    _dbg(
+        f"done total_results={len(out)} total_time={time.perf_counter() - t_global:.2f}s"
+    )
     return out
-
