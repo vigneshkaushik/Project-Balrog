@@ -36,6 +36,7 @@ import { toChatAttachmentsWire } from "../../lib/chatAttachments";
 import { postChatStream } from "../../lib/postChatStream";
 import type { ChatAttachmentSummary, ChatMessage } from "../../types";
 import { AgentActivityLog } from "./AgentActivityLog";
+import { ChatMarkdown } from "./ChatMarkdown";
 import { ChatAddContextMenu } from "./ChatAddContextMenu";
 import {
 	ChatAttachmentChips,
@@ -975,16 +976,28 @@ export function ChatWindow({
 										/>
 									)}
 									{m.role === "user" &&
-									m.attachments &&
-									m.attachments.length > 0 ? (
-										<ChatMessageAttachmentChips attachments={m.attachments} />
+									((m.attachments?.length ?? 0) > 0 || m.text.trim()) ? (
+										<div className="flex min-w-0 flex-col gap-2">
+											{(m.attachments?.length ?? 0) > 0 ? (
+												<ChatMessageAttachmentChips
+													attachments={m.attachments!}
+												/>
+											) : null}
+											{m.text.trim() ? (
+												<ChatMarkdown
+													content={m.text}
+													variant="user"
+												/>
+											) : null}
+										</div>
 									) : null}
 									{m.role === "assistant" &&
 									m.streaming &&
 									!assistantVisible ? null : assistantVisible ? (
-										<span className="whitespace-pre-wrap">
-											{assistantVisible}
-										</span>
+										<ChatMarkdown
+											content={assistantVisible}
+											variant="assistant"
+										/>
 									) : null}
 								</li>
 							);
